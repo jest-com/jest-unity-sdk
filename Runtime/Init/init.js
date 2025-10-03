@@ -6,10 +6,13 @@ function marshalString(value) {
 }
 
 async function initializeSdkAsync() {
-  const { JestSDK } = await import(
-    "https://cdn.jest.com/sdk/latest/jestsdk.esm.js"
-  );
-  window.JestSDK = JestSDK;
+  await new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jest.com/sdk/latest/jestsdk.js';
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
   await window.JestSDK.init();
   console.log("Initialized.");
 }
