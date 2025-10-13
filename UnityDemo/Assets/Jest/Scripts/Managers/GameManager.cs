@@ -114,6 +114,17 @@ public class GameManager : MonoBehaviour
         m_jestSDK.Login(payload);
     }
 
+
+    public void ScheduleTestNotification()
+    {
+        string message = "Come back and play the game!!!";
+        float delay = 60;
+        bool sendPush = true;
+        ScheduleNotification(message, delay, sendPush);
+    }
+
+
+
     public void ScheduleNotification(string message, float delaySeconds, bool sendPush)
     {
         m_jestSDK?.notifications?.ScheduleNotification(new Notifications.Options

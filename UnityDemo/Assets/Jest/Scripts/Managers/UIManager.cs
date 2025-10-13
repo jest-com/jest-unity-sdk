@@ -18,6 +18,8 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI m_coinsText;
     [SerializeField] private TextMeshProUGUI m_levelText;
     [SerializeField] private Button m_loginButton;
+    [SerializeField] public ToastUI m_toastUI;
+
 
 
     void Awake()
@@ -109,5 +111,11 @@ public class UIManager : MonoBehaviour
     public void OnLoginPressed()
     {
         GameManager.Instance.OnLoginAction();
+    }
+
+    public void OnTestNotificationPressed()
+    {
+        m_toastUI.ShowToast("Scheduled test notification for 1 minute.");
+        GameManager.Instance.ScheduleTestNotification();
     }
 }
