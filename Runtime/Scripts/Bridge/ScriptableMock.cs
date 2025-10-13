@@ -104,7 +104,10 @@ namespace JestSDK
             var result = new Dictionary<string, object>();
             foreach (var pair in _entryPayload)
             {
-                result.Add(pair.key, pair.value);
+                if (!result.ContainsKey(pair.key))
+                {
+                    result.Add(pair.key, pair.value);
+                }
             }
 
             return Convert.ToString(result);
@@ -121,6 +124,18 @@ namespace JestSDK
                 _entryPayload.Add(new ValuePair { key = pair.Key, value = pair.Value.ToString() });
             }
         }
+
+        /// <summary>
+        /// Mark user as logged in.
+        /// </summary>
+        /// <param name="payload">A string-object map containing the payload.</param>
+        public void Login(string payload)
+        {
+            _isRegistered = true;
+            Dictionary<string, object> payloadDictionary = Convert.FromString<Dictionary<string, object>>(payload);
+            SetEntryPayload(payloadDictionary);
+        }
+
 
 #if UNITY_EDITOR
         private void OnEnable()

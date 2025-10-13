@@ -61,10 +61,7 @@ namespace JestSDK
         /// </summary>
         public void Login(Dictionary<string, object> payload)
         {
-            var entryPayloadDictionary = new Dictionary<string, object>();
-            entryPayloadDictionary["entryPayload"] = payload;
-            string entryPayloadString = Convert.ToString(entryPayloadDictionary);
-            Debug.Log("Umair::entryPayloadString::" + entryPayloadString);
+            string entryPayloadString = Convert.ToString(payload);
             JsBridge.Login(entryPayloadString);
         }
     }

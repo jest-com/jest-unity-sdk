@@ -22,7 +22,7 @@ namespace JestSDK
         /// <summary>
         /// Gets whether the player is registered as a string representation.
         /// </summary>
-        public string isRegistered { get; }
+        public string isRegistered { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the TestBridgeMock class.
@@ -119,5 +119,16 @@ namespace JestSDK
         {
             _entryPayload = Convert.ToString(payload);
         }
+
+        /// <summary>
+        /// Mark user as logged in.
+        /// </summary>
+        /// <param name="payload">A string-object map containing the payload.</param>
+        public void Login(string payload)
+        {
+            this.isRegistered = true.ToString();
+            _entryPayload = payload;
+        }
+
     }
 }

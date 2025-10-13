@@ -40,7 +40,14 @@ mergeInto(LibraryManager.library, {
   },
 
   JS_login: function (payload) {
-    window.JestSDK.login(JSON.parse(UTF8ToString(payload)));
+    const payloadJson = UTF8ToString(payload);
+    let data = {};
+    try {
+      data = JSON.parse(payloadJson);
+    } catch (e) {
+      console.error("Invalid JSON passed:", payloadJson);
+    }
+    window.JestSDK.login({ entryPayload: data });
   },
 
   JS_initSdk: function (taskPtr, successCallback, errorCallback) {

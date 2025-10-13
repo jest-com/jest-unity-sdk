@@ -81,7 +81,7 @@ namespace JestSDK
         { successCallback(ptr); }
 
         private static void JS_login(string payload)
-        {}
+        { _bridgeMock.Login(payload); }
 
 
 #endif
