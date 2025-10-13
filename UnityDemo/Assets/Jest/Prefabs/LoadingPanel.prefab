@@ -114,7 +114,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  Rainbow: 1
+  Rainbow: 0
   RainbowSpeed: 0.5
   RainbowSaturation: 1
   RainbowAnimationCurve:
