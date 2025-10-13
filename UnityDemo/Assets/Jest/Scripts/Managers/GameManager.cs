@@ -98,7 +98,19 @@ public class GameManager : MonoBehaviour
         m_jestSDK.player.TryGet("Coins", out int coins);
         m_jestSDK.player.TryGet("Level", out int level);
         m_jestSDK.player.TryGet("Name", out string name);
-        var payload = new Dictionary<string, object> { { "Level", level }, { "Name", name }, { "Coins", coins } };
+        var payload = new Dictionary<string, object>();
+        if (coins != 0)
+        {
+            payload["Coins"] = coins;
+        }
+        if (level != 0)
+        {
+            payload["Level"] = level;
+        }
+        if (!string.IsNullOrEmpty(name))
+        {
+            payload["Name"] = name;
+        }
         m_jestSDK.Login(payload);
     }
 
