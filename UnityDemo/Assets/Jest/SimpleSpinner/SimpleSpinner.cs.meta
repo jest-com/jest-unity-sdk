@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 91a804772ecfd463ca53036af77b26c3
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 237500
+  packageName: Simple Spinner
+  packageVersion: 1.0
+  assetPath: Assets/SimpleSpinner/SimpleSpinner.cs
+  uploadId: 538897
