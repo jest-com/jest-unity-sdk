@@ -70,5 +70,12 @@ namespace JestSDK
         /// </summary>
         /// <param name="payload">A string-object map containing the payload.</param>
         void SetEntryPayload(Dictionary<string, object> payload);
+
+        /// <summary>
+        /// Mark user as logged in.
+        /// </summary>
+        /// <param name="payload">A string-object map containing the payload.</param>
+        void Login(string payload);
+
     }
 }

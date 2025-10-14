@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using AOT;
+using UnityEngine.Scripting;
 
 namespace JestSDK
 {
@@ -45,6 +46,9 @@ namespace JestSDK
         [DllImport("__Internal")]
         private static extern void JS_initSdk(System.IntPtr ptr, System.Action<System.IntPtr> successCallback,
                                          System.Action<System.IntPtr, string> errorCallback);
+
+        [DllImport("__Internal")]
+        private static extern void JS_login(string payload);
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -75,6 +79,10 @@ namespace JestSDK
         private static void JS_initSdk(System.IntPtr ptr, System.Action<System.IntPtr> successCallback,
                                  System.Action<System.IntPtr, string> errorCallback)
         { successCallback(ptr); }
+
+        private static void JS_login(string payload)
+        { _bridgeMock.Login(payload); }
+
 
 #endif
 
@@ -143,6 +151,11 @@ namespace JestSDK
             return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, HandleSuccess, HandleError); });
         }
 
+        internal static void Login(string payload)
+        {
+            JS_login(payload);
+        }
+
         internal static JestSDKTask CallAsyncVoid(string call)
         {
             return new JestSDKTask((System.IntPtr ptr) => { JS_callAsyncVoid(ptr, call, HandleSuccess, HandleError); });
@@ -159,23 +172,23 @@ namespace JestSDK
             return new JestSDKTask<string>((System.IntPtr ptr) =>
                             { JS_callAsyncString(ptr, call, HandleSuccessString, HandleErrorString); });
         }
-
+        [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, float>))]
         public static void HandleSuccessNumber(System.IntPtr taskPtr, float result) => HandleSuccess(taskPtr, result);
 
-
+        [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, string>))]
         public static void HandleSuccessString(System.IntPtr taskPtr, string result) => HandleSuccess(taskPtr, result);
 
-
+        [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, string>))]
         public static void HandleErrorNumber(System.IntPtr taskPtr, string error) => HandleError<float>(taskPtr, error);
 
-
+        [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, string>))]
         public static void HandleErrorString(System.IntPtr taskPtr, string error) => HandleError<string>(taskPtr, error);
 
-
+        [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, string>))]
         public static void HandleError(System.IntPtr taskPtr, string error)
         {
@@ -185,6 +198,7 @@ namespace JestSDK
             handle.Free();
         }
 
+        [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr>))]
         public static void HandleSuccess(System.IntPtr taskPtr)
         {

@@ -1,8 +1,22 @@
 function marshalString(value) {
-  var bufferSize = lengthBytesUTF8(value) + 1;
-  var buffer = _malloc(bufferSize);
-  stringToUTF8(value, buffer, bufferSize);
-  return buffer;
+  // If value is null or undefined, treat it as an empty string
+  if (value === undefined || value === null) {
+    value = "";
+  }
+
+  // Always convert to string to be safe
+  var str = String(value);
+
+  // Allocate space for the UTF-8 bytes + null terminator
+  var length = lengthBytesUTF8(str) + 1;
+  var ptr = _malloc(length);
+  if (!ptr) {
+    return 0; // in case malloc failed
+  }
+
+  // Write into WASM memory
+  stringToUTF8(str, ptr, length);
+  return ptr;
 }
 
 async function initializeSdkAsync() {

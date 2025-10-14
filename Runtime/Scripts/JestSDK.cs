@@ -52,7 +52,24 @@ namespace JestSDK
         public Dictionary<string, object> GetEntryPayload()
         {
             string payloadString = JsBridge.GetEntryPayload();
-            return Convert.FromString<Dictionary<string, object>>(payloadString);
+            Debug.Log("EntryPayload::" + payloadString);
+            if (string.IsNullOrEmpty(payloadString))
+            {
+                return new Dictionary<string, object>();
+            }
+            else
+            {
+                return Convert.FromString<Dictionary<string, object>>(payloadString);
+            }
+        }
+
+        /// <summary>
+        /// Login the user with the provided payload data.
+        /// </summary>
+        public void Login(Dictionary<string, object> payload)
+        {
+            string entryPayloadString = Convert.ToString(payload);
+            JsBridge.Login(entryPayloadString);
         }
     }
 }
