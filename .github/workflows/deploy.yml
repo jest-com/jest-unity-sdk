@@ -51,7 +51,7 @@ jobs:
           customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
       - name: Zip build
         run: |
-          cd UnityDemo/build/WebGL
+          cd build/WebGL
           zip -r game.zip .
 
       - name: Upload build
