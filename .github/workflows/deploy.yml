@@ -17,18 +17,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Print version
-        run: echo "Version is ${{ steps.build.outputs.buildVersion }}"
       - uses: actions/cache@v3
         with:
           path: UnityDemo/Library
           key: Library-WebGL
           restore-keys: Library-
-      - name: Create and push version tag
-        run: |
-          git tag $NEXT_VERSION
-          git push origin $NEXT_VERSION
-
       - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
         env:
@@ -41,20 +34,35 @@ jobs:
           versioning: Semantic
           baseVersion: 1.0.0
           customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
+
+      - name: Print version
+        run: echo "Version is ${{ steps.build.outputs.buildVersion }}"
+
+      - name: Create and push version tag
+        if: success()
+        run: |
+          VERSION="${{ steps.build.outputs.buildVersion }}"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag "$VERSION"
+          git push origin "$VERSION"
+
       - name: List workspace contents
         run: ls -R .
       - uses: actions/upload-artifact@v4
         with:
           name: Build
           path: build/WebGL
-      # - name: Zip build
-      #   run: |
-      #     zip -r build/WebGL/game.zip build/WebGL
-      
-      # - name: Upload build
-      #   run: |
-      #     curl -X POST \
-      #       -H "X-Game-Upload-Token: $UPLOAD_TOKEN" \
-      #       -H "X-Build-Version: $NEXT_VERSION" \
-      #       --form file=@build/WebGL/game.zip \
-      #       "$UPLOAD_URL"
+      - name: Create ZIP for upload
+        run: |
+          mkdir -p build_zip
+          cd build
+          zip -r ../build_zip/game.zip WebGL
+
+      - name: Upload build
+        run: |
+          curl -X POST \
+            -H "X-Game-Upload-Token: $UPLOAD_TOKEN" \
+            -H "X-Build-Version: ${{ steps.build.outputs.buildVersion }}" \
+            --form file=@build_zip/game.zip \
+            "$UPLOAD_URL"
