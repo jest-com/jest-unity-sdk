@@ -40,7 +40,8 @@ jobs:
 
           echo "Disk space after cleanup:"
           df -h
-     - name: Build Unity WebGL
+      - name: Build Unity WebGL
+        id: build
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -50,20 +51,10 @@ jobs:
           targetPlatform: WebGL
           projectPath: UnityDemo
           versioning: Semantic
-          baseVersion: 1.0.0
           customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
 
       - name: Print version
         run: echo "Version is ${{ steps.build.outputs.buildVersion }}"
-
-      - name: Create and push version tag
-        if: success()
-        run: |
-          VERSION="${{ steps.build.outputs.buildVersion }}"
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git tag "$VERSION"
-          git push origin "$VERSION"
 
       - name: List workspace contents
         run: ls -R .
