@@ -41,10 +41,10 @@ jobs:
       # 3. Build WebGL (adjust to your Unity setup or CI builder)
       # Example with game-ci:
       - name: Build Unity WebGL
-        projectPath: UnityDemo
         uses: game-ci/unity-builder@v4
         with:
           targetPlatform: WebGL
+          projectPath: UnityDemo
           versioning: None
           customImage: "unityci/editor:ubuntu-6000.0.46f1-webgl-3.1.0"
         env:
