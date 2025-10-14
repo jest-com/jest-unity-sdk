@@ -66,8 +66,8 @@ jobs:
       - name: Create ZIP for upload
         run: |
           mkdir -p build_zip
-          cd build
-          zip -r ../build_zip/game.zip WebGL
+          cd build/WebGL
+          zip -r ../../build_zip/game.zip WebGL
 
       - name: Upload build
         run: |
