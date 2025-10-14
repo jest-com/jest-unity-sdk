@@ -22,6 +22,14 @@ jobs:
           path: UnityDemo/Library
           key: Library-WebGL
           restore-keys: Library-
+      # Free up disk space
+      - name: Free Disk Space for Android
+        run: |
+          sudo swapoff -a
+          sudo rm -f /swapfile
+          sudo apt clean
+          docker rmi $(docker images -q)
+          df -h
       - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
         env:
