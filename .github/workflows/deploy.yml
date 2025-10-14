@@ -20,6 +20,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Unity - Activate
+        uses: game-ci/unity-activate@v2.0.0
+
       # 2. Get and increment the patch version
       - name: Compute next build version
         id: version
