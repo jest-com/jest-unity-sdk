@@ -16,23 +16,23 @@ jobs:
       BASE_VERSION: "1.0"
 
     steps:
-      # 1. Checkout repository
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ✅ Use latest version here
       - name: Activate Unity License
         uses: game-ci/unity-activate@v2
         with:
+          unityVersion: 6000.0.46f1
           unityLicense: ${{ secrets.UNITY_LICENSE }}
 
-      # 2. Get and increment the patch version
       - name: Compute next build version
         id: version
         run: |
           LAST_TAG=$(git tag --list "${BASE_VERSION}.*" | sort -V | tail -n1)
 
           if [ -z "$LAST_TAG" ]; then
-            NEXT_VERSION="${BASE_VERSION}.3"   # ✅ starts at .3
+            NEXT_VERSION="${BASE_VERSION}.3"
           else
             PATCH=${LAST_TAG##*.}
             NEXT_PATCH=$((PATCH + 1))
@@ -42,27 +42,22 @@ jobs:
           echo "NEXT_VERSION=$NEXT_VERSION" | tee -a $GITHUB_ENV
           echo "Using version: $NEXT_VERSION"
 
-      # ✅ Licensed Unity Builder (uses encoded license)
       - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
         with:
           targetPlatform: WebGL
           projectPath: UnityDemo
           versioning: None
-          customImage: "unityci/editor:ubuntu-6000.0.46f1-webgl-3.1.0"
+          # ✅ Fixed image tag
+          customImage: "unityci/editor:ubuntu-6000.0.46f1-webgl-1"
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          # Only include these if you're using Unity ID login-based activation
-          # UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          # UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
-      # ✅ Zip from UnityDemo/build/WebGL
       - name: Zip build
         run: |
           cd UnityDemo/build/WebGL
           zip -r game.zip .
 
-      # ✅ Upload using curl
       - name: Upload build
         run: |
           curl -X POST \
