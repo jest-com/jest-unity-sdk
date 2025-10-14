@@ -1,0 +1,67 @@
+name: Build and Upload WebGL
+
+on:
+  push:
+    branches:
+      - main # change if needed
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    env:
+      UPLOAD_URL: "https://a.messagedisco.com/api/management/games/d3d29990-a6f6-44b1-b5ac-150688526b13/upload-build"
+      UPLOAD_TOKEN: ${{ secrets.GAME_UPLOAD_TOKEN }}
+      BASE_VERSION: "1.0"
+
+    steps:
+      # 1. Checkout repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Get and increment the patch version
+      - name: Compute next build version
+        id: version
+        run: |
+          # Get tag or use 0 if none
+          LAST_TAG=$(git tag --list "${BASE_VERSION}.*" | sort -V | tail -n1)
+
+          if [ -z "$LAST_TAG" ]; then
+            NEXT_VERSION="${BASE_VERSION}.3"
+          else
+            PATCH=${LAST_TAG##*.}
+            NEXT_PATCH=$((PATCH + 1))
+            NEXT_VERSION="${BASE_VERSION}.${NEXT_PATCH}"
+          fi
+
+          echo "NEXT_VERSION=$NEXT_VERSION" | tee -a $GITHUB_ENV
+          echo "Using version: $NEXT_VERSION"
+
+      # 3. Build WebGL (adjust to your Unity setup or CI builder)
+      # Example with game-ci:
+      - name: Build Unity WebGL
+        projectPath: UnityDemo
+        uses: game-ci/unity-builder@v4
+        with:
+          targetPlatform: WebGL
+          versioning: None
+          customImage: "unityci/editor:ubuntu-6000.0.46f1-webgl-3.1.0"
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_ENCODED_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+      # 4. Zip the build output
+      - name: Zip build
+        run: |
+          cd UnityDemo/build/WebGL
+          zip -r game.zip .
+
+      # 5. Upload using curl
+      - name: Upload build
+        run: |
+          curl -X POST \
+            -H "X-Game-Upload-Token: $UPLOAD_TOKEN" \
+            -H "X-Build-Version: $NEXT_VERSION" \
+            --form file=@UnityDemo/build/WebGL/game.zip \
+            "$UPLOAD_URL"
