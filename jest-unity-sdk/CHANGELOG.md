@@ -6,3 +6,6 @@
 
 ## 1.0.26 - 2025-10-14
 - Merge branch 'main' of https://github.com/umair6/jest-unity-sdk
+
+## 1.0.27 - 2025-10-14
+- Updated Messages List
