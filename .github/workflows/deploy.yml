@@ -13,31 +13,22 @@ jobs:
     env:
       UPLOAD_URL: "https://a.messagedisco.com/api/management/games/d3d29990-a6f6-44b1-b5ac-150688526b13/upload-build"
       UPLOAD_TOKEN: ${{ secrets.GAME_UPLOAD_TOKEN }}
-      BASE_VERSION: "1.0"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Compute next build version
-        id: version
-        run: |
-          LAST_TAG=$(git tag --list "${BASE_VERSION}.*" | sort -V | tail -n1)
-
-          if [ -z "$LAST_TAG" ]; then
-            NEXT_VERSION="${BASE_VERSION}.3"
-          else
-            PATCH=${LAST_TAG##*.}
-            NEXT_PATCH=$((PATCH + 1))
-            NEXT_VERSION="${BASE_VERSION}.${NEXT_PATCH}"
-          fi
-
-          echo "NEXT_VERSION=$NEXT_VERSION" | tee -a $GITHUB_ENV
-          echo "Using version: $NEXT_VERSION"
+      - name: Print version
+        run: echo "Version is ${{ steps.build.outputs.buildVersion }}"
       - uses: actions/cache@v3
         with:
           path: UnityDemo/Library
           key: Library-WebGL
           restore-keys: Library-
+      - name: Create and push version tag
+        run: |
+          git tag $NEXT_VERSION
+          git push origin $NEXT_VERSION
+
       - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
         env:
@@ -47,18 +38,23 @@ jobs:
         with:
           targetPlatform: WebGL
           projectPath: UnityDemo
-          versioning: None
+          versioning: Semantic
+          baseVersion: 1.0.0
           customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
       - name: List workspace contents
         run: ls -R .
-      - name: Zip build
-        run: |
-          zip -r build/WebGL/game.zip build/WebGL
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Build
+          path: build/WebGL
+      # - name: Zip build
+      #   run: |
+      #     zip -r build/WebGL/game.zip build/WebGL
       
-      - name: Upload build
-        run: |
-          curl -X POST \
-            -H "X-Game-Upload-Token: $UPLOAD_TOKEN" \
-            -H "X-Build-Version: $NEXT_VERSION" \
-            --form file=@build/WebGL/game.zip \
-            "$UPLOAD_URL"
+      # - name: Upload build
+      #   run: |
+      #     curl -X POST \
+      #       -H "X-Game-Upload-Token: $UPLOAD_TOKEN" \
+      #       -H "X-Build-Version: $NEXT_VERSION" \
+      #       --form file=@build/WebGL/game.zip \
+      #       "$UPLOAD_URL"
