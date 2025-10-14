@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Activate Unity License
-        uses: game-ci/unity-activate@v3
+        uses: game-ci/unity-activate@v2
         with:
           unityLicense: ${{ secrets.UNITY_LICENSE }}
 
