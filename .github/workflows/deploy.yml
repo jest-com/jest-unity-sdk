@@ -3,8 +3,8 @@ name: Build and Upload WebGL
 on:
   push:
     branches:
-      - main # change if needed
-      - SDKWithDemoProject # change if needed
+      - main
+      - SDKWithDemoProject
 
 jobs:
   build-and-upload:
@@ -24,11 +24,10 @@ jobs:
       - name: Compute next build version
         id: version
         run: |
-          # Get tag or use 0 if none
           LAST_TAG=$(git tag --list "${BASE_VERSION}.*" | sort -V | tail -n1)
 
           if [ -z "$LAST_TAG" ]; then
-            NEXT_VERSION="${BASE_VERSION}.3"
+            NEXT_VERSION="${BASE_VERSION}.3"   # ✅ starts at .3
           else
             PATCH=${LAST_TAG##*.}
             NEXT_PATCH=$((PATCH + 1))
@@ -38,8 +37,7 @@ jobs:
           echo "NEXT_VERSION=$NEXT_VERSION" | tee -a $GITHUB_ENV
           echo "Using version: $NEXT_VERSION"
 
-      # 3. Build WebGL (adjust to your Unity setup or CI builder)
-      # Example with game-ci:
+      # ✅ Licensed Unity Builder (uses encoded license)
       - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
         with:
@@ -48,17 +46,18 @@ jobs:
           versioning: None
           customImage: "unityci/editor:ubuntu-6000.0.46f1-webgl-3.1.0"
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_ENCODED_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          # Only include these if you're using Unity ID login-based activation
+          # UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          # UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 
-      # 4. Zip the build output
+      # ✅ Zip from UnityDemo/build/WebGL
       - name: Zip build
         run: |
           cd UnityDemo/build/WebGL
           zip -r game.zip .
 
-      # 5. Upload using curl
+      # ✅ Upload using curl
       - name: Upload build
         run: |
           curl -X POST \
