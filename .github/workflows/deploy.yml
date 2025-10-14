@@ -50,7 +50,8 @@ jobs:
         with:
           targetPlatform: WebGL
           projectPath: UnityDemo
-          versioning: Semantic
+          versioning: Custom
+          version: 1.0.${{ github.run_number }}
           customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
 
       - name: Print version
