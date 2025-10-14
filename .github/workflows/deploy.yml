@@ -82,12 +82,31 @@ jobs:
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-      - name: Commit version bump
+      - name: Update CHANGELOG with commit messages
+        if: steps.sdk_change.outputs.changed == 'true'
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          DATE=$(date +"%Y-%m-%d")
+
+          # Get commits since the last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s")
+          else
+            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s")
+          fi
+
+          echo "" >> jest-unity-sdk/CHANGELOG.md
+          echo "## $VERSION - $DATE" >> jest-unity-sdk/CHANGELOG.md
+          echo "$COMMITS" >> jest-unity-sdk/CHANGELOG.md
+
+      - name: Commit version bump + changelog
         if: steps.sdk_change.outputs.changed == 'true'
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git add jest-unity-sdk/package.json
+          git add jest-unity-sdk/package.json jest-unity-sdk/CHANGELOG.md
           git commit -m "Bump version to ${{ steps.bump.outputs.version }}"
           git push
 
