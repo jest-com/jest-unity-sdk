@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - SDKWithDemoProject
 
 jobs:
   build-and-upload:
@@ -17,29 +16,48 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Read and bump version
+        id: bump
+        run: |
+          FILE="jest-unity-sdk/package.json"
+          VERSION=$(jq -r '.version' $FILE)
+          IFS='.' read -r major minor patch <<< "$VERSION"
+          patch=$((patch + 1))
+          NEW_VERSION="${major}.${minor}.${patch}"
+
+          echo "New version: $NEW_VERSION"
+          jq --arg v "$NEW_VERSION" '.version = $v' $FILE > tmp.json && mv tmp.json $FILE
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Commit version bump
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add jest-unity-sdk/package.json
+          git commit -m "Bump version to ${{ steps.bump.outputs.version }}" || echo "No changes to commit"
+          git push
+
       - uses: actions/cache@v3
         with:
           path: UnityDemo/Library
           key: Library-WebGL
           restore-keys: Library-
-      # Free up disk space
+
       - name: Free Disk Space for Android
         run: |
-          echo "Disabling and removing swap"
           sudo swapoff -a || true
           sudo rm -f /swapfile || true
-
-          echo "Cleaning APT cache"
           sudo apt-get clean
           sudo rm -rf /var/lib/apt/lists/*
-
-          echo "Pruning unused docker images"
           docker image prune -af
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
-
-          echo "Disk space after cleanup:"
           df -h
+
       - name: Build Unity WebGL
         id: build
         uses: game-ci/unity-builder@v4
@@ -51,18 +69,17 @@ jobs:
           targetPlatform: WebGL
           projectPath: UnityDemo
           versioning: Custom
-          version: 1.0.${{ github.run_number }}
+          version: ${{ steps.bump.outputs.version }}
           customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
 
       - name: Print version
         run: echo "Version is ${{ steps.build.outputs.buildVersion }}"
 
-      - name: List workspace contents
-        run: ls -R .
       - uses: actions/upload-artifact@v4
         with:
           name: Build-${{ steps.build.outputs.buildVersion }}
           path: build/WebGL
+
       - name: Create ZIP for upload
         run: |
           mkdir -p build_zip
