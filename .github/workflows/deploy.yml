@@ -43,7 +43,7 @@ jobs:
           customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
       - name: List workspace contents
         run: ls -R .
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Build
           path: build/WebGL
