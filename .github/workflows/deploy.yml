@@ -49,15 +49,16 @@ jobs:
           projectPath: UnityDemo
           versioning: None
           customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
+      - name: List workspace contents
+        run: ls -R .
       - name: Zip build
         run: |
-          cd build/WebGL
-          zip -r game.zip .
-
+          zip -r build/WebGL/game.zip build/WebGL
+      
       - name: Upload build
         run: |
           curl -X POST \
             -H "X-Game-Upload-Token: $UPLOAD_TOKEN" \
             -H "X-Build-Version: $NEXT_VERSION" \
-            --form file=@UnityDemo/build/WebGL/game.zip \
+            --form file=@build/WebGL/game.zip \
             "$UPLOAD_URL"
