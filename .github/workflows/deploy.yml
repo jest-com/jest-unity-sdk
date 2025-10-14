@@ -19,13 +19,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ✅ Use latest version here
       - name: Activate Unity License
         uses: game-ci/unity-activate@v2
-        with:
-          unityVersion: 6000.0.46f1
-          unityLicense: ${{ secrets.UNITY_LICENSE }}
 
+     
       - name: Compute next build version
         id: version
         run: |
@@ -41,18 +38,22 @@ jobs:
 
           echo "NEXT_VERSION=$NEXT_VERSION" | tee -a $GITHUB_ENV
           echo "Using version: $NEXT_VERSION"
-
+      - uses: actions/cache@v3
+        with:
+          path: UnityDemo/Library
+          key: Library-WebGL
+          restore-keys: Library-
       - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           targetPlatform: WebGL
           projectPath: UnityDemo
           versioning: None
-          # ✅ Fixed image tag
-          customImage: "unityci/editor:ubuntu-6000.0.46f1-webgl-1"
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-
+          customImage: "unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0"
       - name: Zip build
         run: |
           cd UnityDemo/build/WebGL
