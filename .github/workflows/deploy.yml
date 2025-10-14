@@ -85,21 +85,28 @@ jobs:
       - name: Update CHANGELOG with commit messages
         if: steps.sdk_change.outputs.changed == 'true'
         run: |
+          FILE="jest-unity-sdk/CHANGELOG.md"
           VERSION="${{ steps.bump.outputs.version }}"
           DATE=$(date +"%Y-%m-%d")
 
-          # Get commits since the last tag
+          # Ensure CHANGELOG exists
+          if [ ! -f "$FILE" ]; then
+            echo "# Changelog" > "$FILE"
+            echo "" >> "$FILE"
+          fi
+
+          # Get last tag (if any)
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
           if [ -z "$LAST_TAG" ]; then
-            COMMITS=$(git log --pretty=format:"- %s")
+            COMMITS=$(git log --no-merges --pretty=format:"- %s")
           else
-            COMMITS=$(git log $LAST_TAG..HEAD --pretty=format:"- %s")
+            COMMITS=$(git log $LAST_TAG..HEAD --no-merges --pretty=format:"- %s")
           fi
 
-          echo "" >> jest-unity-sdk/CHANGELOG.md
-          echo "## $VERSION - $DATE" >> jest-unity-sdk/CHANGELOG.md
-          echo "$COMMITS" >> jest-unity-sdk/CHANGELOG.md
+          echo "" >> "$FILE"
+          echo "## $VERSION - $DATE" >> "$FILE"
+          echo "$COMMITS" >> "$FILE"
 
       - name: Commit version bump + changelog
         if: steps.sdk_change.outputs.changed == 'true'
