@@ -25,12 +25,22 @@ jobs:
       # Free up disk space
       - name: Free Disk Space for Android
         run: |
-          sudo swapoff -a
-          sudo rm -f /swapfile
-          sudo apt clean
-          docker rmi $(docker images -q)
+          echo "Disabling and removing swap"
+          sudo swapoff -a || true
+          sudo rm -f /swapfile || true
+
+          echo "Cleaning APT cache"
+          sudo apt-get clean
+          sudo rm -rf /var/lib/apt/lists/*
+
+          echo "Pruning unused docker images"
+          docker image prune -af
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+
+          echo "Disk space after cleanup:"
           df -h
-      - name: Build Unity WebGL
+     - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
