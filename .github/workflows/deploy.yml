@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main # change if needed
+      - SDKWithDemoProject # change if needed
 
 jobs:
   build-and-upload:
