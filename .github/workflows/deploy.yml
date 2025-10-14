@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      UPLOAD_URL: "https://a.messagedisco.com/api/management/games/d3d29990-a6f6-44b1-b5ac-150688526b13/upload-build"
+      UPLOAD_URL: ${{ secrets.GAME_UPLOAD_URL }}
       UPLOAD_TOKEN: ${{ secrets.GAME_UPLOAD_TOKEN }}
 
     steps:
