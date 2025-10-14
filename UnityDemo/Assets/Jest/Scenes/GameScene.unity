@@ -3564,8 +3564,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eaeda4109f37241c797f6126cbcd09f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rewardIntervalMinutes: 5
-  coinRewardAmount: 50
+  rewardIntervalMinutes: 1
+  coinRewardAmount: 100
 --- !u!1 &2026443810
 GameObject:
   m_ObjectHideFlags: 0

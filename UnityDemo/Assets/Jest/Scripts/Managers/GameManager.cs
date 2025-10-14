@@ -131,7 +131,8 @@ public class GameManager : MonoBehaviour
         {
             message = message,
             date = System.DateTime.Now.AddSeconds(delaySeconds),
-            attemptPushNotification = sendPush
+            attemptPushNotification = sendPush,
+            deduplicationKey = System.DateTime.Now.ToString()
         });
     }
 
