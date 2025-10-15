@@ -20,6 +20,8 @@ on:
         required: true
       UNITY_PASSWORD:
         required: true
+      GITHUB_TOKEN:
+        required: true
 
 jobs:
   build:
@@ -28,25 +30,76 @@ jobs:
       UPLOAD_URL: ${{ secrets.GAME_UPLOAD_URL }}
       UPLOAD_TOKEN: ${{ secrets.GAME_UPLOAD_TOKEN }}
 
+    permissions:
+      contents: read
+      checks: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      ##############################
+      # ✅ 1. Run Unity Tests FIRST
+      ##############################
+      - name: Run Unity Tests
+        uses: game-ci/unity-test-runner@v4
+        id: tests
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: UnityDemo
+          testMode: All # PlayMode + EditMode
+          unityVersion: 6000.2.3f1
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-test-results
+          path: ${{ steps.tests.outputs.artifactsPath }}
+
+      # ✅ Stop if tests failed
+      - name: Stop if tests failed
+        if: failure()
+        run: |
+          echo "❌ Tests failed — aborting build."
+          exit 1
+
+      ##############################
+      # ✅ 2. Continue to cleanup + build
+      ##############################
       - uses: actions/cache@v3
         with:
           path: UnityDemo/Library
           key: Library-WebGL
           restore-keys: Library-
 
-      - name: Free Disk Space
+      - name: Free Disk Space (Optimized)
         run: |
+          echo "🧹 Disabling and removing swap (fast)..."
           sudo swapoff -a || true
           sudo rm -f /swapfile || true
+
+          echo "🧹 Cleaning APT cache (fast)..."
           sudo apt-get clean
           sudo rm -rf /var/lib/apt/lists/*
-          docker image prune -af
+
+          echo "🧹 Removing unused SDKs (medium)..."
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /usr/local/lib/android
+
+          echo "🧹 Checking if Docker is used..."
+          if docker info > /dev/null 2>&1; then
+            echo "🧹 Docker detected — pruning images..."
+            docker image prune -af
+          else
+            echo "✅ Docker not in use — skipping prune step"
+          fi
+
+          echo "✅ Disk space after cleanup:"
           df -h
 
       - name: Build Unity WebGL
