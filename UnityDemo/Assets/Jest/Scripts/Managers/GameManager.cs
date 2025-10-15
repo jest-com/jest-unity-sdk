@@ -17,29 +17,42 @@ public class GameManager : MonoBehaviour
         }
 
         Instance = this;
+
+
     }
 
-    private async void Start()
+    private void Start()
     {
-        await InitJestSDK();
+        InitJestSDK();
     }
 
-    private async Task InitJestSDK()
+    private void InitJestSDK()
+    {
+        ShowLoading();
+        JestSDK.Instance.Init().ContinueWith(t =>
+        {
+            Debug.Log("InitJestSDK Success");
+            SetupGameStateFromEntryPayload();
+            UIManager.Instance.EnableLoginButton(!JestSDK.Instance.player.isRegistered);
+            SetupPlayerUI();
+            HideLoading();
+        });
+    }
+
+    private void ShowLoading()
     {
         UIManager.Instance?.HidePanel();
-        UIManager.Instance?.ShowLoadingSpinner();        
+        UIManager.Instance?.ShowLoadingSpinner();
+    }
 
-        try
-        {
-            await JestSDK.Instance.Init();
-        }
-        catch (System.Exception e)
-        {
-            Debug.LogError($"InitJestSDK failed: {e}");
-            UIManager.Instance?.HideLoadingSpinner();
-            return;
-        }
-        Debug.Log("InitJestSDK Success");
+    private void HideLoading()
+    {
+        UIManager.Instance?.HideLoadingSpinner();
+        UIManager.Instance?.ShowPanel();
+    }
+
+    private void SetupGameStateFromEntryPayload()
+    {
         Dictionary<string, object> payload = JestSDK.Instance.GetEntryPayload();
         if (payload.TryGetValue("Name", out object nameObject))
         {
@@ -48,21 +61,13 @@ public class GameManager : MonoBehaviour
 
         if (payload.TryGetValue("Level", out object level))
         {
-            JestSDK.Instance.player.Set("Level",   int.Parse(level.ToString()));
+            JestSDK.Instance.player.Set("Level", int.Parse(level.ToString()));
         }
 
         if (payload.TryGetValue("Coins", out object coins))
         {
             JestSDK.Instance.player.Set("Coins", int.Parse(coins.ToString()));
         }
-
-        UIManager.Instance.EnableLoginButton(!JestSDK.Instance.player.isRegistered);
-
-        SetupPlayerUI();
-
-        UIManager.Instance?.HideLoadingSpinner();
-        UIManager.Instance?.ShowPanel();
-
     }
 
     private void SetupPlayerUI()

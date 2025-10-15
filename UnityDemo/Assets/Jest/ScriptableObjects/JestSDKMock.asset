@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: JestSDKMock
   m_EditorClassIdentifier: 
   _playerId: 1234
-  _isRegistered: 1
+  _isRegistered: 0
   _notifications: []
   _values: []
   _events: []
