@@ -37,6 +37,9 @@ jobs:
 
   build:
     uses: ./.github/workflows/common.yml
+    permissions:
+      contents: read
+      checks: write
     needs:
       - get_version
       - get_suffix
@@ -49,4 +52,4 @@ jobs:
       UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
       UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
       UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -20,7 +20,7 @@ on:
         required: true
       UNITY_PASSWORD:
         required: true
-      GITHUB_TOKEN:
+      GH_TOKEN:
         required: true
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
           projectPath: UnityDemo
           testMode: All # PlayMode + EditMode
           unityVersion: 6000.2.3f1
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          githubToken: ${{ secrets.GH_TOKEN }}
 
       - name: Upload Test Results
         if: always()
