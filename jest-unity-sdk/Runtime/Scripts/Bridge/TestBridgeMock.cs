@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace com.unity.jest
 {
@@ -18,6 +19,12 @@ namespace com.unity.jest
         /// Gets the unique identifier for the player.
         /// </summary>
         public string playerId { get; }
+
+        /// <summary>
+        /// Returns all serialized player data as JSON.
+        /// </summary>
+        public string playerData => JsonUtility.ToJson(this, true);
+
 
         /// <summary>
         /// Gets whether the player is registered as a string representation.

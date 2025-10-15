@@ -44,6 +44,17 @@ namespace com.unity.jest
             return JsBridge.GetPlayerValue(key);
         }
 
+
+        /// <summary>
+        /// Retrieves a string value associated with the specified player.
+        /// </summary>
+        /// <returns>Player data as string</returns>
+        public string GetPlayerData()
+        {
+            return JsBridge.GetPlayerData();
+        }
+
+
         /// <summary>
         /// Attempts to retrieve a string value associated with the specified key.
         /// </summary>

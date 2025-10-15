@@ -14,6 +14,11 @@ namespace com.unity.jest
         string playerId { get; }
 
         /// <summary>
+        /// Returns all serialized player data as JSON.
+        /// </summary>
+        public string playerData { get; }
+
+        /// <summary>
         /// Gets the registration status of the current player.
         /// </summary>
         string isRegistered { get; }

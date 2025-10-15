@@ -17,6 +17,9 @@ namespace com.unity.jest
         private static extern string JS_getPlayerId();
 
         [DllImport("__Internal")]
+        private static extern string JS_getPlayerData();
+
+        [DllImport("__Internal")]
         private static extern string JS_getIsRegistered();
 
         [DllImport("__Internal")]
@@ -53,6 +56,8 @@ namespace com.unity.jest
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
         private static string JS_getPlayerId() { return _bridgeMock.playerId; }
+
+        private static string JS_getPlayerData() { return _bridgeMock.playerData; }
 
         private static string JS_getIsRegistered() { return _bridgeMock.isRegistered; }
 
@@ -109,6 +114,11 @@ namespace com.unity.jest
         internal static string GetPlayerId()
         {
             return JS_getPlayerId();
+        }
+
+        internal static string GetPlayerData()
+        {
+            return JS_getPlayerData();
         }
 
         internal static string GetIsRegistered()

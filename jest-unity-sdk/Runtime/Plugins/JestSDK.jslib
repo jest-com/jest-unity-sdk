@@ -4,6 +4,11 @@ mergeInto(LibraryManager.library, {
     return marshalString(val);
   },
 
+  JS_getPlayerData: function () {
+    const val = window.JestSDK.getPlayer();
+    return marshalString(JSON.stringify(val));
+  },
+
   JS_getEntryPayload: function () {
     const payload = window.JestSDK.getEntryPayload();
     return marshalString(JSON.stringify(payload));

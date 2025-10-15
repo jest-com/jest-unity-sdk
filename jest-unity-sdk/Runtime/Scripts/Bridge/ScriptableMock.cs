@@ -24,6 +24,12 @@ namespace com.unity.jest
         public string playerId => _playerId;
 
         /// <summary>
+        /// Returns all serialized player data as JSON.
+        /// </summary>
+        public string playerData => JsonUtility.ToJson(this, true);
+
+
+        /// <summary>
         /// Gets whether the player is registered as a string representation.
         /// </summary>
         public string isRegistered => _isRegistered.ToString();

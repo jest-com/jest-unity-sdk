@@ -14,6 +14,8 @@ namespace com.unity.jest
         /// </summary>
         public string playerId { get; }
 
+        public string playerData { get; }
+
         /// <summary>
         /// Gets whether the player is registered as a string representation.
         /// </summary>
@@ -27,6 +29,7 @@ namespace com.unity.jest
         public DebugBridgeMock(string playerId, bool isRegistered)
         {
             this.playerId = playerId;
+            this.playerData = playerId;
             this.isRegistered = isRegistered.ToString();
         }
 

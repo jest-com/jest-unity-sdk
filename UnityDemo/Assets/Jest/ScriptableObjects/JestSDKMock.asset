@@ -13,8 +13,19 @@ MonoBehaviour:
   m_Name: JestSDKMock
   m_EditorClassIdentifier: 
   _playerId: 1234
-  _isRegistered: 0
-  _notifications: []
+  _isRegistered: 1
+  _notifications:
+  - scheduledAt: 2025-10-15T20:24:46.2482430+05:00
+    metadata: '{}'
+    message: come  back and play!!!
+    attemptPushNotification: 1
+    deduplicationKey: 1760541876.24815
   _values: []
-  _events: []
-  _entryPayload: []
+  _events:
+  - key: LevelUp
+    value: '{"score":10,"coins":100}'
+  _entryPayload:
+  - key: level
+    value: 5
+  - key: score
+    value: 100
