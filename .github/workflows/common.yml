@@ -9,6 +9,17 @@ on:
       build_suffix:
         required: true
         type: string
+    secrets:
+      GAME_UPLOAD_URL:
+        required: true
+      GAME_UPLOAD_TOKEN:
+        required: true
+      UNITY_LICENSE:
+        required: true
+      UNITY_EMAIL:
+        required: true
+      UNITY_PASSWORD:
+        required: true
 
 jobs:
   build:
