@@ -1,0 +1,34 @@
+name: Build on Commit or PR
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Version
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' jest-unity-sdk/package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate Non-Release Suffix
+        id: suffix
+        run: |
+          RUN_NUMBER=${{ github.run_number }}
+          echo "suffix=$RUN_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Call Reusable Workflow
+        uses: ./.github/workflows/common.yml
+        with:
+          version: ${{ steps.version.outputs.version }}
+          build_suffix: ${{ steps.suffix.outputs.suffix }}

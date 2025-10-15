@@ -1,0 +1,77 @@
+name: Release on Tag
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version from tag
+        id: version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "version=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Reset Build Counter
+        id: suffix
+        run: |
+          echo "suffix=1" >> $GITHUB_OUTPUT
+
+      # ✅ BUILD FIRST
+      - name: Call Reusable Workflow (Build)
+        uses: ./.github/workflows/common.yml
+        with:
+          version: ${{ steps.version.outputs.version }}
+          build_suffix: ${{ steps.suffix.outputs.suffix }}
+
+      # ✅ Only continue if build succeeded
+      - name: Update CHANGELOG with commit messages
+        run: |
+          FILE="jest-unity-sdk/CHANGELOG.md"
+          VERSION="${{ steps.version.outputs.version }}"
+          DATE=$(date +"%Y-%m-%d")
+
+          # Ensure changelog exists
+          if [ ! -f "$FILE" ]; then
+            echo "# Changelog" > "$FILE"
+            echo "" >> "$FILE"
+          fi
+
+          PREV_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1) 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log --no-merges --pretty=format:"- %s")
+          else
+            COMMITS=$(git log $PREV_TAG..HEAD --no-merges --pretty=format:"- %s")
+          fi
+
+          echo "" >> "$FILE"
+          echo "## [$VERSION] - $DATE" >> "$FILE"
+          echo "$COMMITS" >> "$FILE"
+
+      - name: Commit and push changelog
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add jest-unity-sdk/CHANGELOG.md
+          git commit -m "Update CHANGELOG for ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+          git push
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: ${{ steps.version.outputs.version }}
+          draft: false
+          body: |
+            UPM Install URL:
+            https://github.com/${{ github.repository }}.git?path=jest-unity-sdk#${{ steps.version.outputs.version }}
