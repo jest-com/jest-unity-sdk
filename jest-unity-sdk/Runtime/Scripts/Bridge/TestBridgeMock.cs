@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// A mock implementation of IBridgeMock for testing purposes.

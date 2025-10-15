@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// Provides utility methods for converting between different data types and their string representations.

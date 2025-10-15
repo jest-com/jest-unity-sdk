@@ -2,8 +2,9 @@ using NUnit.Framework;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
+using com.unity.jest;
 
-namespace JestSDK.Tests
+namespace com.unity.jest.Tests
 {
     public class JestSDKAPITests
     {
@@ -17,7 +18,7 @@ namespace JestSDK.Tests
         {
             _mock = new TestBridgeMock(testId, true);
             JsBridge.SetMock(_mock);
-            _jest = new JestSDK();
+            _jest = JestSDK.Instance;
         }
 
         [Test]

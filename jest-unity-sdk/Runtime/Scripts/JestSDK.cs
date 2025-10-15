@@ -1,14 +1,21 @@
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
-    /// Main entry point for the Jest SDK, providing access to various features and services.
+    /// Main entry point for the Jest SDK, implemented as a Singleton.
     /// </summary>
     public sealed class JestSDK
     {
+        /// <summary>
+        /// Global access point to the JestSDK instance.
+        /// </summary>
+        public static readonly JestSDK Instance = new JestSDK();
+
+        // Private constructor prevents external instantiation.
+        private JestSDK() { }
+
         /// <summary>
         /// Provides access to notification management functionality.
         /// </summary>
@@ -35,36 +42,23 @@ namespace JestSDK
 
         /// <summary>
         /// Retrieves the entry payload data associated with the current session entry.
-        ///
-        /// It may contain data passed from an onboarding to a game or referral data from another entry.
         /// </summary>
         /// <returns>A dictionary containing the entry payload data</returns>
-        /// <example>
-        /// <code>
-        ///     var jest = new JestSDK();
-        ///     var entryPayload = jest.GetEntryPayload();
-        ///     if (entryPayload.TryGetValue("petName", out var petName))
-        ///     {
-        ///         Debug.Log($"Pet name: {petName}");
-        ///     }
-        /// </code>
-        /// </example>
         public Dictionary<string, object> GetEntryPayload()
         {
             string payloadString = JsBridge.GetEntryPayload();
             Debug.Log("EntryPayload::" + payloadString);
+
             if (string.IsNullOrEmpty(payloadString))
             {
                 return new Dictionary<string, object>();
             }
-            else
-            {
-                return Convert.FromString<Dictionary<string, object>>(payloadString);
-            }
+
+            return Convert.FromString<Dictionary<string, object>>(payloadString);
         }
 
         /// <summary>
-        /// Login the user with the provided payload data.
+        /// Logs in the user with the provided payload data.
         /// </summary>
         public void Login(Dictionary<string, object> payload)
         {

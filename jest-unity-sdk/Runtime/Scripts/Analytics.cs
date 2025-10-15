@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// Provides analytics functionality for tracking and retrieving events.

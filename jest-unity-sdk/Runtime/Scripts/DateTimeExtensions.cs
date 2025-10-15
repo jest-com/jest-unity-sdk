@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// Provides extension methods for DateTime conversions between C# and JavaScript formats.

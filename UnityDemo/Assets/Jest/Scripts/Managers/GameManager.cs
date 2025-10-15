@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
-using JestSDK;
+using com.unity.jest;
 using System;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
-    private JestSDK.JestSDK m_jestSDK;
 
     private void Awake()
     {
@@ -28,13 +27,11 @@ public class GameManager : MonoBehaviour
     private async Task InitJestSDK()
     {
         UIManager.Instance?.HidePanel();
-        UIManager.Instance?.ShowLoadingSpinner();
-
-        m_jestSDK = new JestSDK.JestSDK();
+        UIManager.Instance?.ShowLoadingSpinner();        
 
         try
         {
-            await m_jestSDK.Init();
+            await JestSDK.Instance.Init();
         }
         catch (System.Exception e)
         {
@@ -43,23 +40,23 @@ public class GameManager : MonoBehaviour
             return;
         }
         Debug.Log("InitJestSDK Success");
-        Dictionary<string, object> payload = m_jestSDK.GetEntryPayload();
+        Dictionary<string, object> payload = JestSDK.Instance.GetEntryPayload();
         if (payload.TryGetValue("Name", out object nameObject))
         {
-            m_jestSDK.player.Set("Name", nameObject.ToString());
+            JestSDK.Instance.player.Set("Name", nameObject.ToString());
         }
 
         if (payload.TryGetValue("Level", out object level))
         {
-            m_jestSDK.player.Set("Level",   int.Parse(level.ToString()));
+            JestSDK.Instance.player.Set("Level",   int.Parse(level.ToString()));
         }
 
         if (payload.TryGetValue("Coins", out object coins))
         {
-            m_jestSDK.player.Set("Coins", int.Parse(coins.ToString()));
+            JestSDK.Instance.player.Set("Coins", int.Parse(coins.ToString()));
         }
 
-        UIManager.Instance.EnableLoginButton(!m_jestSDK.player.isRegistered);
+        UIManager.Instance.EnableLoginButton(!JestSDK.Instance.player.isRegistered);
 
         SetupPlayerUI();
 
@@ -70,9 +67,9 @@ public class GameManager : MonoBehaviour
 
     private void SetupPlayerUI()
     {
-        m_jestSDK.player.TryGet("Coins", out int coins);
-        m_jestSDK.player.TryGet("Level", out int level);
-        m_jestSDK.player.TryGet("Name", out string name);
+        JestSDK.Instance.player.TryGet("Coins", out int coins);
+        JestSDK.Instance.player.TryGet("Level", out int level);
+        JestSDK.Instance.player.TryGet("Name", out string name);
         name ??= "<Set Name>";
 
         UIManager.Instance.SetCoinsText(coins);
@@ -83,7 +80,7 @@ public class GameManager : MonoBehaviour
     public void ClaimFreeCoinsReward(int amount)
     {
         AddCoin(amount);
-        m_jestSDK?.analytics?.CaptureEvent(
+        JestSDK.Instance?.analytics?.CaptureEvent(
             "ClaimedFreeCoins",
             new Dictionary<string, object>
             {
@@ -95,9 +92,9 @@ public class GameManager : MonoBehaviour
 
     internal void OnLoginAction()
     {
-        m_jestSDK.player.TryGet("Coins", out int coins);
-        m_jestSDK.player.TryGet("Level", out int level);
-        m_jestSDK.player.TryGet("Name", out string name);
+        JestSDK.Instance.player.TryGet("Coins", out int coins);
+        JestSDK.Instance.player.TryGet("Level", out int level);
+        JestSDK.Instance.player.TryGet("Name", out string name);
         var payload = new Dictionary<string, object>();
         if (coins != 0)
         {
@@ -111,7 +108,7 @@ public class GameManager : MonoBehaviour
         {
             payload["Name"] = name;
         }
-        m_jestSDK.Login(payload);
+        JestSDK.Instance.Login(payload);
     }
 
 
@@ -127,7 +124,7 @@ public class GameManager : MonoBehaviour
 
     public void ScheduleNotification(string message, float delaySeconds, bool sendPush)
     {
-        m_jestSDK?.notifications?.ScheduleNotification(new Notifications.Options
+        JestSDK.Instance?.notifications?.ScheduleNotification(new Notifications.Options
         {
             message = message,
             date = System.DateTime.Now.AddSeconds(delaySeconds),
@@ -139,30 +136,30 @@ public class GameManager : MonoBehaviour
 
     public void AddCoin(int amount = 1)
     {
-        m_jestSDK.player.TryGet("Coins", out int coins);
+        JestSDK.Instance.player.TryGet("Coins", out int coins);
         coins += amount;
-        m_jestSDK.player.Set("Coins", coins);
+        JestSDK.Instance.player.Set("Coins", coins);
 
 
 
-        m_jestSDK?.analytics?.CaptureEvent("AddCoins", new Dictionary<string, object> {{ "amount", amount }});
+        JestSDK.Instance?.analytics?.CaptureEvent("AddCoins", new Dictionary<string, object> {{ "amount", amount }});
         UIManager.Instance.SetCoinsText(coins);
     }
 
     public void IncrementLevel()
     {
-        m_jestSDK.player.TryGet("Level", out int level);
+        JestSDK.Instance.player.TryGet("Level", out int level);
         level += 1;
-        m_jestSDK.player.Set("Level", level);
+        JestSDK.Instance.player.Set("Level", level);
 
-        m_jestSDK?.analytics?.CaptureEvent("LevelUp", new Dictionary<string, object> { { "level", level } });
+        JestSDK.Instance?.analytics?.CaptureEvent("LevelUp", new Dictionary<string, object> { { "level", level } });
         UIManager.Instance.SetLevelText(level);
     }
 
     public void SetName(string newName)
     {
-        m_jestSDK.player.Set("Name", newName);
-        m_jestSDK?.analytics?.CaptureEvent(
+        JestSDK.Instance.player.Set("Name", newName);
+        JestSDK.Instance?.analytics?.CaptureEvent(
             "UpdateName",
             new Dictionary<string, object> { { "newName", newName } }
         );

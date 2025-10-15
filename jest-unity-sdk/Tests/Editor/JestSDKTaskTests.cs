@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using UnityEngine.TestTools;
 
-namespace JestSDK.Tests
+namespace com.unity.jest.Tests
 {
     public class JestSDKTaskTests
     {

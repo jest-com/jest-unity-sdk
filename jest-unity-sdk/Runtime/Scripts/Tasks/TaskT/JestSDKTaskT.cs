@@ -3,7 +3,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// Represents an asynchronous operation that produces a result of type T.

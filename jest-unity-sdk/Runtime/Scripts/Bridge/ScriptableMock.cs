@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// A scriptable object that implements IBridgeMock for testing and debugging purposes.

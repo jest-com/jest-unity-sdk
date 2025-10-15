@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// Interface for mocking bridge functionality in the Jest SDK.

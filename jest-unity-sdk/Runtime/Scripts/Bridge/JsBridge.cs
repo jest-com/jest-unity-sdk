@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using AOT;
 using UnityEngine.Scripting;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     internal static class JsBridge
     {

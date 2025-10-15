@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// Provides an awaiter for JestSDKTask<T> that implements the async/await pattern.

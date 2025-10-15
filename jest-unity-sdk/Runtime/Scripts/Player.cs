@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace JestSDK
+namespace com.unity.jest
 {
     /// <summary>
     /// Manages player-related data and operations in the Jest SDK.
