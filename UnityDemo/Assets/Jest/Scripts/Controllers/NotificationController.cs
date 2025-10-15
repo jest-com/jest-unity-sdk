@@ -42,7 +42,7 @@ public class NotificationController : MonoBehaviour
         JestSDK.Instance?.notifications?.ScheduleNotification(new Notifications.Options
         {
             message = message,
-            date = System.DateTime.Now.AddSeconds(float.Parse(timeString)),
+            date = System.DateTime.Now.AddMinutes(float.Parse(timeString)),
             attemptPushNotification = sendPush,
             deduplicationKey = deduplicationKey
         });
