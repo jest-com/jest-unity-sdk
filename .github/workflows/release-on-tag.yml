@@ -28,7 +28,7 @@ jobs:
 
       # ✅ BUILD FIRST
       - name: Call Reusable Workflow (Build)
-        uses: ./.github/workflows/common.yml
+        uses: ${{ github.repository }}/.github/workflows/common.yml@main
         with:
           version: ${{ steps.version.outputs.version }}
           build_suffix: ${{ steps.suffix.outputs.suffix }}

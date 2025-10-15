@@ -28,7 +28,7 @@ jobs:
           echo "suffix=$RUN_NUMBER" >> $GITHUB_OUTPUT
 
       - name: Call Reusable Workflow
-        uses: ./.github/workflows/common.yml
+        uses: ${{ github.repository }}/.github/workflows/common.yml@main
         with:
           version: ${{ steps.version.outputs.version }}
           build_suffix: ${{ steps.suffix.outputs.suffix }}
