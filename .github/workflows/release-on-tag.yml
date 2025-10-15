@@ -6,9 +6,15 @@ on:
       - "*"
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  build:
+    uses: ./.github/workflows/common.yml
+    with:
+      version: ${{ github.ref_name }}
+      build_suffix: 1
 
+  release:
+    needs: build
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,26 +27,12 @@ jobs:
           TAG=${GITHUB_REF#refs/tags/}
           echo "version=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Reset Build Counter
-        id: suffix
-        run: |
-          echo "suffix=1" >> $GITHUB_OUTPUT
-
-      # ✅ BUILD FIRST
-      - name: Call Reusable Workflow (Build)
-        uses: ${{ github.repository }}/.github/workflows/common.yml@main
-        with:
-          version: ${{ steps.version.outputs.version }}
-          build_suffix: ${{ steps.suffix.outputs.suffix }}
-
-      # ✅ Only continue if build succeeded
       - name: Update CHANGELOG with commit messages
         run: |
           FILE="jest-unity-sdk/CHANGELOG.md"
           VERSION="${{ steps.version.outputs.version }}"
           DATE=$(date +"%Y-%m-%d")
 
-          # Ensure changelog exists
           if [ ! -f "$FILE" ]; then
             echo "# Changelog" > "$FILE"
             echo "" >> "$FILE"

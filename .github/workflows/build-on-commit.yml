@@ -9,8 +9,10 @@ on:
       - main
 
 jobs:
-  build:
+  get_version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,14 +23,23 @@ jobs:
           VERSION=$(jq -r '.version' jest-unity-sdk/package.json)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+  get_suffix:
+    runs-on: ubuntu-latest
+    needs: get_version
+    outputs:
+      suffix: ${{ steps.suffix.outputs.suffix }}
+    steps:
       - name: Generate Non-Release Suffix
         id: suffix
         run: |
           RUN_NUMBER=${{ github.run_number }}
           echo "suffix=$RUN_NUMBER" >> $GITHUB_OUTPUT
 
-      - name: Call Reusable Workflow
-        uses: ${{ github.repository }}/.github/workflows/common.yml@main
-        with:
-          version: ${{ steps.version.outputs.version }}
-          build_suffix: ${{ steps.suffix.outputs.suffix }}
+  build:
+    uses: ./.github/workflows/common.yml
+    needs:
+      - get_version
+      - get_suffix
+    with:
+      version: ${{ needs.get_version.outputs.version }}
+      build_suffix: ${{ needs.get_suffix.outputs.suffix }}
