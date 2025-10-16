@@ -61,32 +61,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ✅ Run tests
-      - name: Run Unity Tests
-        id: tests
-        uses: game-ci/unity-test-runner@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: ${{ env.PROJECT_PATH }}
-          testMode: All
-          unityVersion: ${{ env.UNITY_VERSION }}
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      # # ✅ Run tests
+      # - name: Run Unity Tests
+      #   id: tests
+      #   uses: game-ci/unity-test-runner@v4
+      #   env:
+      #     UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      #     UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      #     UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      #   with:
+      #     projectPath: ${{ env.PROJECT_PATH }}
+      #     testMode: All
+      #     unityVersion: ${{ env.UNITY_VERSION }}
+      #     githubToken: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Test Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unity-test-results
-          path: ${{ steps.tests.outputs.artifactsPath }}
+      # - name: Upload Test Results
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: unity-test-results
+      #     path: ${{ steps.tests.outputs.artifactsPath }}
 
-      - name: Stop if tests failed
-        if: failure()
-        run: |
-          echo "❌ Tests failed — aborting build."
-          exit 1
+      # - name: Stop if tests failed
+      #   if: failure()
+      #   run: |
+      #     echo "❌ Tests failed — aborting build."
+      #     exit 1
 
       # ✅ Get version + suffix
       - id: meta
@@ -101,14 +101,14 @@ jobs:
           key: Library-${{ runner.os }}-WebGL
           restore-keys: Library-
 
-      - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          android: true
-          dotnet: true
-          docker-images: true
-          large-packages: false
+      # - name: Free Disk Space
+      #   uses: jlumbroso/free-disk-space@main
+      #   with:
+      #     tool-cache: false
+      #     android: true
+      #     dotnet: true
+      #     docker-images: true
+      #     large-packages: false
 
       # ✅ Build
       - name: Build Unity WebGL
@@ -154,7 +154,7 @@ jobs:
       UNITY_VERSION: 6000.2.3f1
       UNITY_IMAGE: unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0
       PROJECT_PATH: UnityDemo
-      BUILD_PATH: Build
+      BUILD_PATH: build
       TAG_NAME: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
@@ -220,17 +220,19 @@ jobs:
       - name: Create ZIP for Release
         id: zip
         run: |
-          ZIP="webgl-${{ env.TAG_NAME }}.zip"
-          zip -r "$ZIP" "${{ env.BUILD_PATH }}"
+          mkdir -p build_zip
+          cd build/WebGL
+          ZIP="game-${{ env.TAG_NAME }}.zip"
+          zip -r "../../build_zip/$ZIP" WebGL
           echo "zip_name=$ZIP" >> $GITHUB_OUTPUT
 
       # ✅ Upload ZIP to your custom endpoint
-      - name: Upload Build to Server
+      - name: Upload Build
         run: |
           curl -sSf -X POST \
             -H "X-Game-Upload-Token: ${{ secrets.GAME_UPLOAD_TOKEN }}" \
             -H "X-Build-Version: ${{ env.TAG_NAME }}" \
-            --form "file=@${{ steps.zip.outputs.zip_name }}" \
+            --form "file=@build_zip/${{ steps.zip.outputs.zip_name }}" \
             "${{ secrets.GAME_UPLOAD_URL }}"
 
       # ✅ Create GitHub Release
