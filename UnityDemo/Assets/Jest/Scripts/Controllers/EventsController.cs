@@ -34,6 +34,7 @@ public class EventsController : MonoBehaviour
         UIManager.Instance.m_toastUI.ShowToast("Event sent successfully.");
         m_eventNameTextInput.text = default;
         m_eventParamsTextInput.text = "{\"score\":10, \"coins\": 100}";
+
         GameManager.Instance.TriggerGameStateChangeEvent();
     }
 }
