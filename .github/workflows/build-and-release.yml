@@ -60,7 +60,7 @@ jobs:
       UNITY_VERSION: 6000.2.3f1
       UNITY_IMAGE: unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0
       PROJECT_PATH: UnityDemo
-      BUILD_PATH: Build
+      BUILD_PATH: build
     steps:
       - uses: actions/checkout@v4
 
