@@ -139,7 +139,7 @@ jobs:
         run: |
           curl -sSf -X POST \
             -H "X-Game-Upload-Token: ${{ secrets.GAME_UPLOAD_TOKEN }}" \
-            -H "X-Build-Version: ${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.suffix  }}" \
+            -H "X-Build-Version: ${{ steps.meta.outputs.version }}-github-${{ steps.meta.outputs.suffix  }}" \
             --form "file=@build_zip/${{ steps.zip.outputs.zip_name }}" \
             "${{ secrets.GAME_UPLOAD_URL }}"
 
