@@ -3,10 +3,13 @@ name: Build & Release (Unified)
 on:
   push:
     branches: [main]
-    tags:
-      - "v*.*.*"
   pull_request:
     branches: [main]
+  workflow_dispatch: # ✅ Add this
+    inputs:
+      tag_name:
+        description: "Tag or version number (e.g. v1.2.3)"
+        required: true
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -48,7 +51,7 @@ jobs:
   # ✅ 2) Push to main → TEST + Build + Upload
   # ---------------------------------------------------------------------------
   build_and_upload_on_commit:
-    if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ github.event_name == 'push'}}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -61,32 +64,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # # ✅ Run tests
-      # - name: Run Unity Tests
-      #   id: tests
-      #   uses: game-ci/unity-test-runner@v4
-      #   env:
-      #     UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-      #     UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-      #     UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      #   with:
-      #     projectPath: ${{ env.PROJECT_PATH }}
-      #     testMode: All
-      #     unityVersion: ${{ env.UNITY_VERSION }}
-      #     githubToken: ${{ secrets.GITHUB_TOKEN }}
+      # ✅ Run tests
+      - name: Run Unity Tests
+        id: tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          testMode: All
+          unityVersion: ${{ env.UNITY_VERSION }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Upload Test Results
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: unity-test-results
-      #     path: ${{ steps.tests.outputs.artifactsPath }}
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-test-results
+          path: ${{ steps.tests.outputs.artifactsPath }}
 
-      # - name: Stop if tests failed
-      #   if: failure()
-      #   run: |
-      #     echo "❌ Tests failed — aborting build."
-      #     exit 1
+      - name: Stop if tests failed
+        if: failure()
+        run: |
+          echo "❌ Tests failed — aborting build."
+          exit 1
 
       # ✅ Get version + suffix
       - id: meta
@@ -122,7 +125,7 @@ jobs:
           projectPath: ${{ env.PROJECT_PATH }}
           versioning: None
           customImage: ${{ env.UNITY_IMAGE }}
-          buildsPath: ${{ env.Build_PATH }}
+          buildsPath: ${{ env.BUILD_PATH }}
 
       # ✅ Zip build
       - name: Create ZIP
@@ -146,8 +149,8 @@ jobs:
   # ---------------------------------------------------------------------------
   # ✅ 3) Tag push → TEST + Build + ZIP + Release
   # ---------------------------------------------------------------------------
-  build_and_release_on_tag:
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+  test_build_and_release_on_wf:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -157,7 +160,6 @@ jobs:
       UNITY_IMAGE: unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0
       PROJECT_PATH: UnityDemo
       BUILD_PATH: build
-      TAG_NAME: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -224,7 +226,7 @@ jobs:
         run: |
           mkdir -p build_zip
           cd build/WebGL
-          ZIP="game-${{ env.TAG_NAME }}.zip"
+          ZIP="game-${{ inputs.tag_name }}.zip"
           zip -r "../../build_zip/$ZIP" WebGL
           echo "zip_name=$ZIP" >> $GITHUB_OUTPUT
 
@@ -233,7 +235,7 @@ jobs:
         run: |
           curl -sSf -X POST \
             -H "X-Game-Upload-Token: ${{ secrets.GAME_UPLOAD_TOKEN }}" \
-            -H "X-Build-Version: ${{ env.TAG_NAME }}" \
+            -H "X-Build-Version: ${{ inputs.tag_name }}" \
             --form "file=@build_zip/${{ steps.zip.outputs.zip_name }}" \
             "${{ secrets.GAME_UPLOAD_URL }}"
 
@@ -241,10 +243,10 @@ jobs:
       - name: Create GitHub Release with Asset
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.TAG_NAME }}
-          name: ${{ env.TAG_NAME }}
+          tag_name: ${{ inputs.tag_name }}
+          name: ${{ inputs.tag_name }}
           draft: false
           body: |
             UPM Install URL:
-            https://github.com/${{ github.repository }}.git?path=jest-unity-sdk#${{ env.TAG_NAME }}
+            https://github.com/${{ github.repository }}.git?path=jest-unity-sdk#${{ inputs.tag_name }}
           files: ${{ steps.zip.outputs.zip_name }}
