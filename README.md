@@ -25,7 +25,7 @@ They are serialized into JSON and delivered as JSON from the platform.
 The `GetEntryPayload` method fetches and returns the payload as Dictionary<string, object>.
 
 ```csharp
-var jest = new JestSDK();
+var jest = JestSDK.Instance;
 var entryPayload = jest.GetEntryPayload();
 if (entryPayload.TryGetValue("key", out var value))
 {
@@ -38,7 +38,7 @@ if (entryPayload.TryGetValue("key", out var value))
 #### Getting Player Data
 
 ```csharp
-var player = new JestSDK.Player();
+var player = JestSDK.Instance.Player;
 
 // Basic player info
 string playerId = player.id;
@@ -61,7 +61,7 @@ PlayerStats stats = player.Get<PlayerStats>("stats");
 #### Setting Player Data
 
 ```csharp
-var player = new JestSDK.Player();
+var player = JestSDK.Instance.Player;
 
 // Set individual properties
 player.Set("level", 5);
@@ -81,7 +81,7 @@ player.Set("stats", new PlayerStats {
 #### Basic Events
 
 ```csharp
-var analytics = new JestSDK.Analytics();
+var analytics = JestSDK.Instance.Analytics;
 
 // Simple event without properties
 analytics.CaptureEvent("game_started");
@@ -121,7 +121,7 @@ analytics.CaptureEvent("level_complete", new LevelCompleteEvent {
 ### Notifications
 
 ```csharp
-var notifications = new JestSDK.Notifications();
+var notifications = JestSDK.Instance.Notifications;
 
 // Schedule for specific time
 notifications.ScheduleNotification(new Notifications.Options {
