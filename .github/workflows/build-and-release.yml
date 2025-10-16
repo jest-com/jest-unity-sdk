@@ -10,10 +10,45 @@ on:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # A) Regular build on push/PR to main (NOT for tag builds)
+  # ✅ 1) PRs → ONLY run tests
   # ---------------------------------------------------------------------------
-  build_and_upload:
-    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+  test_on_pr:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    env:
+      UNITY_VERSION: 6000.2.3f1
+      PROJECT_PATH: UnityDemo
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Unity Tests
+        id: tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          testMode: All
+          unityVersion: ${{ env.UNITY_VERSION }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-test-results
+          path: ${{ steps.tests.outputs.artifactsPath }}
+
+  # ---------------------------------------------------------------------------
+  # ✅ 2) Push to main → TEST + Build + Upload
+  # ---------------------------------------------------------------------------
+  build_and_upload_on_commit:
+    if: ${{ github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -26,13 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Get version from package.json and a numeric suffix
-      - id: meta
-        run: |
-          echo "version=$(jq -r '.version' jest-unity-sdk/package.json)" >> $GITHUB_OUTPUT
-          echo "suffix=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
-
-      # Run Unity tests (EditMode + PlayMode)
+      # ✅ Run tests
       - name: Run Unity Tests
         id: tests
         uses: game-ci/unity-test-runner@v4
@@ -59,14 +88,19 @@ jobs:
           echo "❌ Tests failed — aborting build."
           exit 1
 
-      # Cache Library to speed up imports
+      # ✅ Get version + suffix
+      - id: meta
+        run: |
+          echo "version=$(jq -r '.version' jest-unity-sdk/package.json)" >> $GITHUB_OUTPUT
+          echo "suffix=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+
+      # ✅ Cache Library
       - uses: actions/cache@v4
         with:
           path: ${{ env.PROJECT_PATH }}/Library
           key: Library-${{ runner.os }}-WebGL
           restore-keys: Library-
 
-      # Free disk space (safe & concise)
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -76,7 +110,7 @@ jobs:
           docker-images: true
           large-packages: false
 
-      # Build WebGL (output to Build/)
+      # ✅ Build
       - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
         env:
@@ -88,17 +122,17 @@ jobs:
           projectPath: ${{ env.PROJECT_PATH }}
           versioning: None
           customImage: ${{ env.UNITY_IMAGE }}
-          buildPath: ${{ env.BUILD_PATH }}
+          buildsPath: ${{ env.Build_PATH }}
 
-      # Zip the WebGL build
+      # ✅ Zip build
       - name: Create ZIP
+        id: zip
         run: |
           ZIP="game-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.suffix }}.zip"
           zip -r "$ZIP" "${{ env.BUILD_PATH }}"
           echo "zip_name=$ZIP" >> $GITHUB_OUTPUT
-        id: zip
 
-      # Upload ZIP to your endpoint
+      # ✅ Upload to custom endpoint
       - name: Upload Build
         run: |
           curl -sSf -X POST \
@@ -108,13 +142,13 @@ jobs:
             "${{ secrets.GAME_UPLOAD_URL }}"
 
   # ---------------------------------------------------------------------------
-  # B) Tag build (v*.*.*): build & attach ZIP to a GitHub Release (no custom upload)
+  # ✅ 3) Tag push → TEST + Build + ZIP + Release
   # ---------------------------------------------------------------------------
-  build_and_release:
+  build_and_release_on_tag:
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write # needed to create the release
+      contents: write
       checks: write
     env:
       UNITY_VERSION: 6000.2.3f1
@@ -125,7 +159,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Run Unity tests
+      # ✅ Run tests
       - name: Run Unity Tests
         id: tests
         uses: game-ci/unity-test-runner@v4
@@ -152,14 +186,13 @@ jobs:
           echo "❌ Tests failed — aborting release build."
           exit 1
 
-      # Cache Library
+      # ✅ Cache Library
       - uses: actions/cache@v4
         with:
           path: ${{ env.PROJECT_PATH }}/Library
           key: Library-${{ runner.os }}-WebGL
           restore-keys: Library-
 
-      # Free disk space
       - name: Free Disk Space
         uses: jlumbroso/free-disk-space@main
         with:
@@ -169,7 +202,7 @@ jobs:
           docker-images: true
           large-packages: false
 
-      # Build WebGL (output to Build/)
+      # ✅ Build
       - name: Build Unity WebGL
         uses: game-ci/unity-builder@v4
         env:
@@ -181,9 +214,9 @@ jobs:
           projectPath: ${{ env.PROJECT_PATH }}
           versioning: None
           customImage: ${{ env.UNITY_IMAGE }}
-          buildPath: ${{ env.BUILD_PATH }}
+          buildsPath: ${{ env.BUILD_PATH }}
 
-      # Zip the WebGL build for release
+      # ✅ Zip the build
       - name: Create ZIP for Release
         id: zip
         run: |
@@ -191,7 +224,16 @@ jobs:
           zip -r "$ZIP" "${{ env.BUILD_PATH }}"
           echo "zip_name=$ZIP" >> $GITHUB_OUTPUT
 
-      # Create GitHub Release and attach the ZIP
+      # ✅ Upload ZIP to your custom endpoint
+      - name: Upload Build to Server
+        run: |
+          curl -sSf -X POST \
+            -H "X-Game-Upload-Token: ${{ secrets.GAME_UPLOAD_TOKEN }}" \
+            -H "X-Build-Version: ${{ env.TAG_NAME }}" \
+            --form "file=@${{ steps.zip.outputs.zip_name }}" \
+            "${{ secrets.GAME_UPLOAD_URL }}"
+
+      # ✅ Create GitHub Release
       - name: Create GitHub Release with Asset
         uses: softprops/action-gh-release@v2
         with:
