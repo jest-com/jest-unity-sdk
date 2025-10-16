@@ -1,9 +1,9 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Collections;
 using UnityEngine.TestTools;
 
-namespace com.unity.jest.Tests
+namespace com.jest.sdk.Tests
 {
     public class JestSDKTaskTTests
     {

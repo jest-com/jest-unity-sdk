@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
-using com.unity.jest;
+using com.jest.sdk;
 using System;
 
 public class GameManager : MonoBehaviour

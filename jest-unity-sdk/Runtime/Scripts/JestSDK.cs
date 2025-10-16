@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace com.unity.jest
+namespace com.jest.sdk
 {
     /// <summary>
     /// Main entry point for the Jest SDK, implemented as a Singleton.
@@ -47,8 +47,6 @@ namespace com.unity.jest
         public Dictionary<string, object> GetEntryPayload()
         {
             string payloadString = JsBridge.GetEntryPayload();
-            Debug.Log("EntryPayload::" + payloadString);
-
             if (string.IsNullOrEmpty(payloadString))
             {
                 return new Dictionary<string, object>();
@@ -63,7 +61,6 @@ namespace com.unity.jest
         public void Login(Dictionary<string, object> payload)
         {
             string entryPayloadString = Convert.ToString(payload);
-            Debug.Log("Login with payload internal::" + entryPayloadString);
             JsBridge.Login(entryPayloadString);
         }
     }

@@ -1,8 +1,8 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace com.unity.jest
+namespace com.jest.sdk
 {
     /// <summary>
     /// Handles scheduling and management of notifications in the Jest SDK.

@@ -1,10 +1,10 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UnityEngine;
 using System;
 using System.Collections.Generic;
-using com.unity.jest;
+using com.jest.sdk;
 
-namespace com.unity.jest.Tests
+namespace com.jest.sdk.Tests
 {
     public class JestSDKAPITests
     {

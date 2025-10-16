@@ -1,4 +1,4 @@
-using com.unity.jest;
+using com.jest.sdk;
 using TMPro;
 using UnityEngine;
 

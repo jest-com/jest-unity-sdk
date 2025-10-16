@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using com.unity.jest;
+using com.jest.sdk;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -29,7 +29,6 @@ public class LoginController : MonoBehaviour
 
     private void OnLoginPressed(string payload)
     {
-        Debug.Log("Jest Login With Payload::" + payload);
         Dictionary<string, object> payloadDictionary;
         try
         {

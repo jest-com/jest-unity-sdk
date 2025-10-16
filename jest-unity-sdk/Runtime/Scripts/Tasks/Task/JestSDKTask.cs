@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace com.unity.jest
+namespace com.jest.sdk
 {
     /// <summary>
     /// Represents a custom task implementation for asynchronous operations in Jest SDK.

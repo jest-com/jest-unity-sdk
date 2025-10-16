@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace com.unity.jest
+namespace com.jest.sdk
 {
     /// <summary>
     /// Represents an asynchronous operation that produces a result of type T.
