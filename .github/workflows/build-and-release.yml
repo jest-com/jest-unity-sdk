@@ -1,0 +1,204 @@
+name: Build & Release (Unified)
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # A) Regular build on push/PR to main (NOT for tag builds)
+  # ---------------------------------------------------------------------------
+  build_and_upload:
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    env:
+      UNITY_VERSION: 6000.2.3f1
+      UNITY_IMAGE: unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0
+      PROJECT_PATH: UnityDemo
+      BUILD_PATH: Build
+    steps:
+      - uses: actions/checkout@v4
+
+      # Get version from package.json and a numeric suffix
+      - id: meta
+        run: |
+          echo "version=$(jq -r '.version' jest-unity-sdk/package.json)" >> $GITHUB_OUTPUT
+          echo "suffix=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+
+      # Run Unity tests (EditMode + PlayMode)
+      - name: Run Unity Tests
+        id: tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          testMode: All
+          unityVersion: ${{ env.UNITY_VERSION }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-test-results
+          path: ${{ steps.tests.outputs.artifactsPath }}
+
+      - name: Stop if tests failed
+        if: failure()
+        run: |
+          echo "❌ Tests failed — aborting build."
+          exit 1
+
+      # Cache Library to speed up imports
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.PROJECT_PATH }}/Library
+          key: Library-${{ runner.os }}-WebGL
+          restore-keys: Library-
+
+      # Free disk space (safe & concise)
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          docker-images: true
+          large-packages: false
+
+      # Build WebGL (output to Build/)
+      - name: Build Unity WebGL
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: WebGL
+          projectPath: ${{ env.PROJECT_PATH }}
+          versioning: None
+          customImage: ${{ env.UNITY_IMAGE }}
+          buildPath: ${{ env.BUILD_PATH }}
+
+      # Zip the WebGL build
+      - name: Create ZIP
+        run: |
+          ZIP="game-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.suffix }}.zip"
+          zip -r "$ZIP" "${{ env.BUILD_PATH }}"
+          echo "zip_name=$ZIP" >> $GITHUB_OUTPUT
+        id: zip
+
+      # Upload ZIP to your endpoint
+      - name: Upload Build
+        run: |
+          curl -sSf -X POST \
+            -H "X-Game-Upload-Token: ${{ secrets.GAME_UPLOAD_TOKEN }}" \
+            -H "X-Build-Version: ${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.suffix }}" \
+            --form "file=@${{ steps.zip.outputs.zip_name }}" \
+            "${{ secrets.GAME_UPLOAD_URL }}"
+
+  # ---------------------------------------------------------------------------
+  # B) Tag build (v*.*.*): build & attach ZIP to a GitHub Release (no custom upload)
+  # ---------------------------------------------------------------------------
+  build_and_release:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed to create the release
+      checks: write
+    env:
+      UNITY_VERSION: 6000.2.3f1
+      UNITY_IMAGE: unityci/editor:ubuntu-6000.2.3f1-webgl-3.2.0
+      PROJECT_PATH: UnityDemo
+      BUILD_PATH: Build
+      TAG_NAME: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Run Unity tests
+      - name: Run Unity Tests
+        id: tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: ${{ env.PROJECT_PATH }}
+          testMode: All
+          unityVersion: ${{ env.UNITY_VERSION }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-test-results
+          path: ${{ steps.tests.outputs.artifactsPath }}
+
+      - name: Stop if tests failed
+        if: failure()
+        run: |
+          echo "❌ Tests failed — aborting release build."
+          exit 1
+
+      # Cache Library
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.PROJECT_PATH }}/Library
+          key: Library-${{ runner.os }}-WebGL
+          restore-keys: Library-
+
+      # Free disk space
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          docker-images: true
+          large-packages: false
+
+      # Build WebGL (output to Build/)
+      - name: Build Unity WebGL
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: WebGL
+          projectPath: ${{ env.PROJECT_PATH }}
+          versioning: None
+          customImage: ${{ env.UNITY_IMAGE }}
+          buildPath: ${{ env.BUILD_PATH }}
+
+      # Zip the WebGL build for release
+      - name: Create ZIP for Release
+        id: zip
+        run: |
+          ZIP="webgl-${{ env.TAG_NAME }}.zip"
+          zip -r "$ZIP" "${{ env.BUILD_PATH }}"
+          echo "zip_name=$ZIP" >> $GITHUB_OUTPUT
+
+      # Create GitHub Release and attach the ZIP
+      - name: Create GitHub Release with Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: ${{ env.TAG_NAME }}
+          draft: false
+          body: |
+            UPM Install URL:
+            https://github.com/${{ github.repository }}.git?path=jest-unity-sdk#${{ env.TAG_NAME }}
+          files: ${{ steps.zip.outputs.zip_name }}
