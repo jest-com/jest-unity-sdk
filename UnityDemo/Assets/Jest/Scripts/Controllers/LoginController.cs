@@ -29,6 +29,7 @@ public class LoginController : MonoBehaviour
 
     private void OnLoginPressed(string payload)
     {
+        Debug.Log("Jest Login With Payload::" + payload);
         Dictionary<string, object> payloadDictionary;
         try
         {

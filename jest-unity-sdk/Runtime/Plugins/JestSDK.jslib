@@ -52,6 +52,7 @@ mergeInto(LibraryManager.library, {
     } catch (e) {
       console.error("Invalid JSON passed:", payloadJson);
     }
+    console.log("➡ Received from Unity:", data);
     window.JestSDK.login({ entryPayload: data });
   },
 

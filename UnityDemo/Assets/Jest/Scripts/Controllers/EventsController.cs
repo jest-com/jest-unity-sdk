@@ -35,7 +35,5 @@ public class EventsController : MonoBehaviour
         m_eventNameTextInput.text = default;
         m_eventParamsTextInput.text = "{\"score\":10, \"coins\": 100}";
         GameManager.Instance.TriggerGameStateChangeEvent();
-
-
     }
 }

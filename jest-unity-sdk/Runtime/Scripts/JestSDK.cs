@@ -63,6 +63,7 @@ namespace com.unity.jest
         public void Login(Dictionary<string, object> payload)
         {
             string entryPayloadString = Convert.ToString(payload);
+            Debug.Log("Login with payload internal::" + entryPayloadString);
             JsBridge.Login(entryPayloadString);
         }
     }
