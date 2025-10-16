@@ -101,14 +101,14 @@ jobs:
           key: Library-${{ runner.os }}-WebGL
           restore-keys: Library-
 
-      # - name: Free Disk Space
-      #   uses: jlumbroso/free-disk-space@main
-      #   with:
-      #     tool-cache: false
-      #     android: true
-      #     dotnet: true
-      #     docker-images: true
-      #     large-packages: false
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          docker-images: false
+          large-packages: false
 
       # ✅ Build
       - name: Build Unity WebGL
