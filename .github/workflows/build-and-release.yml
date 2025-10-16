@@ -129,7 +129,7 @@ jobs:
         id: zip
         run: |
           ZIP="game-${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.suffix }}.zip"
-          zip -r "$ZIP" "${{ env.BUILD_PATH }}"
+          zip -r "../../build_zip/$ZIP" WebGL
           echo "zip_name=$ZIP" >> $GITHUB_OUTPUT
 
       # ✅ Upload to custom endpoint
@@ -137,8 +137,8 @@ jobs:
         run: |
           curl -sSf -X POST \
             -H "X-Game-Upload-Token: ${{ secrets.GAME_UPLOAD_TOKEN }}" \
-            -H "X-Build-Version: ${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.suffix }}" \
-            --form "file=@${{ steps.zip.outputs.zip_name }}" \
+            -H "X-Build-Version: ${{ steps.meta.outputs.version }}-${{ steps.meta.outputs.suffix  }}" \
+            --form "file=@build_zip/${{ steps.zip.outputs.zip_name }}" \
             "${{ secrets.GAME_UPLOAD_URL }}"
 
   # ---------------------------------------------------------------------------
