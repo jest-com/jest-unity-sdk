@@ -76,6 +76,26 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Schedule v2 notification request to the Unity console.
+        /// </summary>
+        /// <param name="options">The notification options in JSON format.</param>
+        public void ScheduleNotificationV2(string options)
+        {
+            Debug.Log($"[JestSDK] Schedule NotificationV2 {options}");
+            //TODO: umair
+        }
+
+        /// <summary>
+        /// Unschedule v2 notification request to the Unity console.
+        /// </summary>
+        /// <param name="key">The notification key in string format.</param>
+        public void UnscheduleNotificationV2(string key)
+        {
+            Debug.Log($"[JestSDK] Unschedule NotificationV2 {key}");
+            //TODO: umair
+        }
+
+        /// <summary>
         /// Sets a player value with the specified key.
         /// </summary>
         /// <param name="key">The key of the value to set.</param>

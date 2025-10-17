@@ -37,6 +37,18 @@ mergeInto(LibraryManager.library, {
     window.JestSDK.scheduleNotification(opts);
   },
 
+  JS_scheduleNotificationV2: function (options) {
+    let opts = JSON.parse(UTF8ToString(options));
+    opts.scheduledAt = new Date(opts.scheduledAt);
+    window.JestSDK.notifications.scheduleNotification(opts);
+  },
+
+  JS_unscheduleNotificationV2: function (identifier) {
+    window.JestSDK.notifications.unscheduleNotification({
+      identifier: UTF8ToString(identifier),
+    });
+  },
+
   JS_captureEvent: function (eventName, properties) {
     window.JestSDK.captureEvent(
       UTF8ToString(eventName),
