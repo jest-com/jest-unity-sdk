@@ -148,7 +148,7 @@ namespace com.jest.sdk.Tests
                 data = { { "stringValue", "test" }, { "numberValue", 42 } },
                 identifier = "test-key",
                 date = DateTime.Now,
-                severity = RichNotifications.Severity.Low
+                notificationPriority = RichNotifications.Severity.Low
             };
             
             JestSDK.Instance.richNotifications.ScheduleNotification(options);
@@ -161,7 +161,7 @@ namespace com.jest.sdk.Tests
             Assert.AreEqual(options.date, result.date);
             Assert.AreEqual(options.data, result.data);
             Assert.AreEqual(options.identifier, result.identifier);
-            Assert.AreEqual(options.severity, result.severity);
+            Assert.AreEqual(options.notificationPriority, result.notificationPriority);
         }
 
         [System.Serializable]

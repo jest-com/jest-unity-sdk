@@ -96,7 +96,7 @@ public class RichNotificationController : MonoBehaviour
             body = fallback,
             ctaText = callToAction,
             image = imageString,
-            severity = m_selected,
+            notificationPriority = m_selected,
             identifier = uniqueKey,
             date = System.DateTime.Now.AddMinutes(float.Parse(timeString)),
         };

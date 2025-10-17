@@ -30,16 +30,22 @@ mergeInto(LibraryManager.library, {
 
   JS_scheduleNotification: function (options) {
     let opts = JSON.parse(UTF8ToString(options));
-
     opts.scheduledAt = new Date(opts.scheduledAt);
-    opts.metadata = JSON.parse(opts.metadata);
-
+    if (opts.metadata) {
+      opts.metadata = JSON.parse(opts.metadata);
+    }
     window.JestSDK.scheduleNotification(opts);
   },
 
   JS_scheduleNotificationV2: function (options) {
     let opts = JSON.parse(UTF8ToString(options));
     opts.scheduledAt = new Date(opts.scheduledAt);
+    if (opts.entryPayload) {
+      opts.entryPayload = JSON.parse(opts.entryPayload);
+    }
+    if (typeof opts.image === "string" && opts.image === "") {
+      delete opts.image;
+    }
     window.JestSDK.notifications.scheduleNotification(opts);
   },
 

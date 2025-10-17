@@ -11,19 +11,11 @@ namespace com.jest.sdk
     public class RichNotifications
     {
 
-        [JsonConverter(typeof(StringEnumConverter))]
         public enum Severity
         {
-            [EnumMember(Value = "low")]
             Low,
-
-            [EnumMember(Value = "medium")]
             Medium,
-
-            [EnumMember(Value = "high")]
             High,
-
-            [EnumMember(Value = "critical")]
             Critical
         }
 
@@ -34,6 +26,7 @@ namespace com.jest.sdk
         public void ScheduleNotification(Options options)
         {
             string payload = JsonUtility.ToJson(options);
+            Debug.Log("NotificationsV2::" + payload);
             JsBridge.ScheduleNotificationV2(payload);
         }
 
@@ -46,19 +39,21 @@ namespace com.jest.sdk
             return JsBridge.GetNotificationsV2().Select(n => JsonUtility.FromJson<Options>(n)).ToList();
         }
 
+
         [System.Serializable]
         public class Options : ISerializationCallbackReceiver
         {
 
-            [SerializeField] private string dateString;
-            [SerializeField] private string dataString;
+            [SerializeField] private string scheduledAt;
+            [SerializeField] private string entryPayload;
+            [SerializeField] private string priority;
 
 
             public string plainText;
             public string body;
             public string ctaText;
             public string image; // optional
-            public Severity severity = Severity.Low;
+            [System.NonSerialized] public Severity notificationPriority = Severity.Low;
             public string identifier;
 
             public readonly Dictionary<string, object> data = new();
@@ -66,19 +61,21 @@ namespace com.jest.sdk
 
             public void OnAfterDeserialize()
             {
-                date = DateTimeExtensions.FromJsString(dateString);
-                var newData = Convert.FromString<Dictionary<string, object>>(dataString);
+                date = DateTimeExtensions.FromJsString(scheduledAt);
+                var newData = Convert.FromString<Dictionary<string, object>>(entryPayload);
                 data.Clear();
                 foreach (var item in newData)
                 {
                     data.Add(item.Key, item.Value);
                 }
+                notificationPriority = Enum.Parse<Severity>(priority, ignoreCase: true);
             }
 
             public void OnBeforeSerialize()
             {
-                dateString = date.ToJsString();
-                dataString = Convert.ToString(data);
+                scheduledAt = date.ToJsString();
+                entryPayload = Convert.ToString(data);
+                priority = notificationPriority.ToString().ToLower();
             }
         }
     }
