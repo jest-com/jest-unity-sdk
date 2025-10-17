@@ -32,6 +32,12 @@ namespace com.jest.sdk
         private static extern void JS_scheduleNotification(string options);
 
         [DllImport("__Internal")]
+        private static extern void JS_scheduleNotificationV2(string optionsJson);
+
+        [DllImport("__Internal")]
+        private static extern void JS_unscheduleNotificationV2(string identifier);
+
+        [DllImport("__Internal")]
         private static extern void JS_captureEvent(string eventName, string properties);
 
         [DllImport("__Internal")]
@@ -66,6 +72,10 @@ namespace com.jest.sdk
         private static void JS_setPlayerValue(string key, string value) { _bridgeMock.SetPlayerValue(key, value); }
 
         private static void JS_scheduleNotification(string options) { _bridgeMock.ScheduleNotification(options); }
+
+        private static void JS_scheduleNotificationV2(string optionsJson) { _bridgeMock.ScheduleNotificationV2(optionsJson); }
+
+        private static void JS_unscheduleNotificationV2(string identifier) { _bridgeMock.UnscheduleNotificationV2(identifier); }
 
         private static void JS_captureEvent(string eventName, string properties) { _bridgeMock.CaptureEvent(eventName, properties); }
 
@@ -141,6 +151,16 @@ namespace com.jest.sdk
             JS_scheduleNotification(options);
         }
 
+        internal static void ScheduleNotificationV2(string options)
+        {
+            JS_scheduleNotificationV2(options);
+        }
+
+        internal static void UnscheduleNotificationV2(string options)
+        {
+            JS_unscheduleNotificationV2(options);
+        }
+
         internal static void CaptureEvent(string eventName, string properties)
         {
             JS_captureEvent(eventName, properties);
@@ -154,6 +174,11 @@ namespace com.jest.sdk
         internal static List<string> GetNotifications()
         {
             return _bridgeMock.GetNotifications();
+        }
+
+        internal static List<string> GetNotificationsV2()
+        {
+            return _bridgeMock.GetNotificationsV2();
         }
 
         internal static JestSDKTask Init()

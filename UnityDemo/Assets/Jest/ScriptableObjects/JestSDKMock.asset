@@ -15,6 +15,23 @@ MonoBehaviour:
   _playerId: 1234
   _isRegistered: 0
   _notifications: []
+  _notificationsV2:
+  - scheduledAt: 2025-10-17T23:14:03.1024220+05:00
+    entryPayload: '{"source":"rich_notification"}'
+    priority: low
+    plainText: kjkl
+    body: lk;lk
+    ctaText: lkl
+    image: 
+    identifier: mjkj
+  - scheduledAt: 2025-10-17T23:38:10.3135020+05:00
+    entryPayload: '{"source":"rich_notification"}'
+    priority: low
+    plainText: jhjhj
+    body: dddd
+    ctaText: ffff
+    image: data:image/png;base64,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
+    identifier: jhjhj
   _values: []
   _events: []
   _entryPayload: []

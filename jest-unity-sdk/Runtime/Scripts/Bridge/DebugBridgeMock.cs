@@ -64,6 +64,24 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Logs a schedule v2 notification request to the Unity console.
+        /// </summary>
+        /// <param name="options">The notification options in JSON format.</param>
+        public void ScheduleNotificationV2(string options)
+        {
+            Debug.Log($"[JestSDK] Schedule NotificationV2 {options}");
+        }
+
+        /// <summary>
+        /// Logs a Unschedule v2 notification request to the Unity console.
+        /// </summary>
+        /// <param name="key">The notification key in string format.</param>
+        public void UnscheduleNotificationV2(string key)
+        {
+            Debug.Log($"[JestSDK] Unschedule NotificationV2 {key}");
+        }
+
+        /// <summary>
         /// Logs a set player value request to the Unity console.
         /// </summary>
         /// <param name="key">The key of the value to set.</param>
@@ -88,6 +106,15 @@ namespace com.jest.sdk
         /// </summary>
         /// <returns>An empty list as mock notification data.</returns>
         public List<string> GetNotifications()
+        {
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Gets all scheduled notifications v2.
+        /// </summary>
+        /// <returns>An empty list as mock notification data.</returns>
+        public List<string> GetNotificationsV2()
         {
             return new List<string>();
         }
