@@ -22,6 +22,11 @@ namespace com.jest.sdk
         public readonly Notifications notifications = new();
 
         /// <summary>
+        /// Provides access to notification management functionality.
+        /// </summary>
+        public readonly RichNotifications richNotifications = new();
+
+        /// <summary>
         /// Provides access to analytics tracking and reporting.
         /// </summary>
         public readonly Analytics analytics = new();

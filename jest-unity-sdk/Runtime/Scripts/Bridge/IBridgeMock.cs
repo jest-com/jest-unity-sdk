@@ -77,6 +77,12 @@ namespace com.jest.sdk
         List<string> GetNotifications();
 
         /// <summary>
+        /// Gets all scheduled notifications V2.
+        /// </summary>
+        /// <returns>A list of notifications as JSON strings</returns>
+        List<string> GetNotificationsV2();
+
+        /// <summary>
         /// Game-specific entry payload, that was used to launch the game.
         /// </summary>
         /// <returns>A map of strings->objects</returns>

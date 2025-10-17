@@ -137,6 +137,33 @@ namespace com.jest.sdk.Tests
             Assert.AreEqual(options.message, result.message);
         }
 
+        [Test]
+        public void Notifications_ScheduleNotificationV2_StoresNotification()
+        {
+            var options = new RichNotifications.Options
+            {
+                plainText = "Test notification",
+                body = "Test Body",
+                ctaText = "Play Now!",
+                data = { { "stringValue", "test" }, { "numberValue", 42 } },
+                identifier = "test-key",
+                date = DateTime.Now,
+                severity = RichNotifications.Severity.Low
+            };
+            
+            JestSDK.Instance.richNotifications.ScheduleNotification(options);
+            var notifications = JestSDK.Instance.richNotifications.GetNotifications();
+            Assert.That(notifications, Has.Count.EqualTo(1));
+            var result = notifications[0];
+            Assert.AreEqual(options.plainText, result.plainText);
+            Assert.AreEqual(options.body, result.body);
+            Assert.AreEqual(options.ctaText, result.ctaText);
+            Assert.AreEqual(options.date, result.date);
+            Assert.AreEqual(options.data, result.data);
+            Assert.AreEqual(options.identifier, result.identifier);
+            Assert.AreEqual(options.severity, result.severity);
+        }
+
         [System.Serializable]
         private struct TestEventData
         {

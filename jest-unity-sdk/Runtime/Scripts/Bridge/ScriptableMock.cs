@@ -14,6 +14,7 @@ namespace com.jest.sdk
         [SerializeField] private string _playerId;
         [SerializeField] private bool _isRegistered;
         [SerializeField] private List<Notifications.Options> _notifications;
+        [SerializeField] private List<RichNotifications.Options> _notificationsV2;
         [SerializeField] private List<ValuePair> _values;
         [SerializeField] private List<ValuePair> _events;
         [SerializeField] private List<ValuePair> _entryPayload;
@@ -88,8 +89,7 @@ namespace com.jest.sdk
         /// <param name="options">The notification options in JSON format.</param>
         public void ScheduleNotificationV2(string options)
         {
-            Debug.Log($"[JestSDK] Schedule NotificationV2 {options}");
-            //TODO: umair
+            _notificationsV2.Add(JsonUtility.FromJson<RichNotifications.Options>(options));
         }
 
         /// <summary>
@@ -98,8 +98,7 @@ namespace com.jest.sdk
         /// <param name="key">The notification key in string format.</param>
         public void UnscheduleNotificationV2(string key)
         {
-            Debug.Log($"[JestSDK] Unschedule NotificationV2 {key}");
-            //TODO: umair
+            _notificationsV2.RemoveAll(n => n.identifier == key);
         }
 
         /// <summary>
@@ -119,6 +118,15 @@ namespace com.jest.sdk
         public List<string> GetNotifications()
         {
             return _notifications.Select(n => JsonUtility.ToJson(n)).ToList();
+        }
+
+        /// <summary>
+        /// Gets all scheduled notifications v2.
+        /// </summary>
+        /// <returns>A list of notification options in JSON format.</returns>
+        public List<string> GetNotificationsV2()
+        {
+            return _notificationsV2.Select(n => JsonUtility.ToJson(n)).ToList();
         }
 
         /// <summary>

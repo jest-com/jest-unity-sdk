@@ -1,6 +1,6 @@
 {
     "name": "JestSDKTests",
-    "rootNamespace": "JestSDK.Tests",
+    "rootNamespace": "com.jest.sdk.Tests",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",

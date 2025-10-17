@@ -73,7 +73,7 @@ namespace com.jest.sdk
 
         private static void JS_scheduleNotification(string options) { _bridgeMock.ScheduleNotification(options); }
 
-        private static void JS_scheduleNotificationV2(string optionsJson) { _bridgeMock.ScheduleNotificationV2(options); }
+        private static void JS_scheduleNotificationV2(string optionsJson) { _bridgeMock.ScheduleNotificationV2(optionsJson); }
 
         private static void JS_unscheduleNotificationV2(string identifier) { _bridgeMock.UnscheduleNotificationV2(identifier); }
 
@@ -174,6 +174,11 @@ namespace com.jest.sdk
         internal static List<string> GetNotifications()
         {
             return _bridgeMock.GetNotifications();
+        }
+
+        internal static List<string> GetNotificationsV2()
+        {
+            return _bridgeMock.GetNotificationsV2();
         }
 
         internal static JestSDKTask Init()

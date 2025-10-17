@@ -111,6 +111,15 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Gets all scheduled notifications v2.
+        /// </summary>
+        /// <returns>An empty list as mock notification data.</returns>
+        public List<string> GetNotificationsV2()
+        {
+            return new List<string>();
+        }
+
+        /// <summary>
         /// Game-specific entry payload, that was used to launch the game.
         /// </summary>
         /// <returns>A map of strings->objects</returns>

@@ -17,4 +17,8 @@ MonoBehaviour:
   _notifications: []
   _values: []
   _events: []
-  _entryPayload: []
+  _entryPayload:
+  - key: level
+    value: 5
+  - key: score
+    value: 100
