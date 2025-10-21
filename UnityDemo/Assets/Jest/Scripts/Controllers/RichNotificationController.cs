@@ -16,7 +16,7 @@ public class RichNotificationController : MonoBehaviour
     [SerializeField] private TMP_InputField m_uniqueKeyInput;
     [SerializeField] private TMP_InputField m_entryPayloadInput;
     [SerializeField] private TMP_Dropdown m_priorityDropDown;
-
+    [SerializeField] private TMP_InputField m_unscheduleUniqueKeyInput;
     RichNotifications.Severity m_selected = RichNotifications.Severity.Low;
 
     private void Start()
@@ -47,6 +47,12 @@ public class RichNotificationController : MonoBehaviour
 
     public void ScheduleNotification()
     {
+
+        if (!JestSDK.Instance.Player.isRegistered)
+        {
+            UIManager.Instance.m_toastUI.ShowToast("Login first to schedule the notification.");
+            return;
+        }
 
         string body = m_notificationBodyInput.text;
         string fallback = m_fallbackBodyInput.text;
@@ -123,7 +129,7 @@ public class RichNotificationController : MonoBehaviour
 
         }
 
-        JestSDK.Instance?.richNotifications?.ScheduleNotification(options);
+        JestSDK.Instance?.RichNotifications?.ScheduleNotification(options);
         UIManager.Instance.m_toastUI.ShowToast("Rich Notification scheduled successfully.");
 
 
@@ -136,4 +142,25 @@ public class RichNotificationController : MonoBehaviour
 
         GameManager.Instance.TriggerGameStateChangeEvent();
     }
+
+
+    public void UnscheduleNotification()
+    {
+        if (!JestSDK.Instance.Player.isRegistered)
+        {
+            UIManager.Instance.m_toastUI.ShowToast("Login first to unschedule the notification.");
+            return;
+        }
+        string uniqueKey = m_unscheduleUniqueKeyInput.text;
+        if (string.IsNullOrEmpty(uniqueKey))
+        {
+            UIManager.Instance.m_toastUI.ShowToast("Unique key is empty");
+            return;
+        }
+        JestSDK.Instance.RichNotifications.UnscheduleNotification(uniqueKey);
+        UIManager.Instance.m_toastUI.ShowToast("Rich Notification unscheduled successfully.");
+        m_unscheduleUniqueKeyInput.text = "";
+        GameManager.Instance.TriggerGameStateChangeEvent();
+    }
+
 }

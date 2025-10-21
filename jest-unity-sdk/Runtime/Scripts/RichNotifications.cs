@@ -30,6 +30,12 @@ namespace com.jest.sdk
             JsBridge.ScheduleNotificationV2(payload);
         }
 
+
+        public void UnscheduleNotification(string uniqueKey)
+        {
+            JsBridge.UnscheduleNotificationV2(uniqueKey);
+        }
+
         /// <summary>
         /// Retrieves all scheduled notifications.
         /// </summary>

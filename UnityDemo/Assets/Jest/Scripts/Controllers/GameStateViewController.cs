@@ -14,6 +14,6 @@ public class GameStateViewController : MonoBehaviour
 
     private void GameStateController_OnGameStateChanged(object sender, System.EventArgs e)
     {
-        m_playerStateText.text = JestSDK.Instance.player.GetPlayerData();
+        m_playerStateText.text = JestSDK.Instance.Player.GetPlayerData();
     }
 }

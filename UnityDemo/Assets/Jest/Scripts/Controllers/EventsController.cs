@@ -30,7 +30,7 @@ public class EventsController : MonoBehaviour
             Debug.LogError(e);
             properties = new Dictionary<string, object>();
         }
-        JestSDK.Instance?.analytics.CaptureEvent(eventName, properties);
+        JestSDK.Instance?.Analytics.CaptureEvent(eventName, properties);
         UIManager.Instance.m_toastUI.ShowToast("Event sent successfully.");
         m_eventNameTextInput.text = default;
         m_eventParamsTextInput.text = "{\"score\":10, \"coins\": 100}";

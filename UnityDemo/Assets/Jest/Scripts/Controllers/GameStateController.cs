@@ -27,7 +27,7 @@ public class GameStateController : MonoBehaviour
             return;
         }
 
-        JestSDK.Instance.player.Set(key, val);
+        JestSDK.Instance.Player.Set(key, val);
         UIManager.Instance.m_toastUI.ShowToast("Player Data Added");
         GameManager.Instance.TriggerGameStateChangeEvent();
         m_keyTextInput.text = default;

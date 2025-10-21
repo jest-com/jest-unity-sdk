@@ -23,27 +23,27 @@ namespace com.jest.sdk.Tests
         [Test]
         public void Player_GetId_ReturnsCorrectId()
         {
-            Assert.That(JestSDK.Instance.player.id, Is.EqualTo(testId));
+            Assert.That(JestSDK.Instance.Player.id, Is.EqualTo(testId));
         }
 
         [Test]
         public void Player_IsRegistered_ReturnsCorrectValue()
         {
-            Assert.That(JestSDK.Instance.player.isRegistered, Is.True);
+            Assert.That(JestSDK.Instance.Player.isRegistered, Is.True);
         }
 
         [Test]
         public void Player_SetAndGetValue_WorksWithPrimitives()
         {
-            JestSDK.Instance.player.Set("bool", true);
-            JestSDK.Instance.player.Set("int", 42);
-            JestSDK.Instance.player.Set("float", 3.14f);
-            JestSDK.Instance.player.Set("string", "test");
+            JestSDK.Instance.Player.Set("bool", true);
+            JestSDK.Instance.Player.Set("int", 42);
+            JestSDK.Instance.Player.Set("float", 3.14f);
+            JestSDK.Instance.Player.Set("string", "test");
 
-            Assert.That(JestSDK.Instance.player.Get<bool>("bool"), Is.True);
-            Assert.That(JestSDK.Instance.player.Get<int>("int"), Is.EqualTo(42));
-            Assert.That(JestSDK.Instance.player.Get<float>("float"), Is.EqualTo(3.14f));
-            Assert.That(JestSDK.Instance.player.Get<string>("string"), Is.EqualTo("test"));
+            Assert.That(JestSDK.Instance.Player.Get<bool>("bool"), Is.True);
+            Assert.That(JestSDK.Instance.Player.Get<int>("int"), Is.EqualTo(42));
+            Assert.That(JestSDK.Instance.Player.Get<float>("float"), Is.EqualTo(3.14f));
+            Assert.That(JestSDK.Instance.Player.Get<string>("string"), Is.EqualTo("test"));
         }
 
         [Test]
@@ -53,10 +53,10 @@ namespace com.jest.sdk.Tests
             const string value = "value";
             const string anotherKey = "anotherKey";
 
-            JestSDK.Instance.player.Set(key, value);
+            JestSDK.Instance.Player.Set(key, value);
 
-            Assert.That(JestSDK.Instance.player.TryGet(key, out string val) && val == value);
-            Assert.That(!JestSDK.Instance.player.TryGet(anotherKey, out string anotherVal));
+            Assert.That(JestSDK.Instance.Player.TryGet(key, out string val) && val == value);
+            Assert.That(!JestSDK.Instance.Player.TryGet(anotherKey, out string anotherVal));
         }
 
         [Test]
@@ -65,11 +65,11 @@ namespace com.jest.sdk.Tests
             var vector2 = new Vector2(1, 2);
             var vector3 = new Vector3(1, 2, 3);
 
-            JestSDK.Instance.player.Set("vector2", vector2);
-            JestSDK.Instance.player.Set("vector3", vector3);
+            JestSDK.Instance.Player.Set("vector2", vector2);
+            JestSDK.Instance.Player.Set("vector3", vector3);
 
-            Assert.That(JestSDK.Instance.player.Get<Vector2>("vector2"), Is.EqualTo(vector2));
-            Assert.That(JestSDK.Instance.player.Get<Vector3>("vector3"), Is.EqualTo(vector3));
+            Assert.That(JestSDK.Instance.Player.Get<Vector2>("vector2"), Is.EqualTo(vector2));
+            Assert.That(JestSDK.Instance.Player.Get<Vector3>("vector3"), Is.EqualTo(vector3));
         }
 
         [Test]
@@ -92,9 +92,9 @@ namespace com.jest.sdk.Tests
         {
             var eventName = "test-event";
             var eventData = new TestEventData { stringValue = "test", numberValue = 42 };
-            JestSDK.Instance.analytics.CaptureEvent(eventName, eventData);
+            JestSDK.Instance.Analytics.CaptureEvent(eventName, eventData);
 
-            var parsedEvent = JestSDK.Instance.analytics.GetEvent<TestEventData>(eventName);
+            var parsedEvent = JestSDK.Instance.Analytics.GetEvent<TestEventData>(eventName);
 
             Assert.AreEqual(eventData, parsedEvent);
         }
@@ -104,9 +104,9 @@ namespace com.jest.sdk.Tests
         {
             var eventName = "test-event";
             var eventData = new Dictionary<string, object> { { "stringValue", "test" }, { "numberValue", 42 } };
-            JestSDK.Instance.analytics.CaptureEvent(eventName, eventData);
+            JestSDK.Instance.Analytics.CaptureEvent(eventName, eventData);
 
-            var parsedData = JestSDK.Instance.analytics.GetEvent(eventName);
+            var parsedData = JestSDK.Instance.Analytics.GetEvent(eventName);
 
             Assert.AreEqual(eventData, parsedData);
         }
@@ -124,9 +124,9 @@ namespace com.jest.sdk.Tests
                 data = { { "stringValue", "test" }, { "numberValue", 42 } }
             };
 
-            JestSDK.Instance.notifications.ScheduleNotification(options);
+            JestSDK.Instance.Notifications.ScheduleNotification(options);
 
-            var notifications = JestSDK.Instance.notifications.GetNotifications();
+            var notifications = JestSDK.Instance.Notifications.GetNotifications();
             Assert.That(notifications, Has.Count.EqualTo(1));
 
             var result = notifications[0];
@@ -151,8 +151,8 @@ namespace com.jest.sdk.Tests
                 notificationPriority = RichNotifications.Severity.Low
             };
             
-            JestSDK.Instance.richNotifications.ScheduleNotification(options);
-            var notifications = JestSDK.Instance.richNotifications.GetNotifications();
+            JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+            var notifications = JestSDK.Instance.RichNotifications.GetNotifications();
             Assert.That(notifications, Has.Count.EqualTo(1));
             var result = notifications[0];
             Assert.AreEqual(options.plainText, result.plainText);

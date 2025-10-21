@@ -15,7 +15,11 @@ public class NotificationController : MonoBehaviour
 
     public void ScheduleNotification()
     {
-
+        if(!JestSDK.Instance.Player.isRegistered)
+        {
+            UIManager.Instance.m_toastUI.ShowToast("Login first to schedule the notification.");
+            return;
+        }
         string message = m_messageTextInput.text;
         string timeString = m_timeTextInput.text;
         bool sendPush = m_toggleInput.isOn;
@@ -39,7 +43,7 @@ public class NotificationController : MonoBehaviour
             deduplicationKey = SharedUtils.GetUnixTime().ToString();
         }
 
-        JestSDK.Instance?.notifications?.ScheduleNotification(new Notifications.Options
+        JestSDK.Instance?.Notifications?.ScheduleNotification(new Notifications.Options
         {
             message = message,
             date = System.DateTime.Now.AddMinutes(float.Parse(timeString)),

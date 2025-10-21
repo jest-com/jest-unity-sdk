@@ -19,7 +19,7 @@ public class LoginController : MonoBehaviour
 
     private void LoginController_OnGameStateChanged(object sender, System.EventArgs e)
     {
-        m_loginButton.interactable = !JestSDK.Instance.player.isRegistered;
+        m_loginButton.interactable = !JestSDK.Instance.Player.isRegistered;
     }
 
     public void OnLoginPressed()

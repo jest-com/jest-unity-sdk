@@ -132,6 +132,30 @@ notifications.ScheduleNotification(new Notifications.Options {
 
 ```
 
+
+### RichNotifications
+
+```csharp
+var richNotifications = JestSDK.Instance.RichNotifications;
+
+// Schedule for specific time
+richNotifications.ScheduleNotification(new RichNotifications.Options {
+    
+    body = <The text of the notification>,
+    plainText = <Simple formatting (for SMS)>,
+    ctaText = <Call to Action text: what is shown next to the button>,
+    image = <Base64 data URL for the notification image>, //Optional
+    notificationPriority = <low, medium, high, critical>,
+    identifier = <unique Identifier>,
+    date = <When should it be scheduled for>
+});
+
+// Unschedule with unique notification key
+
+richNotifications.UnscheduleNotification(<unique Identifier>);
+
+```
+
 ## Testing
 
 The SDK includes a ScriptableObject-based mock system for testing in the Unity Editor. This allows you to observe and debug SDK values directly in the Unity Inspector.

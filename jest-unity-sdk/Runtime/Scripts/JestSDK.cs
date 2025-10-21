@@ -19,22 +19,22 @@ namespace com.jest.sdk
         /// <summary>
         /// Provides access to notification management functionality.
         /// </summary>
-        public readonly Notifications notifications = new();
+        public readonly Notifications Notifications = new();
 
         /// <summary>
         /// Provides access to notification management functionality.
         /// </summary>
-        public readonly RichNotifications richNotifications = new();
+        public readonly RichNotifications RichNotifications = new();
 
         /// <summary>
         /// Provides access to analytics tracking and reporting.
         /// </summary>
-        public readonly Analytics analytics = new();
+        public readonly Analytics Analytics = new();
 
         /// <summary>
         /// Provides access to player-related functionality and data.
         /// </summary>
-        public readonly Player player = new();
+        public readonly Player Player = new();
 
         /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.
