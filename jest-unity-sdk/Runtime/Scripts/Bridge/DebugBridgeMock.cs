@@ -147,5 +147,12 @@ namespace com.jest.sdk
             this.isRegistered = true.ToString();
             Debug.Log($"[JestSDK] Logged In {this.isRegistered}");
         }
+
+        public string GetProducts()
+        {
+            Debug.Log($"[JestSDK] GetProducts");
+            return "";
+        }
+
     }
 }

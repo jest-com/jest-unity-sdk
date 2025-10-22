@@ -170,6 +170,12 @@ namespace com.jest.sdk
             SetEntryPayload(payloadDictionary);
         }
 
+        public string GetProducts()
+        {
+            return "";
+        }
+
+
 
 #if UNITY_EDITOR
         private void OnEnable()

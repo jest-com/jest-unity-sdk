@@ -167,5 +167,12 @@ namespace com.jest.sdk
             _entryPayload = payload;
         }
 
+        public string GetProducts()
+        {
+            Debug.Log($"[JestSDK] GetProducts");
+            return "";
+        }
+
+
     }
 }

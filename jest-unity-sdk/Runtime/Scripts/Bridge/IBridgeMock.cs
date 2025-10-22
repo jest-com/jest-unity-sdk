@@ -100,5 +100,13 @@ namespace com.jest.sdk
         /// <param name="payload">A string-object map containing the payload.</param>
         void Login(string payload);
 
+
+        /// <summary>
+        /// Get Inapp purchase products.
+        /// </summary>
+        /// <returns>Products</returns>
+        string GetProducts();
+
+
     }
 }

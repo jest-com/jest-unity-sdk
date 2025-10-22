@@ -37,6 +37,12 @@ namespace com.jest.sdk
         public readonly Player Player = new();
 
         /// <summary>
+        /// Provides access to purchase related functionality and data.
+        /// </summary>
+        public readonly Payment Payment = new();
+
+
+        /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.
         /// </summary>
         /// <returns>A task that completes when the SDK is ready</returns>
