@@ -39,6 +39,7 @@ jobs:
           testMode: All
           unityVersion: ${{ env.UNITY_VERSION }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          coverage: false
 
       - name: Upload Test Results
         if: always()
@@ -77,6 +78,7 @@ jobs:
           testMode: All
           unityVersion: ${{ env.UNITY_VERSION }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          coverage: false
 
       - name: Upload Test Results
         if: always()
@@ -176,6 +178,7 @@ jobs:
           testMode: All
           unityVersion: ${{ env.UNITY_VERSION }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          coverage: false
 
       - name: Upload Test Results
         if: always()
