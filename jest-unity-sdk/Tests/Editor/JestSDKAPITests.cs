@@ -138,7 +138,7 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
-        public void Notifications_ScheduleNotificationV2_StoresNotification()
+        public void Notifications_ScheduleRichNotification_StoresNotification()
         {
             var options = new RichNotifications.Options
             {
