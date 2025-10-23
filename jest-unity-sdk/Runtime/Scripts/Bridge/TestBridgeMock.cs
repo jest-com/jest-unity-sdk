@@ -5,17 +5,15 @@ using UnityEngine;
 namespace com.jest.sdk
 {
     /// <summary>
-    /// A mock implementation of IBridgeMock for testing purposes.
-    /// Provides in-memory storage for events, player values, and notifications.
+    /// Mock implementation of <see cref="IBridgeMock"/> for testing and development.
+    /// Provides in-memory storage for events, player values, and notifications without platform dependencies.
     /// </summary>
     public class TestBridgeMock : IBridgeMock
     {
-        private Dictionary<string, string> _events = new();
-        private Dictionary<string, string> _playerValues = new();
-        private List<string> _notifications = new();
-        private List<RichNotifications.Options> _notificationsV2 = new();
-
-
+        private readonly Dictionary<string, string> _events = new();
+        private readonly Dictionary<string, string> _playerValues = new();
+        private readonly List<string> _notifications = new();
+        private readonly List<RichNotifications.Options> _notificationsV2 = new();
         private string _entryPayload;
 
         /// <summary>
@@ -24,21 +22,20 @@ namespace com.jest.sdk
         public string playerId { get; }
 
         /// <summary>
-        /// Returns all serialized player data as JSON.
+        /// Gets all serialized player data as a JSON string.
         /// </summary>
         public string playerData => JsonUtility.ToJson(this, true);
 
-
         /// <summary>
-        /// Gets whether the player is registered as a string representation.
+        /// Gets the registration status of the player as a string representation.
         /// </summary>
         public string isRegistered { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the TestBridgeMock class.
+        /// Initializes a new instance of the <see cref="TestBridgeMock"/> class.
         /// </summary>
         /// <param name="playerId">The unique identifier for the player.</param>
-        /// <param name="isRegistered">Whether the player is registered.</param>
+        /// <param name="isRegistered">Indicates whether the player is registered.</param>
         public TestBridgeMock(string playerId, bool isRegistered)
         {
             this.playerId = playerId;
@@ -49,51 +46,20 @@ namespace com.jest.sdk
         /// Captures an event with the specified name and properties.
         /// </summary>
         /// <param name="eventName">The name of the event to capture.</param>
-        /// <param name="properties">The properties associated with the event in JSON format.</param>
+        /// <param name="properties">A JSON string containing event properties.</param>
         public void CaptureEvent(string eventName, string properties)
         {
-            _events.Add(eventName, properties);
+            _events[eventName] = properties;
         }
 
         /// <summary>
         /// Retrieves a player value by its key.
         /// </summary>
         /// <param name="key">The key of the value to retrieve.</param>
-        /// <returns>The value associated with the specified key, or empty string if not found.</returns>
+        /// <returns>The stored value if found; otherwise, an empty string.</returns>
         public string GetPlayerValue(string key)
         {
-            if (_playerValues.TryGetValue(key, out var value))
-            {
-                return value;
-            }
-            return "";
-        }
-
-        /// <summary>
-        /// Schedules a notification using the provided options.
-        /// </summary>
-        /// <param name="options">The notification options in JSON format.</param>
-        public void ScheduleNotification(string options)
-        {
-            _notifications.Add(options);
-        }
-
-        /// <summary>
-        /// Schedule v2 notification request to the Unity console.
-        /// </summary>
-        /// <param name="options">The notification options in JSON format.</param>
-        public void ScheduleNotificationV2(string options)
-        {
-            _notificationsV2.Add(JsonUtility.FromJson<RichNotifications.Options>(options));
-        }
-
-        /// <summary>
-        /// Unschedule v2 notification request to the Unity console.
-        /// </summary>
-        /// <param name="key">The notification key in string format.</param>
-        public void UnscheduleNotificationV2(string key)
-        {
-            _notificationsV2.RemoveAll(n => n.identifier == key);
+            return _playerValues.TryGetValue(key, out var value) ? value : "";
         }
 
         /// <summary>
@@ -107,99 +73,125 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Retrieves the properties of an event by its name.
+        /// Schedules a notification using the provided options.
         /// </summary>
-        /// <param name="eventName">The name of the event to retrieve.</param>
-        /// <returns>The properties of the event in JSON format, or empty string if not found.</returns>
-        public string GetEvent(string eventName)
+        /// <param name="options">A JSON string containing notification options.</param>
+        public void ScheduleNotification(string options)
         {
-            if (_events.TryGetValue(eventName, out var evnt))
-            {
-                return evnt;
-            }
-
-            return "";
+            _notifications.Add(options);
         }
 
         /// <summary>
-        /// Gets all scheduled notifications.
+        /// Schedules a version 2 notification using the provided options.
         /// </summary>
-        /// <returns>A list of notification options in JSON format.</returns>
+        /// <param name="options">A JSON string containing the notification options.</param>
+        public void ScheduleNotificationV2(string options)
+        {
+            _notificationsV2.Add(JsonUtility.FromJson<RichNotifications.Options>(options));
+        }
+
+        /// <summary>
+        /// Unschedules a version 2 notification using the specified key.
+        /// </summary>
+        /// <param name="key">The identifier of the notification to unschedule.</param>
+        public void UnscheduleNotificationV2(string key)
+        {
+            _notificationsV2.RemoveAll(n => n.identifier == key);
+        }
+
+        /// <summary>
+        /// Retrieves an event by its name.
+        /// </summary>
+        /// <param name="eventName">The name of the event to retrieve.</param>
+        /// <returns>A JSON string containing event properties, or an empty string if not found.</returns>
+        public string GetEvent(string eventName)
+        {
+            return _events.TryGetValue(eventName, out var evnt) ? evnt : "";
+        }
+
+        /// <summary>
+        /// Retrieves all scheduled notifications.
+        /// </summary>
+        /// <returns>A list of notification data in JSON format.</returns>
         public List<string> GetNotifications()
         {
             return _notifications;
         }
 
         /// <summary>
-        /// Gets all scheduled notifications v2.
+        /// Retrieves all scheduled version 2 notifications.
         /// </summary>
-        /// <returns>A list of notification options in JSON format.</returns>
+        /// <returns>A list of notification data in JSON format.</returns>
         public List<string> GetNotificationsV2()
         {
             return _notificationsV2.Select(n => JsonUtility.ToJson(n)).ToList();
         }
 
         /// <summary>
-        /// Game-specific entry payload, that was used to launch the game.
+        /// Retrieves the game-specific entry payload used to launch the game.
         /// </summary>
-        /// <returns>A map of strings->objects</returns>
+        /// <returns>A JSON string representing the entry payload.</returns>
         public string GetEntryPayload()
         {
             return _entryPayload;
         }
 
         /// <summary>
-        /// Sets Game-specific entry payload.
+        /// Sets the game-specific entry payload.
         /// </summary>
-        /// <param name="payload">A string-object map containing the payload.</param>
+        /// <param name="payload">A dictionary containing the payload data.</param>
         public void SetEntryPayload(Dictionary<string, object> payload)
         {
             _entryPayload = Convert.ToString(payload);
         }
 
         /// <summary>
-        /// Mark user as logged in.
+        /// Marks the user as logged in and stores the provided payload.
         /// </summary>
-        /// <param name="payload">A string-object map containing the payload.</param>
+        /// <param name="payload">A JSON string representing login payload data.</param>
         public void Login(string payload)
         {
-            this.isRegistered = true.ToString();
+            isRegistered = true.ToString();
             _entryPayload = payload;
         }
 
+        /// <summary>
+        /// Retrieves available in-app purchase products.
+        /// </summary>
+        /// <returns>A JSON string representing product data.</returns>
         public string GetProducts()
         {
-            Debug.Log($"[JestSDK] GetProducts");
+            Debug.Log("[JestSDK] GetProducts");
             return "";
         }
 
         /// <summary>
-        /// Get Inapp purchase response.
+        /// Retrieves the in-app purchase response.
         /// </summary>
-        /// <returns>purchase response json</returns>
+        /// <returns>A JSON string representing purchase response data.</returns>
         public string GetPurchaseResponse()
         {
-            Debug.Log($"[JestSDK] GetPurchaseResponse");
+            Debug.Log("[JestSDK] GetPurchaseResponse");
             return "";
         }
 
         /// <summary>
-        /// Get incomplete purchase response.
+        /// Retrieves the incomplete purchase response.
         /// </summary>
-        /// <returns>incomplete purchase response json</returns>
+        /// <returns>A JSON string representing incomplete purchase response data.</returns>
         public string GetIncompletePurchaseResponse()
         {
-            Debug.Log($"[JestSDK] GetIncompletePurchaseResponse");
+            Debug.Log("[JestSDK] GetIncompletePurchaseResponse");
             return "";
         }
 
         /// <summary>
-        /// Get complete purchase response.
+        /// Retrieves the complete purchase response.
         /// </summary>
-        /// <returns>Complete purchase response json</returns>
+        /// <returns>A JSON string representing complete purchase response data.</returns>
         public string GetPurchaseCompleteResponse()
         {
-            Debug.Log($"[JestSDK] GetPurchaseCompleteResponse");
+            Debug.Log("[JestSDK] GetPurchaseCompleteResponse");
             return "";
         }
     }

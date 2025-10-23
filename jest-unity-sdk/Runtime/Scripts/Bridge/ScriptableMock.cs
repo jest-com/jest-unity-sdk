@@ -6,8 +6,8 @@ using UnityEngine;
 namespace com.jest.sdk
 {
     /// <summary>
-    /// A scriptable object that implements IBridgeMock for testing and debugging purposes.
-    /// Allows mocking of player data, events, and notifications in the Unity Editor.
+    /// ScriptableObject implementation of <see cref="IBridgeMock"/> for testing and debugging purposes.
+    /// Allows simulation of player data, events, notifications, and purchase flows within the Unity Editor.
     /// </summary>
     [CreateAssetMenu(fileName = "JestSDKMock", menuName = "JestSDK/Mock")]
     public class ScriptableMock : ScriptableObject, IBridgeMock
@@ -24,21 +24,18 @@ namespace com.jest.sdk
         [SerializeField] private Payment.IncompletePurchasesResponse _incompletePurchaseResponse;
         [SerializeField] private Payment.PurchaseCompleteResult _purchaseCompleteResponse;
 
-
-
         /// <summary>
         /// Gets the unique identifier for the player.
         /// </summary>
         public string playerId => _playerId;
 
         /// <summary>
-        /// Returns all serialized player data as JSON.
+        /// Gets all serialized player data as a JSON string.
         /// </summary>
         public string playerData => JsonUtility.ToJson(this, true);
 
-
         /// <summary>
-        /// Gets whether the player is registered as a string representation.
+        /// Gets whether the player is registered, represented as a string value.
         /// </summary>
         public string isRegistered => _isRegistered.ToString();
 
@@ -46,7 +43,7 @@ namespace com.jest.sdk
         /// Captures an event with the specified name and properties.
         /// </summary>
         /// <param name="eventName">The name of the event to capture.</param>
-        /// <param name="properties">The properties associated with the event in JSON format.</param>
+        /// <param name="properties">A JSON string containing the event properties.</param>
         public void CaptureEvent(string eventName, string properties)
         {
             _events.Add(new ValuePair { key = eventName, value = properties });
@@ -84,25 +81,25 @@ namespace com.jest.sdk
         /// <summary>
         /// Schedules a notification using the provided options.
         /// </summary>
-        /// <param name="options">The notification options in JSON format.</param>
+        /// <param name="options">A JSON string containing the notification options.</param>
         public void ScheduleNotification(string options)
         {
             _notifications.Add(JsonUtility.FromJson<Notifications.Options>(options));
         }
 
         /// <summary>
-        /// Schedule v2 notification request to the Unity console.
+        /// Schedules a version 2 notification using the provided options.
         /// </summary>
-        /// <param name="options">The notification options in JSON format.</param>
+        /// <param name="options">A JSON string containing the notification options.</param>
         public void ScheduleNotificationV2(string options)
         {
             _notificationsV2.Add(JsonUtility.FromJson<RichNotifications.Options>(options));
         }
 
         /// <summary>
-        /// Unschedule v2 notification request to the Unity console.
+        /// Unschedules a version 2 notification using the specified key.
         /// </summary>
-        /// <param name="key">The notification key in string format.</param>
+        /// <param name="key">The identifier of the notification to unschedule.</param>
         public void UnscheduleNotificationV2(string key)
         {
             _notificationsV2.RemoveAll(n => n.identifier == key);
@@ -112,34 +109,34 @@ namespace com.jest.sdk
         /// Retrieves the properties of an event by its name.
         /// </summary>
         /// <param name="eventName">The name of the event to retrieve.</param>
-        /// <returns>The properties of the event in JSON format.</returns>
+        /// <returns>A JSON string containing the event properties.</returns>
         public string GetEvent(string eventName)
         {
             return _events.Find(e => e.key == eventName).value;
         }
 
         /// <summary>
-        /// Gets all scheduled notifications.
+        /// Retrieves all scheduled notifications.
         /// </summary>
-        /// <returns>A list of notification options in JSON format.</returns>
+        /// <returns>A list of notification options as JSON strings.</returns>
         public List<string> GetNotifications()
         {
             return _notifications.Select(n => JsonUtility.ToJson(n)).ToList();
         }
 
         /// <summary>
-        /// Gets all scheduled notifications v2.
+        /// Retrieves all scheduled version 2 notifications.
         /// </summary>
-        /// <returns>A list of notification options in JSON format.</returns>
+        /// <returns>A list of notification options as JSON strings.</returns>
         public List<string> GetNotificationsV2()
         {
             return _notificationsV2.Select(n => JsonUtility.ToJson(n)).ToList();
         }
 
         /// <summary>
-        /// Game-specific entry payload, that was used to launch the game.
+        /// Retrieves the game-specific entry payload used to launch the game.
         /// </summary>
-        /// <returns>A map of strings->objects</returns>
+        /// <returns>A JSON string representing the entry payload.</returns>
         public string GetEntryPayload()
         {
             var result = new Dictionary<string, object>();
@@ -155,9 +152,9 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Sets Game-specific entry payload.
+        /// Sets the game-specific entry payload.
         /// </summary>
-        /// <param name="payload">A string-object map containing the payload.</param>
+        /// <param name="payload">A dictionary containing the payload data.</param>
         public void SetEntryPayload(Dictionary<string, object> payload)
         {
             foreach (var pair in payload)
@@ -167,9 +164,9 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Mark user as logged in.
+        /// Marks the user as logged in and updates the entry payload using the provided data.
         /// </summary>
-        /// <param name="payload">A string-object map containing the payload.</param>
+        /// <param name="payload">A JSON string representing the login payload.</param>
         public void Login(string payload)
         {
             _isRegistered = true;
@@ -177,59 +174,70 @@ namespace com.jest.sdk
             SetEntryPayload(payloadDictionary);
         }
 
+        /// <summary>
+        /// Retrieves available in-app purchase products.
+        /// </summary>
+        /// <returns>A JSON string containing the list of mock products.</returns>
         public string GetProducts()
         {
             return JsonConvert.SerializeObject(_purchaseProducts);
         }
 
+        /// <summary>
+        /// Retrieves the in-app purchase response.
+        /// </summary>
+        /// <returns>A JSON string containing the mock purchase response.</returns>
         public string GetPurchaseResponse()
         {
             return JsonConvert.SerializeObject(_purchaseResponse);
         }
 
         /// <summary>
-        /// Get incomplete purchase response.
+        /// Retrieves the incomplete purchase response.
         /// </summary>
-        /// <returns>incomplete purchase response json</returns>
+        /// <returns>A JSON string containing mock incomplete purchase data.</returns>
         public string GetIncompletePurchaseResponse()
         {
             return JsonConvert.SerializeObject(_incompletePurchaseResponse);
         }
 
         /// <summary>
-        /// Get complete purchase response.
+        /// Retrieves the complete purchase response.
         /// </summary>
-        /// <returns>Complete purchase response json</returns>
+        /// <returns>A JSON string containing mock complete purchase data.</returns>
         public string GetPurchaseCompleteResponse()
         {
             return JsonConvert.SerializeObject(_purchaseCompleteResponse);
         }
 
-
-
 #if UNITY_EDITOR
         private void OnEnable()
         {
-            Debug.Log("OnEnable");
+            Debug.Log("[JestSDKMock] Enabled");
             JsBridge.SetMock(this);
         }
 
         private void OnDisable()
         {
-            Debug.Log("OnEnable");
-            JsBridge.SetMock(this);
+            Debug.Log("[JestSDKMock] Disabled");
+            JsBridge.SetMock(null);
         }
 #endif
 
         /// <summary>
-        /// Represents a key-value pair for storing player values and events.
+        /// Represents a key-value pair used for storing player values, events, and payload entries.
         /// </summary>
         [System.Serializable]
         public struct ValuePair
         {
-            /// <summary>The key of the pair.</summary>
+            /// <summary>
+            /// The key of the pair.
+            /// </summary>
             public string key;
-            /// <summary>The value of the pair.</summary>
+
+            /// <summary>
+            /// The value associated with the key.
+            /// </summary>
             public string value;
         }
     }
