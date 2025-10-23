@@ -156,6 +156,56 @@ richNotifications.UnscheduleNotification(<unique Identifier>);
 
 ```
 
+
+### Payment
+
+The Jest SDK provides a robust in-app purchase (IAP) system that allows you to retrieve available products, initiate purchases, and handle incomplete transactions.
+
+#### Getting Products
+```csharp
+var payment = JestSDK.Instance.Payment;
+var productsTask = payment.GetProducts();
+
+await productsTask;
+if (productsTask.IsCompleted)
+{
+    List<Payment.Product> products = productsTask.Result;
+    foreach (var product in products)
+    {
+        Debug.Log($"Product: {product.name} - {product.price}");
+    }
+}
+```
+
+#### Making Purchase
+```csharp
+var purchaseTask = JestSDK.Instance.Payment.Purchase("gems_100");
+await purchaseTask;
+
+if (purchaseTask.Result.result == "success")
+{
+    Debug.Log("Purchase successful!");
+}
+else
+{
+    Debug.LogError($"Purchase failed: {purchaseTask.Result.error}");
+}
+```
+
+#### Completing an Incomplete Purchase
+```csharp
+var incompletePurchasesTask = JestSDK.Instance.Payment.GetIncompletePurchases();
+await incompletePurchasesTask;
+
+foreach (var purchase in incompletePurchasesTask.Result)
+{
+    Debug.Log($"Incomplete Purchase: {purchase.productSku}");
+    await JestSDK.Instance.Payment.CompletePurchase(purchase.purchaseToken);
+}
+```
+
+
+
 ## Testing
 
 The SDK includes a ScriptableObject-based mock system for testing in the Unity Editor. This allows you to observe and debug SDK values directly in the Unity Inspector.
@@ -180,6 +230,7 @@ This is especially useful for:
 - Verifying analytics event data
 - Testing notification scheduling
 - Simulating different player scenarios
+- Testing payments
 
 The mock configuration persists in edit mode, allowing you to maintain test data between play sessions.
 
