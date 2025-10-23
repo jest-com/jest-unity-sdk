@@ -4,30 +4,35 @@ using UnityEngine.UI;
 using com.jest.sdk;
 using static com.jest.sdk.Payment;
 
-public class IncompleteCellUI : MonoBehaviour
+
+namespace com.jest.demo
 {
 
-    [SerializeField] public TextMeshProUGUI m_productNameText;
-    [SerializeField] public TextMeshProUGUI m_productDescriptionText;
-
-
-    private Payment.IncompletePurchase m_purchase;
-    private Payment.Product m_product;
-    private IShopController m_shopController;
-
-
-    public void Setup(Payment.Product product, Payment.IncompletePurchase purchase, IShopController shopController)
+    public class IncompleteCellUI : MonoBehaviour
     {
-        m_product = product;
-        m_purchase = purchase;
-        m_shopController = shopController;
-        m_productNameText.text = m_product.name;
-        m_productDescriptionText.text = m_purchase.purchaseToken;
-    }
+
+        [SerializeField] public TextMeshProUGUI m_productNameText;
+        [SerializeField] public TextMeshProUGUI m_productDescriptionText;
 
 
-    public void CompletePurchase()
-    {
-        m_shopController.CompletePurchase(m_purchase.purchaseToken);
+        private Payment.IncompletePurchase m_purchase;
+        private Payment.Product m_product;
+        private IShopController m_shopController;
+
+
+        public void Setup(Payment.Product product, Payment.IncompletePurchase purchase, IShopController shopController)
+        {
+            m_product = product;
+            m_purchase = purchase;
+            m_shopController = shopController;
+            m_productNameText.text = m_product.name;
+            m_productDescriptionText.text = m_purchase.purchaseToken;
+        }
+
+
+        public void CompletePurchase()
+        {
+            m_shopController.CompletePurchase(m_purchase.purchaseToken);
+        }
     }
 }
