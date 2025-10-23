@@ -19,6 +19,7 @@ namespace com.jest.sdk
         [SerializeField] private List<ValuePair> _values;
         [SerializeField] private List<ValuePair> _events;
         [SerializeField] private List<ValuePair> _entryPayload;
+        [SerializeField] private List<Payment.Product> _purchaseProducts;
         [SerializeField] private Payment.PurchaseResult _purchaseResponse;
         [SerializeField] private Payment.IncompletePurchasesResponse _incompletePurchaseResponse;
         [SerializeField] private Payment.PurchaseCompleteResult _purchaseCompleteResponse;
