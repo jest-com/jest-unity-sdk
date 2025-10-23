@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace com.jest.sdk
@@ -18,6 +19,11 @@ namespace com.jest.sdk
         [SerializeField] private List<ValuePair> _values;
         [SerializeField] private List<ValuePair> _events;
         [SerializeField] private List<ValuePair> _entryPayload;
+        [SerializeField] private Payment.PurchaseResult _purchaseResponse;
+        [SerializeField] private Payment.IncompletePurchasesResponse _incompletePurchaseResponse;
+        [SerializeField] private Payment.PurchaseCompleteResult _purchaseCompleteResponse;
+
+
 
         /// <summary>
         /// Gets the unique identifier for the player.
@@ -172,7 +178,30 @@ namespace com.jest.sdk
 
         public string GetProducts()
         {
-            return "";
+            return JsonConvert.SerializeObject(_purchaseProducts);
+        }
+
+        public string GetPurchaseResponse()
+        {
+            return JsonConvert.SerializeObject(_purchaseResponse);
+        }
+
+        /// <summary>
+        /// Get incomplete purchase response.
+        /// </summary>
+        /// <returns>incomplete purchase response json</returns>
+        public string GetIncompletePurchaseResponse()
+        {
+            return JsonConvert.SerializeObject(_incompletePurchaseResponse);
+        }
+
+        /// <summary>
+        /// Get complete purchase response.
+        /// </summary>
+        /// <returns>Complete purchase response json</returns>
+        public string GetPurchaseCompleteResponse()
+        {
+            return JsonConvert.SerializeObject(_purchaseCompleteResponse);
         }
 
 

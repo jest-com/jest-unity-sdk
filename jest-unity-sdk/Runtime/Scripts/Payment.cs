@@ -111,30 +111,6 @@ namespace com.jest.sdk
             return task;
         }
 
-        //public void GetIncompletePurchases2()
-        //{
-        //    JestSDKTask<string> getIncompletePurchasesTask = JsBridge.GetIncompletePurchases();
-        //    getIncompletePurchasesTask.ContinueWith(t =>
-        //    {
-
-        //        try
-        //        {
-        //            if (t.IsFaulted)
-        //            {
-        //                UnityEngine.Debug.Log($"umair:: GetIncompletePurchases failed: {t.Exception}");
-        //                return;
-        //            }
-        //            string json = t.GetResult();
-        //            UnityEngine.Debug.Log("umair:: got json back:" + json);
-        //        }
-        //        catch (Exception e)
-        //        {
-        //            UnityEngine.Debug.Log("umair:: got json parsing exception:" + e.Message);
-        //        }
-        //    });
-        //}
-
-
         [Serializable]
         public class IncompletePurchasesResponse
         {

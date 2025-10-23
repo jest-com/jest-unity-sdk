@@ -108,5 +108,23 @@ namespace com.jest.sdk
         string GetProducts();
 
 
+        /// <summary>
+        /// Get inapp purchase response.
+        /// </summary>
+        /// <returns>purchase response json</returns>
+        string GetPurchaseResponse();
+
+        /// <summary>
+        /// Get incomplete purchase response.
+        /// </summary>
+        /// <returns>incomplete purchase response json</returns>
+        string GetIncompletePurchaseResponse();
+
+        /// <summary>
+        /// Get complete purchase response.
+        /// </summary>
+        /// <returns>Complete purchase response json</returns>
+        string GetPurchaseCompleteResponse();
+
     }
 }

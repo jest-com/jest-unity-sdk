@@ -173,6 +173,34 @@ namespace com.jest.sdk
             return "";
         }
 
+        /// <summary>
+        /// Get Inapp purchase response.
+        /// </summary>
+        /// <returns>purchase response json</returns>
+        public string GetPurchaseResponse()
+        {
+            Debug.Log($"[JestSDK] GetPurchaseResponse");
+            return "";
+        }
 
+        /// <summary>
+        /// Get incomplete purchase response.
+        /// </summary>
+        /// <returns>incomplete purchase response json</returns>
+        public string GetIncompletePurchaseResponse()
+        {
+            Debug.Log($"[JestSDK] GetIncompletePurchaseResponse");
+            return "";
+        }
+
+        /// <summary>
+        /// Get complete purchase response.
+        /// </summary>
+        /// <returns>Complete purchase response json</returns>
+        public string GetPurchaseCompleteResponse()
+        {
+            Debug.Log($"[JestSDK] GetPurchaseCompleteResponse");
+            return "";
+        }
     }
 }

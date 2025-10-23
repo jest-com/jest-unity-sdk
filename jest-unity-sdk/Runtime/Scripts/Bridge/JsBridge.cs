@@ -121,25 +121,25 @@ namespace com.jest.sdk
         private static void JS_getProducts(IntPtr taskPtr, Action<IntPtr, string> onSuccess, Action<IntPtr,
                                     string> onError)
         {
-            onSuccess(taskPtr, "[]");
+            onSuccess(taskPtr, _bridgeMock.GetProducts());
         }
 
         private static void JS_beginPurchase(IntPtr taskPtr, string sku, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError)
         {
-            onSuccess(taskPtr, "");
+            onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse());
         }
 
         private static void JS_completePurchase(IntPtr taskPtr, string purchaseToken,
                                     Action<IntPtr, string> onSuccess, Action<IntPtr, string> onError)
         {
-            onSuccess(taskPtr, "");
+            onSuccess(taskPtr, _bridgeMock.GetPurchaseCompleteResponse());
 
         }
         private static void JS_getIncompletePurchases(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError)
         {
-            onSuccess(taskPtr, "");
+            onSuccess(taskPtr, _bridgeMock.GetIncompletePurchaseResponse());
         }
 
 
@@ -291,7 +291,6 @@ namespace com.jest.sdk
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, string>))]
         public static void HandleError(System.IntPtr taskPtr, string error)
         {
-            UnityEngine.Debug.Log($"[JestSDK] Umair::HandleError: {error}");
             GCHandle handle = GCHandle.FromIntPtr(taskPtr);
             var task = (JestSDKTask)handle.Target;
             task.SetException(new System.Exception(error));
@@ -318,7 +317,6 @@ namespace com.jest.sdk
 
         public static void HandleError<T>(System.IntPtr taskPtr, string error)
         {
-            UnityEngine.Debug.Log($"[JestSDK] Umair::HandleError<T>: {error}");
             GCHandle handle = GCHandle.FromIntPtr(taskPtr);
             var task = (JestSDKTask<T>)handle.Target;
             task.SetException(new System.Exception(error));

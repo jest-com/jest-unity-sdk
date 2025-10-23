@@ -38,17 +38,23 @@ public class ShopController : MonoBehaviour, IShopController
     {
         UIManager.Instance.ShowLoadingSpinner();
         JestSDKTask<List<Product>> productLoadTask = JestSDK.Instance.Payment.GetProducts();
-        await productLoadTask;
-
-        if (productLoadTask.IsCompleted)
+        try
         {
-            m_productsList = productLoadTask.Result;
-            UpdateProductsInUI();
-            StartCoroutine(RefreshLayout(m_productCellsContainer.GetComponent<RectTransform>()));
+            await productLoadTask;
+            if (productLoadTask.IsCompleted)
+            {
+                m_productsList = productLoadTask.Result;
+                UpdateProductsInUI();
+                StartCoroutine(RefreshLayout(m_productCellsContainer.GetComponent<RectTransform>()));
+            }
+            else
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Products loading failed:" + productLoadTask.Exception.Message);
+            }
         }
-        else
+        catch (Exception e)
         {
-            UIManager.Instance.m_toastUI.ShowToast("Products loading failed:" + productLoadTask.Exception.Message);
+            UIManager.Instance.m_toastUI.ShowToast("Products loading failed:" + e.Message);
         }
         UIManager.Instance.HideLoadingSpinner();
     }
@@ -131,18 +137,25 @@ public class ShopController : MonoBehaviour, IShopController
     {
         UIManager.Instance.ShowLoadingSpinner();
         JestSDKTask<PurchaseCompleteResult> task = JestSDK.Instance.Payment.CompletePurchase(purchaseToken);
-        await task;
-        if (task.Result.result == "success")
+        try
         {
-            UIManager.Instance.m_toastUI.ShowToast("Purchase completion success!");
-            m_incompletePurchaseList.RemoveAll(p => p.purchaseToken == purchaseToken);
-            UpdateIncompletePurchasesInUI();
-            StartCoroutine(RefreshLayout(m_completePurchaseCellsContainer.GetComponent<RectTransform>()));
-        }
-        else
-        {
-            UIManager.Instance.m_toastUI.ShowToast("Purchase completion error:" + task.Result.error);
+            await task;
+            if (task.Result.result == "success")
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Purchase completion success!");
+                m_incompletePurchaseList.RemoveAll(p => p.purchaseToken == purchaseToken);
+                UpdateIncompletePurchasesInUI();
+                StartCoroutine(RefreshLayout(m_completePurchaseCellsContainer.GetComponent<RectTransform>()));
+            }
+            else
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Purchase completion error:" + task.Result.error);
 
+            }
+        }
+        catch (Exception e)
+        {
+            UIManager.Instance.m_toastUI.ShowToast("Purchase completion error:" + e.Message);
         }
         UIManager.Instance.HideLoadingSpinner();
     }
@@ -151,15 +164,21 @@ public class ShopController : MonoBehaviour, IShopController
     {
         UIManager.Instance.ShowLoadingSpinner();
         JestSDKTask<PurchaseResult> task = JestSDK.Instance.Payment.Purchase(sku);
-        await task;
-        if (task.Result.result == "success")
+        try
         {
-            UIManager.Instance.m_toastUI.ShowToast("Purchase success!");
+            await task;
+            if (task.Result.result == "success")
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Purchase success!");
+            }
+            else
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Purchase Fail:" + task.Result.error);
+            }
         }
-        else
+        catch (Exception e)
         {
-            UIManager.Instance.m_toastUI.ShowToast("Purchase Fail:" + task.Result.error);
-
+            UIManager.Instance.m_toastUI.ShowToast("Purchase Fail:" + e.Message);
         }
         UIManager.Instance.HideLoadingSpinner();
     }

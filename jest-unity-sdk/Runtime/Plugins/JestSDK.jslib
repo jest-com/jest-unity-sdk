@@ -175,14 +175,11 @@ mergeInto(LibraryManager.library, {
     window.JestSDK.payments.getIncompletePurchases()
       .then(function (result) {
         const json = JSON.stringify(result);
-        console.log("umair::Incomplete purchase JSON:", json);
         {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, marshalString(json));
       })
       .catch(function (err) {
         const msg = err && err.message ? err.message : String(err);
-        console.log("umair::Incomplete purchase error:", msg);
         {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, marshalString(msg));
-        return null;
       });
   },
 
