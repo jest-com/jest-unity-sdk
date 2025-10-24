@@ -87,7 +87,10 @@ namespace com.jest.sdk
             OnCompleted(() =>
             {
                 action(this);
-                continuationTask.SetResult(Result);
+                if (IsFaulted)
+                    continuationTask.SetException(Exception);
+                else
+                    continuationTask.SetResult(_result);
             });
             return continuationTask;
         }

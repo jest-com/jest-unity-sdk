@@ -82,24 +82,23 @@ namespace com.jest.demo
             Canvas.ForceUpdateCanvases();
         }
 
-        public async void LoadIncompletePurchases()
+        public void LoadIncompletePurchases()
         {
             UIManager.Instance.ShowLoadingSpinner();
-
             JestSDKTask<List<IncompletePurchase>> incompletePurchasesTask = JestSDK.Instance.Payment.GetIncompletePurchases();
-
-            try
+            incompletePurchasesTask.ContinueWith(t =>
             {
-                m_incompletePurchaseList = await incompletePurchasesTask;
+                if (t.IsFaulted)
+                {
+                    UIManager.Instance.m_toastUI.ShowToast("Incomplete purchase loading failed");
+                    UIManager.Instance.HideLoadingSpinner();
+                    return;
+                }
+                m_incompletePurchaseList = t.Result;
                 UpdateIncompletePurchasesInUI();
                 StartCoroutine(RefreshLayout(m_completePurchaseCellsContainer.GetComponent<RectTransform>()));
-            }
-            catch (Exception e)
-            {
-                UIManager.Instance.m_toastUI.ShowToast("Incomplete purchase loading failed: " + e.Message);
-            }
-
-            UIManager.Instance.HideLoadingSpinner();
+                UIManager.Instance.HideLoadingSpinner();
+            });
         }
 
         private void UpdateIncompletePurchasesInUI()

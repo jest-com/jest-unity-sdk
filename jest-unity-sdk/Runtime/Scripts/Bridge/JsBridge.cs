@@ -139,7 +139,14 @@ namespace com.jest.sdk
         private static void JS_getIncompletePurchases(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError)
         {
-            onSuccess(taskPtr, _bridgeMock.GetIncompletePurchaseResponse());
+            if (bool.Parse(_bridgeMock.isRegistered))
+            {
+                onSuccess(taskPtr, _bridgeMock.GetIncompletePurchaseResponse());
+            }
+            else
+            {
+                onError(taskPtr, _bridgeMock.GetIncompletePurchaseResponse());
+            }
         }
 
 
