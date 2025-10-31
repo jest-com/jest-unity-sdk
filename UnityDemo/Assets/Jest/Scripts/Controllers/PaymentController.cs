@@ -28,7 +28,7 @@ namespace com.jest.demo
         [SerializeField] private Transform m_completePurchaseCellsContainer;
 
         private List<Product> m_productsList;
-        private List<IncompletePurchase> m_incompletePurchaseList;
+        private IncompletePurchasesResponse m_incompletePurchases;
 
         public async void LoadProducts()
         {
@@ -85,18 +85,20 @@ namespace com.jest.demo
         public void LoadIncompletePurchases()
         {
             UIManager.Instance.ShowLoadingSpinner();
-            JestSDKTask<List<IncompletePurchase>> incompletePurchasesTask = JestSDK.Instance.Payment.GetIncompletePurchases();
+            JestSDKTask<IncompletePurchasesResponse> incompletePurchasesTask = JestSDK.Instance.Payment.GetIncompletePurchases();
             incompletePurchasesTask.ContinueWith(t =>
             {
                 if (t.IsFaulted)
                 {
-                    UIManager.Instance.m_toastUI.ShowToast("Incomplete purchase loading failed");
-                    UIManager.Instance.HideLoadingSpinner();
-                    return;
+                    UIManager.Instance.m_toastUI.ShowToast("Loadin Incomplete Failed: " + t.Exception.Message);
                 }
-                m_incompletePurchaseList = t.Result;
-                UpdateIncompletePurchasesInUI();
-                StartCoroutine(RefreshLayout(m_completePurchaseCellsContainer.GetComponent<RectTransform>()));
+                else
+                {
+                    m_incompletePurchases = t.Result;
+                    UpdateIncompletePurchasesInUI();
+                    StartCoroutine(RefreshLayout(m_completePurchaseCellsContainer.GetComponent<RectTransform>()));
+                }
+
                 UIManager.Instance.HideLoadingSpinner();
             });
         }
@@ -108,7 +110,7 @@ namespace com.jest.demo
                 Destroy(child.gameObject);
             }
 
-            foreach (IncompletePurchase purchase in m_incompletePurchaseList)
+            foreach (PurchaseData purchase in m_incompletePurchases.purchases)
             {
                 Product product = GetProductBySku(purchase.productSku);
                 if (product != null)
@@ -125,59 +127,63 @@ namespace com.jest.demo
             return m_productsList?.FirstOrDefault(product => product.sku == requiredSku);
         }
 
-        public async void CompletePurchase(string purchaseToken)
+        public void CompletePurchase(string purchaseToken)
         {
             UIManager.Instance.ShowLoadingSpinner();
-            JestSDKTask<PurchaseCompleteResult> task = JestSDK.Instance.Payment.CompletePurchase(purchaseToken);
-
-            try
-            {
-                await task;
-
-                if (task.Result.result == "success")
+            //JestSDKTask<PurchaseCompleteResult> task =
+            JestSDK.Instance.Payment.CompletePurchase(purchaseToken).ContinueWith(t => {
+                try
                 {
-                    UIManager.Instance.m_toastUI.ShowToast("Purchase completion success!");
-                    m_incompletePurchaseList.RemoveAll(p => p.purchaseToken == purchaseToken);
-                    UpdateIncompletePurchasesInUI();
-                    StartCoroutine(RefreshLayout(m_completePurchaseCellsContainer.GetComponent<RectTransform>()));
+                    if (t.IsFaulted)
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Purchase Completion Failed: " + t.Exception.Message);
+                    }
+                    else if (t.Result.result == "success")
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Purchase Completion success!");
+                        m_incompletePurchases.purchases.RemoveAll(p => p.purchaseToken == purchaseToken);
+                        UpdateIncompletePurchasesInUI();
+                        StartCoroutine(RefreshLayout(m_completePurchaseCellsContainer.GetComponent<RectTransform>()));
+                    }
+                    else
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Purchase Completion Failed: " + t.Result.error);
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    UIManager.Instance.m_toastUI.ShowToast("Purchase completion error: " + task.Result.error);
+                    UIManager.Instance.m_toastUI.ShowToast("Purchase Completion Failed: " + e.Message);
                 }
-            }
-            catch (Exception e)
-            {
-                UIManager.Instance.m_toastUI.ShowToast("Purchase completion error: " + e.Message);
-            }
-
-            UIManager.Instance.HideLoadingSpinner();
+                UIManager.Instance.HideLoadingSpinner();
+            });
         }
 
-        public async void Purchase(string sku)
+        public void Purchase(string sku)
         {
             UIManager.Instance.ShowLoadingSpinner();
-            JestSDKTask<PurchaseResult> task = JestSDK.Instance.Payment.Purchase(sku);
-
-            try
-            {
-                await task;
-
-                if (task.Result.result == "success")
+            JestSDK.Instance.Payment.Purchase(sku).ContinueWith(t => {
+                try
                 {
-                    UIManager.Instance.m_toastUI.ShowToast("Purchase success!");
+                    if (t.IsFaulted)
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Purchase Failed: " + t.Exception.Message);
+                    }
+                    else if (t.Result.result == "success")
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Purchase success!");
+                    }
+                    else
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Purchase Failed: " + t.Result.error);
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    UIManager.Instance.m_toastUI.ShowToast("Purchase failed: " + task.Result.error);
+                    UIManager.Instance.m_toastUI.ShowToast("Purchase failed: " + e.Message);
                 }
-            }
-            catch (Exception e)
-            {
-                UIManager.Instance.m_toastUI.ShowToast("Purchase failed: " + e.Message);
-            }
+                UIManager.Instance.HideLoadingSpinner();
+            });
 
-            UIManager.Instance.HideLoadingSpinner();
         }
     }
 }

@@ -127,7 +127,14 @@ namespace com.jest.sdk
         private static void JS_beginPurchase(IntPtr taskPtr, string sku, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError)
         {
-            onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse());
+            if (bool.Parse(_bridgeMock.isRegistered))
+            {
+                onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse());
+            }
+            else
+            {
+                onError(taskPtr, "Login Required");
+            }
         }
 
         private static void JS_completePurchase(IntPtr taskPtr, string purchaseToken,
@@ -145,7 +152,7 @@ namespace com.jest.sdk
             }
             else
             {
-                onError(taskPtr, _bridgeMock.GetIncompletePurchaseResponse());
+                onError(taskPtr, "Login Required");
             }
         }
 

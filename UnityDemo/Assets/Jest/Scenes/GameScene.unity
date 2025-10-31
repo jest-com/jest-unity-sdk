@@ -18287,6 +18287,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7509621510441296144, guid: e1aa8dfbcb3c14cbcbea6e23012b4c9a, type: 3}
+      propertyPath: m_Color.a
+      value: 0.98039216
+      objectReference: {fileID: 0}
     - target: {fileID: 7867266949291806771, guid: e1aa8dfbcb3c14cbcbea6e23012b4c9a, type: 3}
       propertyPath: m_Name
       value: Toast

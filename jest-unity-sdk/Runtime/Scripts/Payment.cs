@@ -1,34 +1,36 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Newtonsoft.Json;
 
 namespace com.jest.sdk
 {
     /// <summary>
-    /// Provides methods for handling in-app purchases within the Jest SDK.
-    /// Includes APIs for retrieving available products, initiating purchases,
+    /// Provides functionality for handling in-app purchases within the Jest SDK.
+    /// Includes methods for retrieving products, initiating purchases,
     /// completing transactions, and fetching incomplete purchases.
     /// </summary>
     public class Payment
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Payment"/> class.
-        /// Internal constructor to prevent external instantiation.
+        /// Internal constructor to restrict external instantiation.
         /// </summary>
         internal Payment() { }
+
+        #region Public Methods
 
         /// <summary>
         /// Retrieves a list of available in-app purchase products.
         /// </summary>
         /// <returns>
-        /// A <see cref="JestSDKTask{TResult}"/> that resolves to a list of <see cref="Product"/> objects.
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to a list of <see cref="Product"/> objects.
         /// </returns>
         public JestSDKTask<List<Product>> GetProducts()
         {
             var task = new JestSDKTask<List<Product>>();
-            JestSDKTask<string> getProductsTask = JsBridge.GetProducts();
+            var getProductsTask = JsBridge.GetProducts();
 
-            // Continue the asynchronous operation.
             getProductsTask.ContinueWith(t =>
             {
                 try
@@ -39,8 +41,8 @@ namespace com.jest.sdk
                         return;
                     }
 
-                    string json = getProductsTask.GetResult();
-                    List<Product> products = JsonConvert.DeserializeObject<List<Product>>(json);
+                    string json = t.GetResult();
+                    var products = JsonConvert.DeserializeObject<List<Product>>(json);
                     task.SetResult(products);
                 }
                 catch (Exception e)
@@ -57,14 +59,12 @@ namespace com.jest.sdk
         /// </summary>
         /// <param name="sku">The product SKU to purchase.</param>
         /// <returns>
-        /// A <see cref="JestSDKTask{TResult}"/> that resolves to a <see cref="PurchaseResult"/>.
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="PurchaseResult"/>.
         /// </returns>
         public JestSDKTask<PurchaseResult> Purchase(string sku)
         {
             var task = new JestSDKTask<PurchaseResult>();
-            JestSDKTask<string> purchaseTask = JsBridge.BeginPurchase(sku);
-
-            purchaseTask.ContinueWith(t =>
+            JsBridge.BeginPurchase(sku).ContinueWith(t =>
             {
                 try
                 {
@@ -73,9 +73,8 @@ namespace com.jest.sdk
                         task.SetException(t.Exception);
                         return;
                     }
-
-                    string json = purchaseTask.GetResult();
-                    PurchaseResult result = JsonConvert.DeserializeObject<PurchaseResult>(json);
+                    string json = t.GetResult();
+                    var result = JsonConvert.DeserializeObject<PurchaseResult>(json);
                     task.SetResult(result);
                 }
                 catch (Exception e)
@@ -92,12 +91,12 @@ namespace com.jest.sdk
         /// </summary>
         /// <param name="purchaseToken">The token associated with the purchase to complete.</param>
         /// <returns>
-        /// A <see cref="JestSDKTask{TResult}"/> that resolves to a <see cref="PurchaseCompleteResult"/>.
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="PurchaseCompleteResult"/>.
         /// </returns>
         public JestSDKTask<PurchaseCompleteResult> CompletePurchase(string purchaseToken)
         {
             var task = new JestSDKTask<PurchaseCompleteResult>();
-            JestSDKTask<string> purchaseCompleteTask = JsBridge.CompletePurchase(purchaseToken);
+            var purchaseCompleteTask = JsBridge.CompletePurchase(purchaseToken);
 
             purchaseCompleteTask.ContinueWith(t =>
             {
@@ -109,8 +108,8 @@ namespace com.jest.sdk
                         return;
                     }
 
-                    string json = purchaseCompleteTask.GetResult();
-                    PurchaseCompleteResult result = JsonConvert.DeserializeObject<PurchaseCompleteResult>(json);
+                    string json = t.GetResult();
+                    var result = JsonConvert.DeserializeObject<PurchaseCompleteResult>(json);
                     task.SetResult(result);
                 }
                 catch (Exception e)
@@ -126,12 +125,12 @@ namespace com.jest.sdk
         /// Retrieves a list of incomplete purchases that have not yet been completed.
         /// </summary>
         /// <returns>
-        /// A <see cref="JestSDKTask{TResult}"/> that resolves to a list of <see cref="IncompletePurchase"/> objects.
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to an <see cref="IncompletePurchasesResponse"/>.
         /// </returns>
-        public JestSDKTask<List<IncompletePurchase>> GetIncompletePurchases()
+        public JestSDKTask<IncompletePurchasesResponse> GetIncompletePurchases()
         {
-            var task = new JestSDKTask<List<IncompletePurchase>>();
-            JestSDKTask<string> getIncompletePurchasesTask = JsBridge.GetIncompletePurchases();
+            var task = new JestSDKTask<IncompletePurchasesResponse>();
+            var getIncompletePurchasesTask = JsBridge.GetIncompletePurchases();
 
             getIncompletePurchasesTask.ContinueWith(t =>
             {
@@ -144,8 +143,8 @@ namespace com.jest.sdk
                     }
 
                     string json = t.GetResult();
-                    IncompletePurchasesResponse response = JsonConvert.DeserializeObject<IncompletePurchasesResponse>(json);
-                    task.SetResult(response.purchases);
+                    var response = JsonConvert.DeserializeObject<IncompletePurchasesResponse>(json);
+                    task.SetResult(response);
                 }
                 catch (Exception e)
                 {
@@ -156,6 +155,10 @@ namespace com.jest.sdk
             return task;
         }
 
+        #endregion
+
+        #region Nested Classes
+
         /// <summary>
         /// Represents the response returned when retrieving incomplete purchases.
         /// </summary>
@@ -163,41 +166,19 @@ namespace com.jest.sdk
         public class IncompletePurchasesResponse
         {
             /// <summary>
-            /// Indicates whether there are more incomplete purchases available for retrieval.
+            /// Indicates whether more incomplete purchases are available for retrieval.
             /// </summary>
             public bool hasMore;
 
             /// <summary>
-            /// A list of incomplete purchases.
+            /// The serialized and signed list of purchases.
             /// </summary>
-            public List<IncompletePurchase> purchases;
-        }
-
-        /// <summary>
-        /// Represents a single incomplete purchase record.
-        /// </summary>
-        [Serializable]
-        public class IncompletePurchase
-        {
-            /// <summary>
-            /// The product SKU associated with the incomplete purchase.
-            /// </summary>
-            public string productSku;
+            public string purchasesSigned;
 
             /// <summary>
-            /// The unique purchase token.
+            /// A list of incomplete purchase data entries.
             /// </summary>
-            public string purchaseToken;
-
-            /// <summary>
-            /// The timestamp of when the purchase was initiated.
-            /// </summary>
-            public long timestamp;
-
-            /// <summary>
-            /// The platform on which the purchase occurred (e.g., Android, iOS).
-            /// </summary>
-            public string platform;
+            public List<PurchaseData> purchases;
         }
 
         /// <summary>
@@ -207,12 +188,12 @@ namespace com.jest.sdk
         public class PurchaseCompleteResult
         {
             /// <summary>
-            /// The result status (e.g., "success", "failure").
+            /// The result status (e.g., "success", "error").
             /// </summary>
             public string result;
 
             /// <summary>
-            /// Any error message returned during the completion process.
+            /// Error message if the completion process failed 
             /// </summary>
             public string error;
         }
@@ -224,19 +205,56 @@ namespace com.jest.sdk
         public class PurchaseResult
         {
             /// <summary>
-            /// The result status (e.g., "success", "failure").
+            /// The result status (e.g., "success", "cancel", "error")
             /// </summary>
             public string result;
 
             /// <summary>
-            /// Any error message returned during the purchase process.
+            /// Error message if the purchase process failed.(e.g., login_required, internal_error, invalid_product).
             /// </summary>
             public string error;
 
             /// <summary>
-            /// The unique purchase token generated for this transaction.
+            /// The purchase data associated with this transaction.
+            /// </summary>
+            public PurchaseData purchase;
+
+            /// <summary>
+            /// The serialized and signed purchase data.
+            /// </summary>
+            public string purchaseSigned;
+        }
+
+        /// <summary>
+        /// Represents details of a single purchase transaction.
+        /// </summary>
+        [Serializable]
+        public class PurchaseData
+        {
+            /// <summary>
+            /// The unique purchase token.
             /// </summary>
             public string purchaseToken;
+
+            /// <summary>
+            /// The SKU of the purchased product.
+            /// </summary>
+            public string productSku;
+
+            /// <summary>
+            /// The number of credits purchased (if applicable).
+            /// </summary>
+            public long credits;
+
+            /// <summary>
+            /// The timestamp (Unix epoch) when the purchase was created.
+            /// </summary>
+            public long createdAt;
+
+            /// <summary>
+            /// The timestamp (Unix epoch) when the purchase was completed.
+            /// </summary>
+            public long? completedAt;
         }
 
         /// <summary>
@@ -246,7 +264,7 @@ namespace com.jest.sdk
         public class Product
         {
             /// <summary>
-            /// The unique product SKU.
+            /// The unique SKU identifier for the product.
             /// </summary>
             public string sku;
 
@@ -265,5 +283,7 @@ namespace com.jest.sdk
             /// </summary>
             public float price;
         }
+
+        #endregion
     }
 }

@@ -15,12 +15,12 @@ namespace com.jest.demo
         [SerializeField] public TextMeshProUGUI m_productDescriptionText;
 
 
-        private Payment.IncompletePurchase m_purchase;
+        private Payment.PurchaseData m_purchase;
         private Payment.Product m_product;
         private IShopController m_shopController;
 
 
-        public void Setup(Payment.Product product, Payment.IncompletePurchase purchase, IShopController shopController)
+        public void Setup(Payment.Product product, Payment.PurchaseData purchase, IShopController shopController)
         {
             m_product = product;
             m_purchase = purchase;
