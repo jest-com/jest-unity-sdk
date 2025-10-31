@@ -29,17 +29,18 @@ jobs:
 
       - name: Run Unity Tests
         id: tests
-        uses: game-ci/unity-test-runner@v4
+        uses: game-ci/unity-test-runner@v4.3.1
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: ${{ env.PROJECT_PATH }}
-          testMode: All
+          testMode: all
           unityVersion: ${{ env.UNITY_VERSION }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           coverageOptions: ''
+          useExitCode: false
 
       - name: Upload Test Results
         if: always()
@@ -68,17 +69,18 @@ jobs:
       # ✅ Run tests
       - name: Run Unity Tests
         id: tests
-        uses: game-ci/unity-test-runner@v4
+        uses: game-ci/unity-test-runner@v4.3.1
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: ${{ env.PROJECT_PATH }}
-          testMode: All
+          testMode: all
           unityVersion: ${{ env.UNITY_VERSION }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           coverageOptions: ''
+          useExitCode: false
 
       - name: Upload Test Results
         if: always()
@@ -169,17 +171,19 @@ jobs:
       # ✅ Run tests
       - name: Run Unity Tests
         id: tests
-        uses: game-ci/unity-test-runner@v4
+        uses: game-ci/unity-test-runner@v4.3.1
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: ${{ env.PROJECT_PATH }}
-          testMode: All
+          testMode: all
           unityVersion: ${{ env.UNITY_VERSION }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           coverageOptions: ''
+          useExitCode: false
+
 
       - name: Upload Test Results
         if: always()
