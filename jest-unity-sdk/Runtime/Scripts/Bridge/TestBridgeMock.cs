@@ -31,6 +31,10 @@ namespace com.jest.sdk
         /// </summary>
         public string isRegistered { get; private set; }
 
+        public PurchaseReult purchaseResult { get; set; }
+        public PurchaseReult purchaseCompleteResult { get; set; }
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TestBridgeMock"/> class.
         /// </summary>
@@ -162,7 +166,7 @@ namespace com.jest.sdk
         public string GetProducts()
         {
             Debug.Log("[JestSDK] GetProducts");
-            return "";
+            return "[{\"sku\":\"gems_100\",\"name\":\"100 Gems\",\"description\":\"Get 100 gems to use in the game\",\"price\":99.0}]";
         }
 
         /// <summary>
@@ -172,7 +176,13 @@ namespace com.jest.sdk
         public string GetPurchaseResponse()
         {
             Debug.Log("[JestSDK] GetPurchaseResponse");
-            return "";
+            switch (purchaseResult)
+            {
+                case PurchaseReult.success:
+                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null},\"purchaseSigned\":\"JWS\"}";
+                default:
+                    return "{\"result\":\"error\",\"error\":\"internal_error\"}";
+            }
         }
 
         /// <summary>
@@ -182,7 +192,7 @@ namespace com.jest.sdk
         public string GetIncompletePurchaseResponse()
         {
             Debug.Log("[JestSDK] GetIncompletePurchaseResponse");
-            return "";
+            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null}]}";
         }
 
         /// <summary>
@@ -192,7 +202,13 @@ namespace com.jest.sdk
         public string GetPurchaseCompleteResponse()
         {
             Debug.Log("[JestSDK] GetPurchaseCompleteResponse");
-            return "";
+            switch (purchaseCompleteResult)
+            {
+                case PurchaseReult.success:
+                    return "{\"result\":\"success\"}";
+                default:
+                    return "{\"result\":\"error\",\"error\":\"internal_error\"}";
+            }
         }
     }
 }
