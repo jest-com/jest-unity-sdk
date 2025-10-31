@@ -97,7 +97,8 @@ jobs:
       - id: meta
         run: |
           echo "version=$(jq -r '.version' jest-unity-sdk/package.json)" >> $GITHUB_OUTPUT
-          echo "suffix=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+          echo "suffix=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
 
       # ✅ Cache Library
       - uses: actions/cache@v4
