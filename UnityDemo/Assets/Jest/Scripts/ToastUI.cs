@@ -3,30 +3,35 @@ using UnityEngine.UI;
 using System.Collections;
 using TMPro;
 
-public class ToastUI : MonoBehaviour
+
+namespace com.jest.demo
 {
-    public TMP_Text toastText;
-    public CanvasGroup canvasGroup;
-    public float duration = 2f;
 
-    public void ShowToast(string message)
+    public class ToastUI : MonoBehaviour
     {
-        StopAllCoroutines();
-        toastText.text = message;
-        StartCoroutine(FadeToast());
-    }
+        public TMP_Text toastText;
+        public CanvasGroup canvasGroup;
+        public float duration = 2f;
 
-    private IEnumerator FadeToast()
-    {
-        canvasGroup.alpha = 1;
-        yield return new WaitForSeconds(duration);
-
-        float t = 0;
-        while (t < 1)
+        public void ShowToast(string message)
         {
-            t += Time.deltaTime;
-            canvasGroup.alpha = 1 - t;
-            yield return null;
+            StopAllCoroutines();
+            toastText.text = message;
+            StartCoroutine(FadeToast());
+        }
+
+        private IEnumerator FadeToast()
+        {
+            canvasGroup.alpha = 1;
+            yield return new WaitForSeconds(duration);
+
+            float t = 0;
+            while (t < 1)
+            {
+                t += Time.deltaTime;
+                canvasGroup.alpha = 1 - t;
+                yield return null;
+            }
         }
     }
 }

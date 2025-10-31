@@ -4,64 +4,70 @@ using System.Threading.Tasks;
 using com.jest.sdk;
 using System;
 
-public class GameManager : MonoBehaviour
+
+
+namespace com.jest.demo
 {
-    public static GameManager Instance { get; private set; }
-    public event EventHandler<EventArgs> OnGameStateChanged;
 
-
-    public void TriggerGameStateChangeEvent()
+    public class GameManager : MonoBehaviour
     {
-        OnGameStateChanged?.Invoke(this, EventArgs.Empty);
-    }
+        public static GameManager Instance { get; private set; }
+        public event EventHandler<EventArgs> OnGameStateChanged;
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
+
+        public void TriggerGameStateChangeEvent()
         {
-            Destroy(gameObject);
-            return;
+            OnGameStateChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        Instance = this;
-
-
-    }
-
-    private void Start()
-    {
-        InitJestSDK();
-    }
-
-    private void InitJestSDK()
-    {
-        ShowLoading();
-        JestSDK.Instance.Init().ContinueWith(t =>
+        private void Awake()
         {
-            Debug.Log("InitJestSDK Success");
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+
+
+        }
+
+        private void Start()
+        {
+            InitJestSDK();
+        }
+
+        private void InitJestSDK()
+        {
+            ShowLoading();
+            JestSDK.Instance.Init().ContinueWith(t =>
+            {
+                Debug.Log("InitJestSDK Success");
+                TriggerGameStateChangeEvent();
+                HideLoading();
+            });
+        }
+
+        private void ShowLoading()
+        {
+            UIManager.Instance?.HidePanel();
+            UIManager.Instance?.ShowLoadingSpinner();
+        }
+
+        private void HideLoading()
+        {
+            UIManager.Instance?.HideLoadingSpinner();
+            UIManager.Instance?.ShowPanel();
+        }
+
+
+
+        internal void OnLoginAction(Dictionary<string, object> payload)
+        {
+            JestSDK.Instance.Login(payload);
             TriggerGameStateChangeEvent();
-            HideLoading();
-        });
+        }
+
     }
-
-    private void ShowLoading()
-    {
-        UIManager.Instance?.HidePanel();
-        UIManager.Instance?.ShowLoadingSpinner();
-    }
-
-    private void HideLoading()
-    {
-        UIManager.Instance?.HideLoadingSpinner();
-        UIManager.Instance?.ShowPanel();
-    }
-
-
-
-    internal void OnLoginAction(Dictionary<string, object> payload)
-    {
-        JestSDK.Instance.Login(payload);
-        TriggerGameStateChangeEvent();
-    }
-
 }

@@ -138,7 +138,7 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
-        public void Notifications_ScheduleNotificationV2_StoresNotification()
+        public void Notifications_ScheduleRichNotification_StoresNotification()
         {
             var options = new RichNotifications.Options
             {
@@ -162,6 +162,77 @@ namespace com.jest.sdk.Tests
             Assert.AreEqual(options.data, result.data);
             Assert.AreEqual(options.identifier, result.identifier);
             Assert.AreEqual(options.notificationPriority, result.notificationPriority);
+        }
+
+
+        [Test]
+        public void GetProducts_ReturnsExpectedProducts()
+        {
+            var task = JestSDK.Instance.Payment.GetProducts();
+            var products = task.GetResult();
+
+            Assert.That(products, Is.Not.Null);
+            Assert.That(products, Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public void Purchase_Success_ReturnsExpectedResult()
+        {
+            _mock.purchaseResult = PurchaseReult.success;
+            var task = JestSDK.Instance.Payment.GetProducts();
+            var products = task.GetResult();
+            var purchaseTask = JestSDK.Instance.Payment.Purchase(products[0].sku);
+            var result = purchaseTask.GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("success", result.result);
+            Assert.That(result.purchase, Is.Not.Null);
+            Assert.AreEqual(products[0].sku, result.purchase.productSku);
+            Assert.AreEqual(products[0].price, result.purchase.credits);
+        }
+
+        [Test]
+        public void Purchase_Error_ReturnsErrorResult()
+        {
+            _mock.purchaseResult = PurchaseReult.error;
+            var task = JestSDK.Instance.Payment.Purchase("invalid_sku");
+            var result = task.GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("error", result.result);
+            Assert.AreEqual("internal_error", result.error);
+        }
+
+        [Test]
+        public void CompletePurchase_Success_ReturnsSuccessResult()
+        {
+            _mock.purchaseCompleteResult = PurchaseReult.success;
+            var task = JestSDK.Instance.Payment.CompletePurchase("mock_token_bcwux13xvm4");
+            var result = task.GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("success", result.result);
+            Assert.That(result.error, Is.Null);
+        }
+
+        [Test]
+        public void CompletePurchase_Error_ReturnsErrorResult()
+        {
+            _mock.purchaseCompleteResult = PurchaseReult.error;
+            var task = JestSDK.Instance.Payment.CompletePurchase("mock_token_invalid");
+            var result = task.GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("error", result.result);
+            Assert.AreEqual("internal_error", result.error);
+        }
+
+        [Test]
+        public void GetIncompletePurchases_ReturnsExpectedResponse()
+        {
+            var task = JestSDK.Instance.Payment.GetIncompletePurchases();
+            var response = task.GetResult();
+
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.hasMore, Is.False);
+            Assert.That(response.purchasesSigned, Is.Not.Empty);
+            Assert.That(response.purchases, Has.Count.EqualTo(1));
         }
 
         [System.Serializable]

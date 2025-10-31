@@ -1,11 +1,12 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace com.jest.sdk
 {
     /// <summary>
-    /// A debug implementation of IBridgeMock that logs operations to the Unity console.
-    /// Used for debugging and testing purposes.
+    /// Mock implementation of <see cref="IBridgeMock"/> that logs operations to the Unity console.
+    /// Used for debugging and testing Jest SDK functionality without platform dependencies.
     /// </summary>
     public class DebugBridgeMock : IBridgeMock
     {
@@ -14,18 +15,21 @@ namespace com.jest.sdk
         /// </summary>
         public string playerId { get; }
 
+        /// <summary>
+        /// Gets the serialized player data.
+        /// </summary>
         public string playerData { get; }
 
         /// <summary>
-        /// Gets whether the player is registered as a string representation.
+        /// Gets a string indicating whether the player is registered.
         /// </summary>
         public string isRegistered { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the DebugBridgeMock class.
+        /// Initializes a new instance of the <see cref="DebugBridgeMock"/> class.
         /// </summary>
         /// <param name="playerId">The unique identifier for the player.</param>
-        /// <param name="isRegistered">Whether the player is registered.</param>
+        /// <param name="isRegistered">Indicates whether the player is registered.</param>
         public DebugBridgeMock(string playerId, bool isRegistered)
         {
             this.playerId = playerId;
@@ -34,20 +38,20 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Logs a capture event to the Unity console.
+        /// Logs an event capture request to the Unity console.
         /// </summary>
         /// <param name="eventName">The name of the event to capture.</param>
-        /// <param name="properties">The properties associated with the event in JSON format.</param>
+        /// <param name="properties">The event properties in JSON format.</param>
         public void CaptureEvent(string eventName, string properties)
         {
             Debug.Log($"[JestSDK] CaptureEvent {eventName} {properties}");
         }
 
         /// <summary>
-        /// Logs a get player value request to the Unity console.
+        /// Logs a player value retrieval request to the Unity console.
         /// </summary>
         /// <param name="key">The key of the value to retrieve.</param>
-        /// <returns>The key as the mock value.</returns>
+        /// <returns>The key itself as a mock value.</returns>
         public string GetPlayerValue(string key)
         {
             Debug.Log($"[JestSDK] GetPlayerValue {key}");
@@ -55,7 +59,7 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Logs a schedule notification request to the Unity console.
+        /// Logs a notification scheduling request to the Unity console.
         /// </summary>
         /// <param name="options">The notification options in JSON format.</param>
         public void ScheduleNotification(string options)
@@ -64,88 +68,127 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Logs a schedule v2 notification request to the Unity console.
+        /// Logs a version 2 notification scheduling request to the Unity console.
         /// </summary>
         /// <param name="options">The notification options in JSON format.</param>
         public void ScheduleNotificationV2(string options)
         {
-            Debug.Log($"[JestSDK] Schedule NotificationV2 {options}");
+            Debug.Log($"[JestSDK] ScheduleNotificationV2 {options}");
         }
 
         /// <summary>
-        /// Logs a Unschedule v2 notification request to the Unity console.
+        /// Logs a version 2 notification unscheduling request to the Unity console.
         /// </summary>
-        /// <param name="key">The notification key in string format.</param>
+        /// <param name="key">The notification key.</param>
         public void UnscheduleNotificationV2(string key)
         {
-            Debug.Log($"[JestSDK] Unschedule NotificationV2 {key}");
+            Debug.Log($"[JestSDK] UnscheduleNotificationV2 {key}");
         }
 
         /// <summary>
-        /// Logs a set player value request to the Unity console.
+        /// Logs a player value update request to the Unity console.
         /// </summary>
-        /// <param name="key">The key of the value to set.</param>
-        /// <param name="value">The value to store.</param>
+        /// <param name="key">The key of the value to update.</param>
+        /// <param name="value">The new value to assign.</param>
         public void SetPlayerValue(string key, string value)
         {
             Debug.Log($"[JestSDK] SetPlayerValue {key} {value}");
         }
 
         /// <summary>
-        /// Gets the properties of an event by its name.
+        /// Retrieves mock event data for the specified event.
         /// </summary>
-        /// <param name="eventName">The name of the event to retrieve.</param>
-        /// <returns>An empty string as mock event data.</returns>
+        /// <param name="eventName">The name of the event.</param>
+        /// <returns>An empty string representing mock event data.</returns>
         public string GetEvent(string eventName)
         {
             return "";
         }
 
         /// <summary>
-        /// Gets all scheduled notifications.
+        /// Retrieves a list of scheduled notifications.
         /// </summary>
-        /// <returns>An empty list as mock notification data.</returns>
+        /// <returns>An empty list representing mock notification data.</returns>
         public List<string> GetNotifications()
         {
             return new List<string>();
         }
 
         /// <summary>
-        /// Gets all scheduled notifications v2.
+        /// Retrieves a list of scheduled version 2 notifications.
         /// </summary>
-        /// <returns>An empty list as mock notification data.</returns>
+        /// <returns>An empty list representing mock notification data.</returns>
         public List<string> GetNotificationsV2()
         {
             return new List<string>();
         }
 
         /// <summary>
-        /// Game-specific entry payload, that was used to launch the game.
+        /// Retrieves the game-specific entry payload used to launch the game.
         /// </summary>
-        /// <returns>A map of strings->objects</returns>
+        /// <returns>An empty string representing mock entry payload data.</returns>
         public string GetEntryPayload()
         {
             return "";
         }
 
         /// <summary>
-        /// Sets Game-specific entry payload.
+        /// Logs a request to set the game-specific entry payload.
         /// </summary>
-        /// <param name="payload">A string-object map containing the payload.</param>
+        /// <param name="payload">A dictionary containing the payload data.</param>
         public void SetEntryPayload(Dictionary<string, object> payload)
         {
             Debug.Log($"[JestSDK] SetEntryPayload {Convert.ToString(payload)}");
         }
 
-
         /// <summary>
-        /// Mark user as logged in.
+        /// Logs a user login event to the Unity console and updates registration status.
         /// </summary>
-        /// <param name="payload">A string-object map containing the payload.</param>
+        /// <param name="payload">A JSON string representing the login payload.</param>
         public void Login(string payload)
         {
-            this.isRegistered = true.ToString();
-            Debug.Log($"[JestSDK] Logged In {this.isRegistered}");
+            isRegistered = true.ToString();
+            Debug.Log($"[JestSDK] Logged In {isRegistered}");
+        }
+
+        /// <summary>
+        /// Logs a product retrieval request to the Unity console.
+        /// </summary>
+        /// <returns>An empty string representing mock product data.</returns>
+        public string GetProducts()
+        {
+            Debug.Log($"[JestSDK] GetProducts");
+            return "";
+        }
+
+        /// <summary>
+        /// Logs a purchase response retrieval request to the Unity console.
+        /// </summary>
+        /// <returns>An empty string representing mock purchase response data.</returns>
+        public string GetPurchaseResponse()
+        {
+            Debug.Log($"[JestSDK] GetPurchaseResponse");
+            return "";
+        }
+
+        /// <summary>
+        /// Logs an incomplete purchase response retrieval request to the Unity console.
+        /// </summary>
+        /// <returns>An empty string representing mock incomplete purchase data.</returns>
+        public string GetIncompletePurchaseResponse()
+        {
+            Debug.Log($"[JestSDK] GetIncompletePurchaseResponse");
+            return "";
+        }
+
+        /// <summary>
+        /// Logs a complete purchase response retrieval request to the Unity console.
+        /// </summary>
+        /// <returns>An empty string representing mock complete purchase data.</returns>
+        public string GetPurchaseCompleteResponse()
+        {
+            Debug.Log($"[JestSDK] GetPurchaseCompleteResponse");
+            return "";
         }
     }
 }

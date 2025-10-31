@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AOT;
 using UnityEngine.Scripting;
@@ -58,6 +59,24 @@ namespace com.jest.sdk
 
         [DllImport("__Internal")]
         private static extern void JS_login(string payload);
+
+        [DllImport("__Internal")]
+        private static extern void JS_getProducts(IntPtr taskPtr, Action<IntPtr, string> onSuccess, Action<IntPtr, 
+                                    string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_beginPurchase(IntPtr taskPtr, string sku, Action<IntPtr, string> onSuccess, 
+                                    Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_completePurchase(IntPtr taskPtr, string purchaseToken, Action<IntPtr, 
+                                    string> onSuccess, Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_getIncompletePurchases(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError);
+
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -97,6 +116,45 @@ namespace com.jest.sdk
 
         private static void JS_login(string payload)
         { _bridgeMock.Login(payload); }
+
+
+        private static void JS_getProducts(IntPtr taskPtr, Action<IntPtr, string> onSuccess, Action<IntPtr,
+                                    string> onError)
+        {
+            onSuccess(taskPtr, _bridgeMock.GetProducts());
+        }
+
+        private static void JS_beginPurchase(IntPtr taskPtr, string sku, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            if (bool.Parse(_bridgeMock.isRegistered))
+            {
+                onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse());
+            }
+            else
+            {
+                onError(taskPtr, "Login Required");
+            }
+        }
+
+        private static void JS_completePurchase(IntPtr taskPtr, string purchaseToken,
+                                    Action<IntPtr, string> onSuccess, Action<IntPtr, string> onError)
+        {
+            onSuccess(taskPtr, _bridgeMock.GetPurchaseCompleteResponse());
+
+        }
+        private static void JS_getIncompletePurchases(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            if (bool.Parse(_bridgeMock.isRegistered))
+            {
+                onSuccess(taskPtr, _bridgeMock.GetIncompletePurchaseResponse());
+            }
+            else
+            {
+                onError(taskPtr, "Login Required");
+            }
+        }
 
 
 #endif
@@ -189,6 +247,26 @@ namespace com.jest.sdk
         internal static void Login(string payload)
         {
             JS_login(payload);
+        }
+
+        internal static JestSDKTask<string> GetProducts()
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_getProducts(ptr, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static JestSDKTask<string> BeginPurchase(string sku)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_beginPurchase(ptr, sku, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static JestSDKTask<string> CompletePurchase(string purchaseToken)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_completePurchase(ptr, purchaseToken, HandleSuccessString, HandleErrorString); });
+        }
+        internal static JestSDKTask<string> GetIncompletePurchases()
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_getIncompletePurchases(ptr, HandleSuccessString, HandleErrorString); });
+
         }
 
         internal static JestSDKTask CallAsyncVoid(string call)

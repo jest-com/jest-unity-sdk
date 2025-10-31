@@ -2,18 +2,21 @@ using com.jest.sdk;
 using TMPro;
 using UnityEngine;
 
-public class GameStateViewController : MonoBehaviour
+namespace com.jest.demo
 {
-
-    [SerializeField] public TextMeshProUGUI m_playerStateText;
-
-    private void Start()
+    public class GameStateViewController : MonoBehaviour
     {
-        GameManager.Instance.OnGameStateChanged += GameStateController_OnGameStateChanged;   
-    }
 
-    private void GameStateController_OnGameStateChanged(object sender, System.EventArgs e)
-    {
-        m_playerStateText.text = JestSDK.Instance.Player.GetPlayerData();
+        [SerializeField] public TextMeshProUGUI m_playerStateText;
+
+        private void Start()
+        {
+            GameManager.Instance.OnGameStateChanged += GameStateController_OnGameStateChanged;
+        }
+
+        private void GameStateController_OnGameStateChanged(object sender, System.EventArgs e)
+        {
+            m_playerStateText.text = JestSDK.Instance.Player.GetPlayerData();
+        }
     }
 }
