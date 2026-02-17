@@ -39,8 +39,13 @@ namespace com.jest.sdk
         /// </summary>
         /// <param name="key">The key to look up</param>
         /// <returns>The value associated with the key, or an empty string if the key is missing</returns>
+        /// <exception cref="System.ArgumentException">Thrown when key is null or empty.</exception>
         public string Get(string key)
         {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new System.ArgumentException("Key cannot be null or empty", nameof(key));
+            }
             return JsBridge.GetPlayerValue(key);
         }
 
@@ -61,8 +66,13 @@ namespace com.jest.sdk
         /// <param name="key">The key to look up</param>
         /// <param name="value">When this method returns, contains the value associated with the key, if found; otherwise, the default value</param>
         /// <returns>true if the key was found; otherwise, false</returns>
+        /// <exception cref="System.ArgumentException">Thrown when key is null or empty.</exception>
         public bool TryGet(string key, out string value)
         {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new System.ArgumentException("Key cannot be null or empty", nameof(key));
+            }
             value = JsBridge.GetPlayerValue(key);
             return !string.IsNullOrEmpty(value);
         }
@@ -92,8 +102,13 @@ namespace com.jest.sdk
         /// <typeparam name="T">The type to convert the value to</typeparam>
         /// <param name="key">The key to look up</param>
         /// <returns>The converted value associated with the key</returns>
+        /// <exception cref="System.ArgumentException">Thrown when key is null or empty.</exception>
         public T Get<T>(string key)
         {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new System.ArgumentException("Key cannot be null or empty", nameof(key));
+            }
             var str = JsBridge.GetPlayerValue(key);
             return Convert.FromString<T>(str);
         }
@@ -104,8 +119,13 @@ namespace com.jest.sdk
         /// <typeparam name="T">The type of the value to set</typeparam>
         /// <param name="key">The key to associate the value with</param>
         /// <param name="value">The value to set</param>
+        /// <exception cref="System.ArgumentException">Thrown when key is null or empty.</exception>
         public void Set<T>(string key, T value)
         {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new System.ArgumentException("Key cannot be null or empty", nameof(key));
+            }
             JsBridge.SetPlayerValue(key, Convert.ToString(value));
         }
 
@@ -114,8 +134,13 @@ namespace com.jest.sdk
         /// </summary>
         /// <param name="key">The key to associate the value with</param>
         /// <param name="value">The string value to set</param>
+        /// <exception cref="System.ArgumentException">Thrown when key is null or empty.</exception>
         public void Set(string key, string value)
         {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new System.ArgumentException("Key cannot be null or empty", nameof(key));
+            }
             JsBridge.SetPlayerValue(key, value);
         }
     }

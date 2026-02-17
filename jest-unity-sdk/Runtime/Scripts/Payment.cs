@@ -61,8 +61,14 @@ namespace com.jest.sdk
         /// <returns>
         /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="PurchaseResult"/>.
         /// </returns>
+        /// <exception cref="ArgumentException">Thrown when sku is null or empty.</exception>
         public JestSDKTask<PurchaseResult> Purchase(string sku)
         {
+            if (string.IsNullOrWhiteSpace(sku))
+            {
+                throw new ArgumentException("SKU cannot be null or empty", nameof(sku));
+            }
+
             var task = new JestSDKTask<PurchaseResult>();
             JsBridge.BeginPurchase(sku).ContinueWith(t =>
             {
@@ -93,8 +99,14 @@ namespace com.jest.sdk
         /// <returns>
         /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="PurchaseCompleteResult"/>.
         /// </returns>
+        /// <exception cref="ArgumentException">Thrown when purchaseToken is null or empty.</exception>
         public JestSDKTask<PurchaseCompleteResult> CompletePurchase(string purchaseToken)
         {
+            if (string.IsNullOrWhiteSpace(purchaseToken))
+            {
+                throw new ArgumentException("Purchase token cannot be null or empty", nameof(purchaseToken));
+            }
+
             var task = new JestSDKTask<PurchaseCompleteResult>();
             var purchaseCompleteTask = JsBridge.CompletePurchase(purchaseToken);
 

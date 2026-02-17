@@ -127,7 +127,7 @@ namespace com.jest.sdk
         private static void JS_beginPurchase(IntPtr taskPtr, string sku, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError)
         {
-            if (bool.Parse(_bridgeMock.isRegistered))
+            if (bool.TryParse(_bridgeMock.isRegistered, out bool isRegistered) && isRegistered)
             {
                 onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse());
             }
@@ -146,7 +146,7 @@ namespace com.jest.sdk
         private static void JS_getIncompletePurchases(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError)
         {
-            if (bool.Parse(_bridgeMock.isRegistered))
+            if (bool.TryParse(_bridgeMock.isRegistered, out bool isRegistered) && isRegistered)
             {
                 onSuccess(taskPtr, _bridgeMock.GetIncompletePurchaseResponse());
             }
@@ -305,6 +305,11 @@ namespace com.jest.sdk
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, string>))]
         public static void HandleError(System.IntPtr taskPtr, string error)
         {
+            if (taskPtr == IntPtr.Zero)
+            {
+                UnityEngine.Debug.LogError($"[JestSDK] HandleError received null pointer. Error: {error}");
+                return;
+            }
             GCHandle handle = GCHandle.FromIntPtr(taskPtr);
             var task = (JestSDKTask)handle.Target;
             task.SetException(new System.Exception(error));
@@ -315,6 +320,11 @@ namespace com.jest.sdk
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr>))]
         public static void HandleSuccess(System.IntPtr taskPtr)
         {
+            if (taskPtr == IntPtr.Zero)
+            {
+                UnityEngine.Debug.LogError("[JestSDK] HandleSuccess received null pointer");
+                return;
+            }
             GCHandle handle = GCHandle.FromIntPtr(taskPtr);
             var task = (JestSDKTask)handle.Target;
             task.SetResult();
@@ -323,6 +333,11 @@ namespace com.jest.sdk
 
         public static void HandleSuccess<T>(System.IntPtr taskPtr, T result)
         {
+            if (taskPtr == IntPtr.Zero)
+            {
+                UnityEngine.Debug.LogError($"[JestSDK] HandleSuccess<{typeof(T).Name}> received null pointer");
+                return;
+            }
             GCHandle handle = GCHandle.FromIntPtr(taskPtr);
             var task = (JestSDKTask<T>)handle.Target;
             task.SetResult(result);
@@ -331,6 +346,11 @@ namespace com.jest.sdk
 
         public static void HandleError<T>(System.IntPtr taskPtr, string error)
         {
+            if (taskPtr == IntPtr.Zero)
+            {
+                UnityEngine.Debug.LogError($"[JestSDK] HandleError<{typeof(T).Name}> received null pointer. Error: {error}");
+                return;
+            }
             GCHandle handle = GCHandle.FromIntPtr(taskPtr);
             var task = (JestSDKTask<T>)handle.Target;
             task.SetException(new System.Exception(error));

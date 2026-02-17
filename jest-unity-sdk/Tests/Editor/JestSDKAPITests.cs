@@ -241,5 +241,112 @@ namespace com.jest.sdk.Tests
             public string stringValue;
             public int numberValue;
         }
+
+        #region Error Scenario Tests
+
+        [Test]
+        public void Player_Get_ThrowsOnNullKey()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Get(null));
+        }
+
+        [Test]
+        public void Player_Get_ThrowsOnEmptyKey()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Get(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Get("   "));
+        }
+
+        [Test]
+        public void Player_GetGeneric_ThrowsOnEmptyKey()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Get<int>(null));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Get<int>(""));
+        }
+
+        [Test]
+        public void Player_Set_ThrowsOnEmptyKey()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Set(null, "value"));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Set("", "value"));
+        }
+
+        [Test]
+        public void Player_SetGeneric_ThrowsOnEmptyKey()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Set<int>(null, 42));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Set<int>("", 42));
+        }
+
+        [Test]
+        public void Player_TryGet_ThrowsOnEmptyKey()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.TryGet(null, out _));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.TryGet("", out _));
+        }
+
+        [Test]
+        public void Payment_Purchase_ThrowsOnNullSku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.Purchase(null));
+        }
+
+        [Test]
+        public void Payment_Purchase_ThrowsOnEmptySku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.Purchase(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.Purchase("   "));
+        }
+
+        [Test]
+        public void Payment_CompletePurchase_ThrowsOnNullToken()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CompletePurchase(null));
+        }
+
+        [Test]
+        public void Payment_CompletePurchase_ThrowsOnEmptyToken()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CompletePurchase(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CompletePurchase("   "));
+        }
+
+        [Test]
+        public void Convert_FromString_ThrowsOnInvalidVector2Format()
+        {
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector2>("invalid"));
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector2>("(1)"));
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector2>("(a,b)"));
+        }
+
+        [Test]
+        public void Convert_FromString_ThrowsOnInvalidVector3Format()
+        {
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector3>("invalid"));
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector3>("(1,2)"));
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector3>("(a,b,c)"));
+        }
+
+        [Test]
+        public void Convert_FromString_ThrowsOnNullOrEmptyVector()
+        {
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector2>(null));
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector2>(""));
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector3>(null));
+            Assert.Throws<ArgumentException>(() => Convert.FromString<Vector3>(""));
+        }
+
+        [Test]
+        public void Convert_FromString_HandlesWhitespaceInVectors()
+        {
+            // Should handle vectors with spaces around components
+            var vector2 = Convert.FromString<Vector2>("(1, 2)");
+            Assert.That(vector2, Is.EqualTo(new Vector2(1, 2)));
+
+            var vector3 = Convert.FromString<Vector3>("( 1 , 2 , 3 )");
+            Assert.That(vector3, Is.EqualTo(new Vector3(1, 2, 3)));
+        }
+
+        #endregion
     }
 }

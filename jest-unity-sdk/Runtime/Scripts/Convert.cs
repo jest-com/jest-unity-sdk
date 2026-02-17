@@ -66,32 +66,63 @@ namespace com.jest.sdk
         private static Vector2 ParseVector2(string value)
         {
             var components = SplitIntoComponents(value, 2);
-            return new Vector3(components[0], components[1]);
+            return new Vector2(components[0], components[1]);
         }
 
-        private static float[] SplitIntoComponents(string value, int compomentCount)
+        private static float[] SplitIntoComponents(string value, int componentCount)
         {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new System.ArgumentException($"Cannot parse null or empty string as Vector{componentCount}");
+            }
+
             // Remove the parentheses and split the string
             string[] components = value.Replace("(", "").Replace(")", "").Split(',');
 
-            if (components.Length != compomentCount)
+            if (components.Length != componentCount)
             {
-                throw new System.ArgumentException("String format must be (x,y,z)");
+                throw new System.ArgumentException(
+                    $"Expected {componentCount} components but found {components.Length} in '{value}'. " +
+                    $"Format must be (x,y{(componentCount == 3 ? ",z" : "")})");
             }
 
-            return System.Array.ConvertAll(components, (string comp) => float.Parse(comp));
+            var result = new float[componentCount];
+            for (int i = 0; i < componentCount; i++)
+            {
+                string trimmed = components[i].Trim();
+                if (!float.TryParse(trimmed, System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture, out result[i]))
+                {
+                    throw new System.ArgumentException(
+                        $"Cannot parse component {i} ('{components[i]}') as float in '{value}'");
+                }
+            }
+
+            return result;
         }
 
         private static Dictionary<string, object> DeserializeDictionary(string json)
         {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return new Dictionary<string, object>();
+            }
+
             var result = JsonConvert.DeserializeObject(json, typeof(Dictionary<string, object>)) as
              Dictionary<string, object>;
+
+            if (result == null)
+            {
+                UnityEngine.Debug.LogWarning($"[JestSDK] Failed to deserialize dictionary from JSON: {json}");
+                return new Dictionary<string, object>();
+            }
+
             foreach (var key in result.Keys.ToList())
             {
                 var value = result[key];
-                if (value is JObject)
+                if (value is JObject jObj)
                 {
-                    result[key] = DeserializeDictionary(((JObject)value).ToString());
+                    result[key] = DeserializeDictionary(jObj.ToString());
                 }
             }
             return result;
