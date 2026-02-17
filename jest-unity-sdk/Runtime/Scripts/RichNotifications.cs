@@ -138,7 +138,7 @@ namespace com.jest.sdk
                 }
 
                 // Convert stored string back to Severity enum.
-                notificationPriority = Enum.Parse<Severity>(priority, ignoreCase: true);
+                notificationPriority = (Severity)Enum.Parse(typeof(Severity), priority, true);
             }
 
             /// <summary>

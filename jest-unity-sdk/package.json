@@ -4,8 +4,7 @@
   "displayName": "Jest SDK",
   "description": "Jest SDK for Unity",
   "author": "Jest",
-  "unity": "6000.0",
-  "unityRelease": "0f1",
+  "unity": "2022.3",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   }
