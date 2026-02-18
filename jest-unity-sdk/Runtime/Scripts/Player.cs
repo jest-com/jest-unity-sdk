@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using Newtonsoft.Json;
+using UnityEngine;
 
 namespace com.jest.sdk
 {
@@ -165,6 +167,72 @@ namespace com.jest.sdk
         public JestSDKTask Flush()
         {
             return JsBridge.Flush();
+        }
+
+        /// <summary>
+        /// Gets signed player data for server-side verification.
+        /// </summary>
+        /// <returns>A task resolving to the player info and signed payload.</returns>
+        public JestSDKTask<PlayerSignedResponse> GetSigned()
+        {
+            var task = new JestSDKTask<PlayerSignedResponse>();
+            var getSignedTask = JsBridge.GetPlayerSigned();
+
+            getSignedTask.ContinueWith(t =>
+            {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        task.SetException(t.Exception);
+                        return;
+                    }
+
+                    string json = t.GetResult();
+                    var response = JsonConvert.DeserializeObject<PlayerSignedResponse>(json);
+                    task.SetResult(response);
+                }
+                catch (Exception e)
+                {
+                    task.SetException(e);
+                }
+            });
+
+            return task;
+        }
+
+        /// <summary>
+        /// Response containing signed player data for server verification.
+        /// </summary>
+        [Serializable]
+        public class PlayerSignedResponse
+        {
+            /// <summary>
+            /// The player information.
+            /// </summary>
+            public PlayerInfo player;
+
+            /// <summary>
+            /// The signed payload for server verification (JWS format).
+            /// </summary>
+            public string playerSigned;
+        }
+
+        /// <summary>
+        /// Basic player information.
+        /// </summary>
+        [Serializable]
+        public class PlayerInfo
+        {
+            /// <summary>
+            /// The unique player identifier.
+            /// </summary>
+            public string playerId;
+
+            /// <summary>
+            /// Whether the player is registered.
+            /// </summary>
+            public bool registered;
         }
     }
 }

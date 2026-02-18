@@ -236,5 +236,15 @@ namespace com.jest.sdk
         {
             Debug.Log($"[JestSDK] OpenLegalPage {page}");
         }
+
+        /// <summary>
+        /// Returns mock signed player response.
+        /// </summary>
+        /// <returns>A JSON string containing mock signed player data.</returns>
+        public string GetPlayerSignedResponse()
+        {
+            Debug.Log("[JestSDK] GetPlayerSignedResponse");
+            return $"{{\"player\":{{\"playerId\":\"{playerId}\",\"registered\":{isRegistered.ToLower()}}},\"playerSigned\":\"mock_signed_data\"}}";
+        }
     }
 }

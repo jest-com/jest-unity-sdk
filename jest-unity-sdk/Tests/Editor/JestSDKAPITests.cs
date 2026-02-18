@@ -722,5 +722,22 @@ namespace com.jest.sdk.Tests
         }
 
         #endregion
+
+        #region Player GetSigned Tests
+
+        [Test]
+        public void Player_GetSigned_ReturnsExpectedResponse()
+        {
+            var task = JestSDK.Instance.Player.GetSigned();
+            var response = task.GetResult();
+
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.player, Is.Not.Null);
+            Assert.That(response.player.playerId, Is.EqualTo(testId));
+            Assert.That(response.player.registered, Is.True);
+            Assert.That(response.playerSigned, Is.Not.Empty);
+        }
+
+        #endregion
     }
 }

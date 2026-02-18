@@ -152,5 +152,11 @@ namespace com.jest.sdk
         /// </summary>
         /// <param name="page">The page type: "privacy", "terms", or "copyright".</param>
         void OpenLegalPage(string page);
+
+        /// <summary>
+        /// Retrieves the signed player response for server verification.
+        /// </summary>
+        /// <returns>A JSON string containing signed player data.</returns>
+        string GetPlayerSignedResponse();
     }
 }

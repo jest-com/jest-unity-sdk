@@ -255,6 +255,14 @@ namespace com.jest.sdk
             Debug.Log($"[JestSDK] OpenLegalPage {page}");
         }
 
+        /// <summary>
+        /// Returns mock signed player response.
+        /// </summary>
+        public string GetPlayerSignedResponse()
+        {
+            return $"{{\"player\":{{\"playerId\":\"{_playerId}\",\"registered\":{_isRegistered.ToString().ToLower()}}},\"playerSigned\":\"mock_signed_data\"}}";
+        }
+
 #if UNITY_EDITOR
         private void OnEnable()
         {

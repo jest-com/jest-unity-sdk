@@ -96,6 +96,10 @@ namespace com.jest.sdk
         [DllImport("__Internal")]
         private static extern void JS_openLegalPage(string page);
 
+        [DllImport("__Internal")]
+        private static extern void JS_getPlayerSigned(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError);
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -201,6 +205,12 @@ namespace com.jest.sdk
         private static void JS_openLegalPage(string page)
         {
             _bridgeMock.OpenLegalPage(page);
+        }
+
+        private static void JS_getPlayerSigned(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            onSuccess(taskPtr, _bridgeMock.GetPlayerSignedResponse());
         }
 
 #endif
@@ -342,6 +352,11 @@ namespace com.jest.sdk
         internal static void OpenLegalPage(string page)
         {
             JS_openLegalPage(page);
+        }
+
+        internal static JestSDKTask<string> GetPlayerSigned()
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_getPlayerSigned(ptr, HandleSuccessString, HandleErrorString); });
         }
 
         internal static JestSDKTask CallAsyncVoid(string call)
