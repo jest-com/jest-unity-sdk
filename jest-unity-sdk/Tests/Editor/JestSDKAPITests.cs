@@ -700,5 +700,27 @@ namespace com.jest.sdk.Tests
         }
 
         #endregion
+
+        #region Legal Pages Tests
+
+        [Test]
+        public void OpenPrivacyPolicy_CompletesSuccessfully()
+        {
+            Assert.DoesNotThrow(() => JestSDK.Instance.OpenPrivacyPolicy());
+        }
+
+        [Test]
+        public void OpenTermsOfService_CompletesSuccessfully()
+        {
+            Assert.DoesNotThrow(() => JestSDK.Instance.OpenTermsOfService());
+        }
+
+        [Test]
+        public void OpenCopyright_CompletesSuccessfully()
+        {
+            Assert.DoesNotThrow(() => JestSDK.Instance.OpenCopyright());
+        }
+
+        #endregion
     }
 }

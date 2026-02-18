@@ -93,6 +93,9 @@ namespace com.jest.sdk
         [DllImport("__Internal")]
         private static extern void JS_redirectToGame(string optionsJson);
 
+        [DllImport("__Internal")]
+        private static extern void JS_openLegalPage(string page);
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -193,6 +196,11 @@ namespace com.jest.sdk
         private static void JS_redirectToGame(string optionsJson)
         {
             _bridgeMock.RedirectToGame(optionsJson);
+        }
+
+        private static void JS_openLegalPage(string page)
+        {
+            _bridgeMock.OpenLegalPage(page);
         }
 
 #endif
@@ -329,6 +337,11 @@ namespace com.jest.sdk
         internal static void RedirectToGame(string optionsJson)
         {
             JS_redirectToGame(optionsJson);
+        }
+
+        internal static void OpenLegalPage(string page)
+        {
+            JS_openLegalPage(page);
         }
 
         internal static JestSDKTask CallAsyncVoid(string call)

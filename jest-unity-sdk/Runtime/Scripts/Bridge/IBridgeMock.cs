@@ -146,5 +146,11 @@ namespace com.jest.sdk
         /// </summary>
         /// <param name="optionsJson">A JSON string containing redirect options.</param>
         void RedirectToGame(string optionsJson);
+
+        /// <summary>
+        /// Opens a legal page (privacy policy, terms of service, or copyright).
+        /// </summary>
+        /// <param name="page">The page type: "privacy", "terms", or "copyright".</param>
+        void OpenLegalPage(string page);
     }
 }

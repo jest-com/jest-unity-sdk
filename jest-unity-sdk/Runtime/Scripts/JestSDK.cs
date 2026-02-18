@@ -90,5 +90,29 @@ namespace com.jest.sdk
             string entryPayloadString = payload != null ? Convert.ToString(payload) : null;
             JsBridge.Login(entryPayloadString);
         }
+
+        /// <summary>
+        /// Opens the privacy policy page.
+        /// </summary>
+        public void OpenPrivacyPolicy()
+        {
+            JsBridge.OpenLegalPage("privacy");
+        }
+
+        /// <summary>
+        /// Opens the terms of service page.
+        /// </summary>
+        public void OpenTermsOfService()
+        {
+            JsBridge.OpenLegalPage("terms");
+        }
+
+        /// <summary>
+        /// Opens the copyright page.
+        /// </summary>
+        public void OpenCopyright()
+        {
+            JsBridge.OpenLegalPage("copyright");
+        }
     }
 }

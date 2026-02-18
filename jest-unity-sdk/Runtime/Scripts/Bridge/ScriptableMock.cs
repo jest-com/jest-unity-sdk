@@ -247,6 +247,14 @@ namespace com.jest.sdk
             Debug.Log($"[JestSDK] RedirectToGame {optionsJson}");
         }
 
+        /// <summary>
+        /// Logs an open legal page request.
+        /// </summary>
+        public void OpenLegalPage(string page)
+        {
+            Debug.Log($"[JestSDK] OpenLegalPage {page}");
+        }
+
 #if UNITY_EDITOR
         private void OnEnable()
         {
