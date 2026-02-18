@@ -67,11 +67,18 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Logs in the user with the provided payload data.
+        /// Logs in the user with the optional payload data.
         /// </summary>
-        public void Login(Dictionary<string, object> payload)
+        /// <param name="payload">Optional entry payload data to pass during login.</param>
+        /// <exception cref="System.InvalidOperationException">Thrown when the player is already logged in.</exception>
+        public void Login(Dictionary<string, object> payload = null)
         {
-            string entryPayloadString = Convert.ToString(payload);
+            if (Player.isRegistered)
+            {
+                throw new System.InvalidOperationException("Player is already logged in");
+            }
+
+            string entryPayloadString = payload != null ? Convert.ToString(payload) : null;
             JsBridge.Login(entryPayloadString);
         }
     }

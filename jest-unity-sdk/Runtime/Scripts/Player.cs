@@ -143,5 +143,28 @@ namespace com.jest.sdk
             }
             JsBridge.SetPlayerValue(key, value);
         }
+
+        /// <summary>
+        /// Deletes the value associated with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the value to delete</param>
+        /// <exception cref="System.ArgumentException">Thrown when key is null or empty.</exception>
+        public void Delete(string key)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new System.ArgumentException("Key cannot be null or empty", nameof(key));
+            }
+            JsBridge.DeletePlayerValue(key);
+        }
+
+        /// <summary>
+        /// Ensures all pending player data updates are synchronized to the server.
+        /// </summary>
+        /// <returns>A task that completes when the data has been flushed to the server.</returns>
+        public JestSDKTask Flush()
+        {
+            return JsBridge.Flush();
+        }
     }
 }

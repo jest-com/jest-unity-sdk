@@ -77,6 +77,15 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Deletes a player value with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the value to delete.</param>
+        public void DeletePlayerValue(string key)
+        {
+            _playerValues.Remove(key);
+        }
+
+        /// <summary>
         /// Schedules a notification using the provided options.
         /// </summary>
         /// <param name="options">A JSON string containing notification options.</param>

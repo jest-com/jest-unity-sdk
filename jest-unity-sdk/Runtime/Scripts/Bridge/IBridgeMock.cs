@@ -38,6 +38,12 @@ namespace com.jest.sdk
         void SetPlayerValue(string key, string value);
 
         /// <summary>
+        /// Deletes a player value with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the value to delete.</param>
+        void DeletePlayerValue(string key);
+
+        /// <summary>
         /// Schedules a notification with the specified options.
         /// </summary>
         /// <param name="options">A JSON string containing the notification options.</param>

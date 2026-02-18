@@ -96,6 +96,15 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Logs a player value delete request to the Unity console.
+        /// </summary>
+        /// <param name="key">The key of the value to delete.</param>
+        public void DeletePlayerValue(string key)
+        {
+            Debug.Log($"[JestSDK] DeletePlayerValue {key}");
+        }
+
+        /// <summary>
         /// Retrieves mock event data for the specified event.
         /// </summary>
         /// <param name="eventName">The name of the event.</param>

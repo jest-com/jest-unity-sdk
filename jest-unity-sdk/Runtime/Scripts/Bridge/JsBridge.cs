@@ -30,6 +30,12 @@ namespace com.jest.sdk
         private static extern void JS_setPlayerValue(string key, string value);
 
         [DllImport("__Internal")]
+        private static extern void JS_deletePlayerValue(string key);
+
+        [DllImport("__Internal")]
+        private static extern void JS_flush(IntPtr taskPtr, Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
         private static extern void JS_scheduleNotification(string options);
 
         [DllImport("__Internal")]
@@ -89,6 +95,11 @@ namespace com.jest.sdk
         private static string JS_getPlayerValue(string key) { return _bridgeMock.GetPlayerValue(key); }
 
         private static void JS_setPlayerValue(string key, string value) { _bridgeMock.SetPlayerValue(key, value); }
+
+        private static void JS_deletePlayerValue(string key) { _bridgeMock.DeletePlayerValue(key); }
+
+        private static void JS_flush(IntPtr taskPtr, Action<IntPtr> onSuccess, Action<IntPtr, string> onError)
+        { onSuccess(taskPtr); }
 
         private static void JS_scheduleNotification(string options) { _bridgeMock.ScheduleNotification(options); }
 
@@ -202,6 +213,16 @@ namespace com.jest.sdk
         internal static void SetPlayerValue(string key, string value)
         {
             JS_setPlayerValue(key, value);
+        }
+
+        internal static void DeletePlayerValue(string key)
+        {
+            JS_deletePlayerValue(key);
+        }
+
+        internal static JestSDKTask Flush()
+        {
+            return new JestSDKTask((System.IntPtr ptr) => { JS_flush(ptr, HandleSuccess, HandleError); });
         }
 
         internal static void ScheduleNotification(string options)

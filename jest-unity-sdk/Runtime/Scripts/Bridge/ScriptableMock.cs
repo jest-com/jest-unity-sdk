@@ -88,6 +88,14 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Deletes a player value with the specified key.
+        /// </summary>
+        public void DeletePlayerValue(string key)
+        {
+            _values.RemoveAll(vp => vp.key == key);
+        }
+
+        /// <summary>
         /// Schedules a notification using the provided options.
         /// </summary>
         public void ScheduleNotification(string options)

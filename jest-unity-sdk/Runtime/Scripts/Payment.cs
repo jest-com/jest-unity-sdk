@@ -62,7 +62,7 @@ namespace com.jest.sdk
         /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="PurchaseResult"/>.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when sku is null or empty.</exception>
-        public JestSDKTask<PurchaseResult> Purchase(string sku)
+        public JestSDKTask<PurchaseResult> BeginPurchase(string sku)
         {
             if (string.IsNullOrWhiteSpace(sku))
             {
@@ -93,6 +93,17 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Initiates an in-app purchase for the specified product SKU.
+        /// </summary>
+        /// <param name="sku">The product SKU to purchase.</param>
+        /// <returns>
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="PurchaseResult"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when sku is null or empty.</exception>
+        [Obsolete("Use BeginPurchase() instead")]
+        public JestSDKTask<PurchaseResult> Purchase(string sku) => BeginPurchase(sku);
+
+        /// <summary>
         /// Completes a pending purchase using the provided purchase token.
         /// </summary>
         /// <param name="purchaseToken">The token associated with the purchase to complete.</param>
@@ -100,11 +111,17 @@ namespace com.jest.sdk
         /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="PurchaseCompleteResult"/>.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when purchaseToken is null or empty.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when player is not registered.</exception>
         public JestSDKTask<PurchaseCompleteResult> CompletePurchase(string purchaseToken)
         {
             if (string.IsNullOrWhiteSpace(purchaseToken))
             {
                 throw new ArgumentException("Purchase token cannot be null or empty", nameof(purchaseToken));
+            }
+
+            if (!JestSDK.Instance.Player.isRegistered)
+            {
+                throw new InvalidOperationException("Player must be registered to complete a purchase");
             }
 
             var task = new JestSDKTask<PurchaseCompleteResult>();
@@ -139,8 +156,14 @@ namespace com.jest.sdk
         /// <returns>
         /// A <see cref="JestSDKTask{TResult}"/> resolving to an <see cref="IncompletePurchasesResponse"/>.
         /// </returns>
+        /// <exception cref="InvalidOperationException">Thrown when player is not registered.</exception>
         public JestSDKTask<IncompletePurchasesResponse> GetIncompletePurchases()
         {
+            if (!JestSDK.Instance.Player.isRegistered)
+            {
+                throw new InvalidOperationException("Player must be registered to retrieve incomplete purchases");
+            }
+
             var task = new JestSDKTask<IncompletePurchasesResponse>();
             var getIncompletePurchasesTask = JsBridge.GetIncompletePurchases();
 
@@ -293,7 +316,7 @@ namespace com.jest.sdk
             /// <summary>
             /// The price of the product, in the smallest currency unit (e.g., cents).
             /// </summary>
-            public float price;
+            public double price;
         }
 
         #endregion

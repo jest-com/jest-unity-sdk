@@ -41,7 +41,7 @@ namespace com.jest.sdk
         /// <param name="options">The notification configuration options.</param>
         public void ScheduleNotification(Options options)
         {
-            string payload = JsonUtility.ToJson(options);
+            var payload = options.ToJson();
             JsBridge.ScheduleNotificationV2(payload);
         }
 
@@ -95,7 +95,17 @@ namespace com.jest.sdk
             /// <summary>
             /// The URL or path to an image displayed with the notification.
             /// </summary>
-            public string image;
+            public string imageReference;
+
+            /// <summary>
+            /// The URL or path to an image displayed with the notification.
+            /// </summary>
+            [Obsolete("Use imageReference instead")]
+            public string image
+            {
+                get => imageReference;
+                set => imageReference = value;
+            }
 
             /// <summary>
             /// The severity or importance level of this notification.
@@ -109,15 +119,42 @@ namespace com.jest.sdk
             public string identifier;
 
             /// <summary>
+            /// Private backing field for entry payload data.
+            /// </summary>
+            private Dictionary<string, object> _entryPayloadData = new();
+
+            /// <summary>
             /// Additional custom key-value data payload associated with the notification.
             /// </summary>
-            public readonly Dictionary<string, object> data = new();
+            public Dictionary<string, object> entryPayloadData
+            {
+                get => _entryPayloadData;
+                set => _entryPayloadData = value ?? new Dictionary<string, object>();
+            }
+
+            /// <summary>
+            /// Additional custom key-value data payload associated with the notification.
+            /// </summary>
+            [Obsolete("Use entryPayloadData instead")]
+            public Dictionary<string, object> data
+            {
+                get => _entryPayloadData;
+                set => _entryPayloadData = value ?? new Dictionary<string, object>();
+            }
 
             /// <summary>
             /// The scheduled date and time of the notification.
+            /// Mutually exclusive with <see cref="scheduledInDays"/>.
             /// </summary>
             [NonSerialized]
             public DateTime date;
+
+            /// <summary>
+            /// Schedule the notification in a specified number of days (1-14).
+            /// Uses fuzzy timing without an exact time.
+            /// Mutually exclusive with <see cref="date"/>.
+            /// </summary>
+            public int? scheduledInDays;
 
             /// <summary>
             /// Called automatically after deserialization.
@@ -130,11 +167,11 @@ namespace com.jest.sdk
 
                 // Deserialize the embedded data payload.
                 var newData = Convert.FromString<Dictionary<string, object>>(entryPayload);
-                data.Clear();
+                _entryPayloadData.Clear();
 
                 foreach (var item in newData)
                 {
-                    data.Add(item.Key, item.Value);
+                    _entryPayloadData.Add(item.Key, item.Value);
                 }
 
                 // Convert stored string back to Severity enum.
@@ -147,9 +184,57 @@ namespace com.jest.sdk
             /// </summary>
             public void OnBeforeSerialize()
             {
-                scheduledAt = date.ToJsString();
-                entryPayload = Convert.ToString(data);
+                if (scheduledInDays.HasValue)
+                {
+                    // When using scheduledInDays, don't serialize scheduledAt
+                    scheduledAt = null;
+                }
+                else
+                {
+                    scheduledAt = date.ToJsString();
+                }
+                entryPayload = Convert.ToString(_entryPayloadData);
                 priority = notificationPriority.ToString().ToLower();
+            }
+
+            /// <summary>
+            /// Serializes this notification options to JSON for the bridge.
+            /// </summary>
+            /// <returns>JSON string representation of the notification options.</returns>
+            internal string ToJson()
+            {
+                var jsonObj = new Dictionary<string, object>
+                {
+                    ["plainText"] = plainText,
+                    ["body"] = body,
+                    ["ctaText"] = ctaText,
+                    ["priority"] = notificationPriority.ToString().ToLower(),
+                    ["identifier"] = identifier
+                };
+
+                // Add optional imageReference
+                if (!string.IsNullOrEmpty(imageReference))
+                {
+                    jsonObj["imageReference"] = imageReference;
+                }
+
+                // Add entryPayload if present
+                if (_entryPayloadData != null && _entryPayloadData.Count > 0)
+                {
+                    jsonObj["entryPayload"] = _entryPayloadData;
+                }
+
+                // Add scheduling - mutually exclusive
+                if (scheduledInDays.HasValue)
+                {
+                    jsonObj["scheduledInDays"] = scheduledInDays.Value;
+                }
+                else
+                {
+                    jsonObj["scheduledAt"] = date.ToJsString();
+                }
+
+                return JsonConvert.SerializeObject(jsonObj);
             }
         }
     }
