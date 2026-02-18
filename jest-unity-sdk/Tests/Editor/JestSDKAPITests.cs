@@ -348,5 +348,201 @@ namespace com.jest.sdk.Tests
         }
 
         #endregion
+
+        #region Phase 1 API Update Tests
+
+        [Test]
+        public void Player_Delete_RemovesValue()
+        {
+            const string key = "deleteTestKey";
+            JestSDK.Instance.Player.Set(key, "someValue");
+            Assert.That(JestSDK.Instance.Player.TryGet(key, out string _), Is.True);
+
+            JestSDK.Instance.Player.Delete(key);
+            Assert.That(JestSDK.Instance.Player.TryGet(key, out string _), Is.False);
+        }
+
+        [Test]
+        public void Player_Delete_ThrowsOnNullKey()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Delete(null));
+        }
+
+        [Test]
+        public void Player_Delete_ThrowsOnEmptyKey()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Delete(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Player.Delete("   "));
+        }
+
+        [Test]
+        public void Player_Flush_CompletesSuccessfully()
+        {
+            var task = JestSDK.Instance.Player.Flush();
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
+        }
+
+        [Test]
+        public void Payment_BeginPurchase_Success_ReturnsExpectedResult()
+        {
+            _mock.purchaseResult = PurchaseReult.success;
+            var task = JestSDK.Instance.Payment.GetProducts();
+            var products = task.GetResult();
+            var purchaseTask = JestSDK.Instance.Payment.BeginPurchase(products[0].sku);
+            var result = purchaseTask.GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("success", result.result);
+            Assert.That(result.purchase, Is.Not.Null);
+        }
+
+        [Test]
+        public void Payment_BeginPurchase_ThrowsOnNullSku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.BeginPurchase(null));
+        }
+
+        [Test]
+        public void Payment_BeginPurchase_ThrowsOnEmptySku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.BeginPurchase(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.BeginPurchase("   "));
+        }
+
+        [Test]
+        public void Login_ThrowsWhenAlreadyLoggedIn()
+        {
+            // Mock is set up with isRegistered = true
+            Assert.Throws<InvalidOperationException>(() => JestSDK.Instance.Login());
+        }
+
+        [Test]
+        public void Login_WorksWithNullPayload()
+        {
+            // Create a new mock with isRegistered = false
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            Assert.DoesNotThrow(() => JestSDK.Instance.Login());
+
+            // Restore original mock
+            JsBridge.SetMock(_mock);
+        }
+
+        [Test]
+        public void Login_WorksWithPayload()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            var payload = new Dictionary<string, object> { { "key", "value" } };
+            Assert.DoesNotThrow(() => JestSDK.Instance.Login(payload));
+
+            // Restore original mock
+            JsBridge.SetMock(_mock);
+        }
+
+        [Test]
+        public void Payment_CompletePurchase_ThrowsWhenNotRegistered()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            Assert.Throws<InvalidOperationException>(() =>
+                JestSDK.Instance.Payment.CompletePurchase("mock_token"));
+
+            // Restore original mock
+            JsBridge.SetMock(_mock);
+        }
+
+        [Test]
+        public void Payment_GetIncompletePurchases_ThrowsWhenNotRegistered()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            Assert.Throws<InvalidOperationException>(() =>
+                JestSDK.Instance.Payment.GetIncompletePurchases());
+
+            // Restore original mock
+            JsBridge.SetMock(_mock);
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_WithImageReference()
+        {
+            var options = new RichNotifications.Options
+            {
+                plainText = "Test notification",
+                body = "Test Body",
+                ctaText = "Play Now!",
+                imageReference = "image://test-image",
+                identifier = "test-key",
+                date = DateTime.Now,
+                notificationPriority = RichNotifications.Severity.High
+            };
+
+            JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+            var notifications = JestSDK.Instance.RichNotifications.GetNotifications();
+            Assert.That(notifications, Has.Count.EqualTo(1));
+            // Note: imageReference serialization is handled by ToJson()
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_WithEntryPayloadData()
+        {
+            var options = new RichNotifications.Options
+            {
+                plainText = "Test notification",
+                body = "Test Body",
+                ctaText = "Play Now!",
+                identifier = "test-key",
+                date = DateTime.Now,
+                notificationPriority = RichNotifications.Severity.Medium
+            };
+            options.entryPayloadData["key1"] = "value1";
+            options.entryPayloadData["key2"] = 42;
+
+            JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+            var notifications = JestSDK.Instance.RichNotifications.GetNotifications();
+            Assert.That(notifications, Has.Count.EqualTo(1));
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_WithScheduledInDays()
+        {
+            var options = new RichNotifications.Options
+            {
+                plainText = "Test notification",
+                body = "Test Body",
+                ctaText = "Play Now!",
+                identifier = "test-key",
+                scheduledInDays = 7,
+                notificationPriority = RichNotifications.Severity.Low
+            };
+
+            // This should not throw - scheduledInDays is used instead of date
+            Assert.DoesNotThrow(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+        }
+
+        [Test]
+        public void RichNotifications_DeprecatedAliases_StillWork()
+        {
+            var options = new RichNotifications.Options();
+
+            // Test deprecated 'image' alias
+            #pragma warning disable CS0618 // Disable obsolete warning for test
+            options.image = "test-image-url";
+            Assert.That(options.imageReference, Is.EqualTo("test-image-url"));
+            Assert.That(options.image, Is.EqualTo("test-image-url"));
+
+            // Test deprecated 'data' alias
+            options.data["testKey"] = "testValue";
+            Assert.That(options.entryPayloadData["testKey"], Is.EqualTo("testValue"));
+            Assert.That(options.data["testKey"], Is.EqualTo("testValue"));
+            #pragma warning restore CS0618
+        }
+
+        #endregion
     }
 }
