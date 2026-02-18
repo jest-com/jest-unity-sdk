@@ -140,5 +140,11 @@ namespace com.jest.sdk
         /// </summary>
         /// <returns>A JSON string containing referral data.</returns>
         string GetListReferralsResponse();
+
+        /// <summary>
+        /// Redirects to another game or the flagship game.
+        /// </summary>
+        /// <param name="optionsJson">A JSON string containing redirect options.</param>
+        void RedirectToGame(string optionsJson);
     }
 }

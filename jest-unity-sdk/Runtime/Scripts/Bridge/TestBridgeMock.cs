@@ -238,5 +238,14 @@ namespace com.jest.sdk
             Debug.Log("[JestSDK] GetListReferralsResponse");
             return "{\"referrals\":[{\"reference\":\"test-ref-123\",\"registrations\":[\"user1\",\"user2\"]}],\"referralsSigned\":\"mock_signed_data\"}";
         }
+
+        /// <summary>
+        /// Logs a redirect to game request.
+        /// </summary>
+        /// <param name="optionsJson">The redirect options in JSON format.</param>
+        public void RedirectToGame(string optionsJson)
+        {
+            Debug.Log($"[JestSDK] RedirectToGame {optionsJson}");
+        }
     }
 }

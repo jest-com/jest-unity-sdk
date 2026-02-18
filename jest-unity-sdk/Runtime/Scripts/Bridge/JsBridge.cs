@@ -90,6 +90,8 @@ namespace com.jest.sdk
         private static extern void JS_listReferrals(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError);
 
+        [DllImport("__Internal")]
+        private static extern void JS_redirectToGame(string optionsJson);
 
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
@@ -188,6 +190,10 @@ namespace com.jest.sdk
             onSuccess(taskPtr, _bridgeMock.GetListReferralsResponse());
         }
 
+        private static void JS_redirectToGame(string optionsJson)
+        {
+            _bridgeMock.RedirectToGame(optionsJson);
+        }
 
 #endif
 
@@ -318,6 +324,11 @@ namespace com.jest.sdk
         internal static JestSDKTask<string> ListReferrals()
         {
             return new JestSDKTask<string>((System.IntPtr ptr) => { JS_listReferrals(ptr, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static void RedirectToGame(string optionsJson)
+        {
+            JS_redirectToGame(optionsJson);
         }
 
         internal static JestSDKTask CallAsyncVoid(string call)

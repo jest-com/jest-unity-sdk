@@ -46,6 +46,10 @@ namespace com.jest.sdk
         /// </summary>
         public readonly Referrals Referrals = new();
 
+        /// <summary>
+        /// Provides access to navigation functionality for redirecting between games.
+        /// </summary>
+        public readonly Navigation Navigation = new();
 
         /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.

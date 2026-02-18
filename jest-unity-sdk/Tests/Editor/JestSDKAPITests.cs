@@ -624,5 +624,81 @@ namespace com.jest.sdk.Tests
         }
 
         #endregion
+
+        #region Navigation Tests
+
+        [Test]
+        public void Navigation_RedirectToFlagshipGame_CompletesSuccessfully()
+        {
+            Assert.DoesNotThrow(() => JestSDK.Instance.Navigation.RedirectToFlagshipGame());
+        }
+
+        [Test]
+        public void Navigation_RedirectToFlagshipGame_WithOptions()
+        {
+            var options = new Navigation.RedirectToFlagshipGameOptions
+            {
+                entryPayload = new Dictionary<string, object>()
+            };
+
+            Assert.DoesNotThrow(() => JestSDK.Instance.Navigation.RedirectToFlagshipGame(options));
+        }
+
+        [Test]
+        public void Navigation_RedirectToGame_CompletesSuccessfully()
+        {
+            var options = new Navigation.RedirectToGameOptions
+            {
+                gameSlug = "test-game"
+            };
+
+            Assert.DoesNotThrow(() => JestSDK.Instance.Navigation.RedirectToGame(options));
+        }
+
+        [Test]
+        public void Navigation_RedirectToGame_WithAllOptions()
+        {
+            var options = new Navigation.RedirectToGameOptions
+            {
+                gameSlug = "test-game",
+                entryPayload = new Dictionary<string, object>(),
+                skipGameExitConfirm = true
+            };
+
+            Assert.DoesNotThrow(() => JestSDK.Instance.Navigation.RedirectToGame(options));
+        }
+
+        [Test]
+        public void Navigation_RedirectToGame_ThrowsOnNullOptions()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+                JestSDK.Instance.Navigation.RedirectToGame(null));
+        }
+
+        [Test]
+        public void Navigation_RedirectToGame_ThrowsOnNullGameSlug()
+        {
+            var options = new Navigation.RedirectToGameOptions
+            {
+                gameSlug = null
+            };
+
+            Assert.Throws<ArgumentException>(() =>
+                JestSDK.Instance.Navigation.RedirectToGame(options));
+        }
+
+        [Test]
+        public void Navigation_RedirectToGame_ThrowsOnEmptyGameSlug()
+        {
+            var options = new Navigation.RedirectToGameOptions
+            {
+                gameSlug = ""
+            };
+
+            Assert.Throws<ArgumentException>(() =>
+                JestSDK.Instance.Navigation.RedirectToGame(options));
+        }
+
+        #endregion
     }
 }

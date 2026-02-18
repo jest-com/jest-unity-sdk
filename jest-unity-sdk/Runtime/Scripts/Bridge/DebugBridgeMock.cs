@@ -218,5 +218,14 @@ namespace com.jest.sdk
             Debug.Log("[JestSDK] GetListReferralsResponse");
             return "{\"referrals\":[],\"referralsSigned\":\"\"}";
         }
+
+        /// <summary>
+        /// Logs a redirect to game request to the Unity console.
+        /// </summary>
+        /// <param name="optionsJson">The redirect options in JSON format.</param>
+        public void RedirectToGame(string optionsJson)
+        {
+            Debug.Log($"[JestSDK] RedirectToGame {optionsJson}");
+        }
     }
 }

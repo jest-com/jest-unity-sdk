@@ -239,6 +239,14 @@ namespace com.jest.sdk
             return "{\"referrals\":[{\"reference\":\"mock-ref\",\"registrations\":[\"user1\"]}],\"referralsSigned\":\"mock_signed\"}";
         }
 
+        /// <summary>
+        /// Logs a redirect to game request.
+        /// </summary>
+        public void RedirectToGame(string optionsJson)
+        {
+            Debug.Log($"[JestSDK] RedirectToGame {optionsJson}");
+        }
+
 #if UNITY_EDITOR
         private void OnEnable()
         {
