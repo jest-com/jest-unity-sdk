@@ -199,5 +199,24 @@ namespace com.jest.sdk
             Debug.Log($"[JestSDK] GetPurchaseCompleteResponse");
             return "";
         }
+
+        /// <summary>
+        /// Logs an open referral dialog request to the Unity console.
+        /// </summary>
+        /// <param name="optionsJson">The referral options in JSON format.</param>
+        public void OpenReferralDialog(string optionsJson)
+        {
+            Debug.Log($"[JestSDK] OpenReferralDialog {optionsJson}");
+        }
+
+        /// <summary>
+        /// Logs a list referrals request to the Unity console.
+        /// </summary>
+        /// <returns>An empty referrals response.</returns>
+        public string GetListReferralsResponse()
+        {
+            Debug.Log("[JestSDK] GetListReferralsResponse");
+            return "{\"referrals\":[],\"referralsSigned\":\"\"}";
+        }
     }
 }

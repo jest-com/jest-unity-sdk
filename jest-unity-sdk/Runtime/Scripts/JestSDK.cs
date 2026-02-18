@@ -41,6 +41,11 @@ namespace com.jest.sdk
         /// </summary>
         public readonly Payment Payment = new();
 
+        /// <summary>
+        /// Provides access to referral functionality and statistics.
+        /// </summary>
+        public readonly Referrals Referrals = new();
+
 
         /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.

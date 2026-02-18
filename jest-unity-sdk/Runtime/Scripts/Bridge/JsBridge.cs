@@ -82,6 +82,14 @@ namespace com.jest.sdk
         private static extern void JS_getIncompletePurchases(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError);
 
+        [DllImport("__Internal")]
+        private static extern void JS_openReferralDialog(IntPtr taskPtr, string optionsJson,
+                                    Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_listReferrals(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError);
+
 
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
@@ -165,6 +173,19 @@ namespace com.jest.sdk
             {
                 onError(taskPtr, "Login Required");
             }
+        }
+
+        private static void JS_openReferralDialog(IntPtr taskPtr, string optionsJson,
+                                    Action<IntPtr> onSuccess, Action<IntPtr, string> onError)
+        {
+            _bridgeMock.OpenReferralDialog(optionsJson);
+            onSuccess(taskPtr);
+        }
+
+        private static void JS_listReferrals(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            onSuccess(taskPtr, _bridgeMock.GetListReferralsResponse());
         }
 
 
@@ -287,7 +308,16 @@ namespace com.jest.sdk
         internal static JestSDKTask<string> GetIncompletePurchases()
         {
             return new JestSDKTask<string>((System.IntPtr ptr) => { JS_getIncompletePurchases(ptr, HandleSuccessString, HandleErrorString); });
+        }
 
+        internal static JestSDKTask OpenReferralDialog(string optionsJson)
+        {
+            return new JestSDKTask((System.IntPtr ptr) => { JS_openReferralDialog(ptr, optionsJson, HandleSuccess, HandleError); });
+        }
+
+        internal static JestSDKTask<string> ListReferrals()
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_listReferrals(ptr, HandleSuccessString, HandleErrorString); });
         }
 
         internal static JestSDKTask CallAsyncVoid(string call)

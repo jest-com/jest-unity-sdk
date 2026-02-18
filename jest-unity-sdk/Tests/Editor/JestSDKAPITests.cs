@@ -544,5 +544,85 @@ namespace com.jest.sdk.Tests
         }
 
         #endregion
+
+        #region Referrals Tests
+
+        [Test]
+        public void Referrals_OpenReferralDialog_CompletesSuccessfully()
+        {
+            var options = new Referrals.OpenDialogOptions
+            {
+                reference = "test-ref-123",
+                shareTitle = "Join me!",
+                shareText = "Check out this game"
+            };
+
+            var task = JestSDK.Instance.Referrals.OpenReferralDialog(options);
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
+        }
+
+        [Test]
+        public void Referrals_OpenReferralDialog_WithEntryPayload()
+        {
+            var options = new Referrals.OpenDialogOptions
+            {
+                reference = "test-ref-456",
+                entryPayload = new Dictionary<string, object>()
+            };
+
+            var task = JestSDK.Instance.Referrals.OpenReferralDialog(options);
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
+        }
+
+        [Test]
+        public void Referrals_OpenReferralDialog_ThrowsOnNullOptions()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+                JestSDK.Instance.Referrals.OpenReferralDialog(null));
+        }
+
+        [Test]
+        public void Referrals_OpenReferralDialog_ThrowsOnNullReference()
+        {
+            var options = new Referrals.OpenDialogOptions
+            {
+                reference = null,
+                shareTitle = "Test"
+            };
+
+            Assert.Throws<ArgumentException>(() =>
+                JestSDK.Instance.Referrals.OpenReferralDialog(options));
+        }
+
+        [Test]
+        public void Referrals_OpenReferralDialog_ThrowsOnEmptyReference()
+        {
+            var options = new Referrals.OpenDialogOptions
+            {
+                reference = "",
+                shareTitle = "Test"
+            };
+
+            Assert.Throws<ArgumentException>(() =>
+                JestSDK.Instance.Referrals.OpenReferralDialog(options));
+        }
+
+        [Test]
+        public void Referrals_ListReferrals_ReturnsExpectedResponse()
+        {
+            var task = JestSDK.Instance.Referrals.ListReferrals();
+            var response = task.GetResult();
+
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response.referrals, Is.Not.Null);
+            Assert.That(response.referrals, Has.Count.EqualTo(1));
+            Assert.That(response.referrals[0].reference, Is.EqualTo("test-ref-123"));
+            Assert.That(response.referrals[0].registrations, Has.Count.EqualTo(2));
+            Assert.That(response.referralsSigned, Is.Not.Empty);
+        }
+
+        #endregion
     }
 }

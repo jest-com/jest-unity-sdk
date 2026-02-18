@@ -223,6 +223,22 @@ namespace com.jest.sdk
             }
         }
 
+        /// <summary>
+        /// Opens a referral share dialog with the specified options.
+        /// </summary>
+        public void OpenReferralDialog(string optionsJson)
+        {
+            Debug.Log($"[JestSDK] OpenReferralDialog {optionsJson}");
+        }
+
+        /// <summary>
+        /// Retrieves the list referrals response.
+        /// </summary>
+        public string GetListReferralsResponse()
+        {
+            return "{\"referrals\":[{\"reference\":\"mock-ref\",\"registrations\":[\"user1\"]}],\"referralsSigned\":\"mock_signed\"}";
+        }
+
 #if UNITY_EDITOR
         private void OnEnable()
         {

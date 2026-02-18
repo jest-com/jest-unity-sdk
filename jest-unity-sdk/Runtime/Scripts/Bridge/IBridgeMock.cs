@@ -128,5 +128,17 @@ namespace com.jest.sdk
         /// </summary>
         /// <returns>A JSON string containing complete purchase response data.</returns>
         string GetPurchaseCompleteResponse();
+
+        /// <summary>
+        /// Opens a referral share dialog with the specified options.
+        /// </summary>
+        /// <param name="optionsJson">A JSON string containing the referral options.</param>
+        void OpenReferralDialog(string optionsJson);
+
+        /// <summary>
+        /// Retrieves the list referrals response.
+        /// </summary>
+        /// <returns>A JSON string containing referral data.</returns>
+        string GetListReferralsResponse();
     }
 }

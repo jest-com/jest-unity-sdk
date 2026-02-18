@@ -219,5 +219,24 @@ namespace com.jest.sdk
                     return "{\"result\":\"error\",\"error\":\"internal_error\"}";
             }
         }
+
+        /// <summary>
+        /// Logs an open referral dialog request.
+        /// </summary>
+        /// <param name="optionsJson">The referral options in JSON format.</param>
+        public void OpenReferralDialog(string optionsJson)
+        {
+            Debug.Log($"[JestSDK] OpenReferralDialog {optionsJson}");
+        }
+
+        /// <summary>
+        /// Retrieves the list referrals response.
+        /// </summary>
+        /// <returns>A JSON string containing mock referral data.</returns>
+        public string GetListReferralsResponse()
+        {
+            Debug.Log("[JestSDK] GetListReferralsResponse");
+            return "{\"referrals\":[{\"reference\":\"test-ref-123\",\"registrations\":[\"user1\",\"user2\"]}],\"referralsSigned\":\"mock_signed_data\"}";
+        }
     }
 }
