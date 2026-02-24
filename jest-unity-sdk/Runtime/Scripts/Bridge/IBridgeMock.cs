@@ -44,13 +44,7 @@ namespace com.jest.sdk
         void DeletePlayerValue(string key);
 
         /// <summary>
-        /// Schedules a notification with the specified options.
-        /// </summary>
-        /// <param name="options">A JSON string containing the notification options.</param>
-        void ScheduleNotification(string options);
-
-        /// <summary>
-        /// Schedules a version 2 notification with the specified options.
+        /// Schedules a rich notification with the specified options.
         /// </summary>
         /// <param name="options">A JSON string containing the notification options.</param>
         void ScheduleNotificationV2(string options);
@@ -76,13 +70,7 @@ namespace com.jest.sdk
         string GetEvent(string eventName);
 
         /// <summary>
-        /// Retrieves all scheduled notifications.
-        /// </summary>
-        /// <returns>A list of notification data as JSON strings.</returns>
-        List<string> GetNotifications();
-
-        /// <summary>
-        /// Retrieves all scheduled version 2 notifications.
+        /// Retrieves all scheduled rich notifications.
         /// </summary>
         /// <returns>A list of notification data as JSON strings.</returns>
         List<string> GetNotificationsV2();

@@ -124,7 +124,7 @@ await signedTask;
 
 if (signedTask.IsCompleted)
 {
-    var response = signedTask.GetResult();
+    var response = signedTask.Result;
     string playerId = response.player.playerId;
     bool isRegistered = response.player.registered;
     string signedPayload = response.playerSigned; // JWS format for server verification
@@ -232,7 +232,7 @@ var productsTask = payment.GetProducts();
 await productsTask;
 if (productsTask.IsCompleted)
 {
-    List<Payment.Product> products = productsTask.GetResult();
+    List<Payment.Product> products = productsTask.Result;
     foreach (var product in products)
     {
         Debug.Log($"Product: {product.name} - {product.price}");
@@ -245,13 +245,13 @@ if (productsTask.IsCompleted)
 var purchaseTask = JestSDK.Instance.Payment.BeginPurchase("gems_100");
 await purchaseTask;
 
-if (purchaseTask.GetResult().result == "success")
+if (purchaseTask.Result.result == "success")
 {
     Debug.Log("Purchase successful!");
 }
 else
 {
-    Debug.LogError($"Purchase failed: {purchaseTask.GetResult().error}");
+    Debug.LogError($"Purchase failed: {purchaseTask.Result.error}");
 }
 ```
 
@@ -263,7 +263,7 @@ Note: The player must be logged in to retrieve and complete incomplete purchases
 var incompletePurchasesTask = JestSDK.Instance.Payment.GetIncompletePurchases();
 await incompletePurchasesTask;
 
-foreach (var purchase in incompletePurchasesTask.GetResult())
+foreach (var purchase in incompletePurchasesTask.Result)
 {
     Debug.Log($"Incomplete Purchase: {purchase.productSku}");
     await JestSDK.Instance.Payment.CompletePurchase(purchase.purchaseToken);
@@ -300,7 +300,7 @@ var listTask = referrals.ListReferrals();
 await listTask;
 if (listTask.IsCompleted)
 {
-    var response = listTask.GetResult();
+    var response = listTask.Result;
     foreach (var referral in response.referrals)
     {
         Debug.Log($"Reference: {referral.reference}, Registrations: {referral.registrations.Count}");

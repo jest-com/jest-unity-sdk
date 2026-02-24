@@ -59,16 +59,7 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Logs a notification scheduling request to the Unity console.
-        /// </summary>
-        /// <param name="options">The notification options in JSON format.</param>
-        public void ScheduleNotification(string options)
-        {
-            Debug.Log($"[JestSDK] ScheduleNotification {options}");
-        }
-
-        /// <summary>
-        /// Logs a version 2 notification scheduling request to the Unity console.
+        /// Logs a rich notification scheduling request to the Unity console.
         /// </summary>
         /// <param name="options">The notification options in JSON format.</param>
         public void ScheduleNotificationV2(string options)
@@ -115,16 +106,7 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Retrieves a list of scheduled notifications.
-        /// </summary>
-        /// <returns>An empty list representing mock notification data.</returns>
-        public List<string> GetNotifications()
-        {
-            return new List<string>();
-        }
-
-        /// <summary>
-        /// Retrieves a list of scheduled version 2 notifications.
+        /// Retrieves a list of scheduled rich notifications.
         /// </summary>
         /// <returns>An empty list representing mock notification data.</returns>
         public List<string> GetNotificationsV2()
@@ -135,10 +117,10 @@ namespace com.jest.sdk
         /// <summary>
         /// Retrieves the game-specific entry payload used to launch the game.
         /// </summary>
-        /// <returns>An empty string representing mock entry payload data.</returns>
+        /// <returns>An empty JSON object representing mock entry payload data.</returns>
         public string GetEntryPayload()
         {
-            return "";
+            return "{}";
         }
 
         /// <summary>
@@ -163,41 +145,41 @@ namespace com.jest.sdk
         /// <summary>
         /// Logs a product retrieval request to the Unity console.
         /// </summary>
-        /// <returns>An empty string representing mock product data.</returns>
+        /// <returns>Mock product data with sample products.</returns>
         public string GetProducts()
         {
             Debug.Log($"[JestSDK] GetProducts");
-            return "";
+            return "[{\"sku\":\"gems_100\",\"name\":\"100 Gems\",\"description\":\"Get 100 gems to use in the game\",\"price\":99.0},{\"sku\":\"gems_500\",\"name\":\"500 Gems\",\"description\":\"Get 500 gems to use in the game\",\"price\":499.0}]";
         }
 
         /// <summary>
         /// Logs a purchase response retrieval request to the Unity console.
         /// </summary>
-        /// <returns>An empty string representing mock purchase response data.</returns>
+        /// <returns>Mock purchase response indicating success.</returns>
         public string GetPurchaseResponse()
         {
             Debug.Log($"[JestSDK] GetPurchaseResponse");
-            return "";
+            return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_debug\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null},\"purchaseSigned\":\"JWS\"}";
         }
 
         /// <summary>
         /// Logs an incomplete purchase response retrieval request to the Unity console.
         /// </summary>
-        /// <returns>An empty string representing mock incomplete purchase data.</returns>
+        /// <returns>Mock incomplete purchase data with an empty purchases array.</returns>
         public string GetIncompletePurchaseResponse()
         {
             Debug.Log($"[JestSDK] GetIncompletePurchaseResponse");
-            return "";
+            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[]}";
         }
 
         /// <summary>
         /// Logs a complete purchase response retrieval request to the Unity console.
         /// </summary>
-        /// <returns>An empty string representing mock complete purchase data.</returns>
+        /// <returns>Mock complete purchase response indicating success.</returns>
         public string GetPurchaseCompleteResponse()
         {
             Debug.Log($"[JestSDK] GetPurchaseCompleteResponse");
-            return "";
+            return "{\"result\":\"success\"}";
         }
 
         /// <summary>

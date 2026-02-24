@@ -60,6 +60,14 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Redirects the player to the explore page of the Jest platform.
+        /// </summary>
+        public void RedirectToExplorePage()
+        {
+            JsBridge.RedirectToExplorePage();
+        }
+
+        /// <summary>
         /// Options for redirecting to the flagship game.
         /// </summary>
         [Serializable]

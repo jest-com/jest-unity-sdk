@@ -112,33 +112,7 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
-        public void Notifications_ScheduleNotification_StoresNotification()
-        {
-            var date = DateTime.Now;
-            var options = new Notifications.Options
-            {
-                message = "Test notification",
-                date = date,
-                deduplicationKey = "test-key",
-                attemptPushNotification = true,
-                data = { { "stringValue", "test" }, { "numberValue", 42 } }
-            };
-
-            JestSDK.Instance.Notifications.ScheduleNotification(options);
-
-            var notifications = JestSDK.Instance.Notifications.GetNotifications();
-            Assert.That(notifications, Has.Count.EqualTo(1));
-
-            var result = notifications[0];
-            Assert.AreEqual(options.attemptPushNotification, result.attemptPushNotification);
-            Assert.AreEqual(options.deduplicationKey, result.deduplicationKey);
-            Assert.AreEqual(options.date, result.date);
-            Assert.AreEqual(options.data, result.data);
-            Assert.AreEqual(options.message, result.message);
-        }
-
-        [Test]
-        public void Notifications_ScheduleRichNotification_StoresNotification()
+        public void RichNotifications_ScheduleNotification_StoresNotification()
         {
             var options = new RichNotifications.Options
             {

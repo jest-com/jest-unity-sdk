@@ -36,9 +36,6 @@ namespace com.jest.sdk
         private static extern void JS_flush(IntPtr taskPtr, Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
-        private static extern void JS_scheduleNotification(string options);
-
-        [DllImport("__Internal")]
         private static extern void JS_scheduleNotificationV2(string optionsJson);
 
         [DllImport("__Internal")]
@@ -100,6 +97,23 @@ namespace com.jest.sdk
         private static extern void JS_getPlayerSigned(IntPtr taskPtr, Action<IntPtr, string> onSuccess,
                                     Action<IntPtr, string> onError);
 
+        [DllImport("__Internal")]
+        private static extern void JS_debugRegister();
+
+        [DllImport("__Internal")]
+        private static extern void JS_redirectToExplorePage();
+
+        [DllImport("__Internal")]
+        private static extern void JS_getFeatureFlag(IntPtr taskPtr, string key, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_reserveLoginMessage(IntPtr taskPtr, string optionsJson, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_sendReservedLoginMessage(string reservationJson);
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -117,8 +131,6 @@ namespace com.jest.sdk
 
         private static void JS_flush(IntPtr taskPtr, Action<IntPtr> onSuccess, Action<IntPtr, string> onError)
         { onSuccess(taskPtr); }
-
-        private static void JS_scheduleNotification(string options) { _bridgeMock.ScheduleNotification(options); }
 
         private static void JS_scheduleNotificationV2(string optionsJson) { _bridgeMock.ScheduleNotificationV2(optionsJson); }
 
@@ -213,6 +225,39 @@ namespace com.jest.sdk
             onSuccess(taskPtr, _bridgeMock.GetPlayerSignedResponse());
         }
 
+        private static void JS_debugRegister()
+        {
+            // In editor mode, just simulate login
+            _bridgeMock.Login(null);
+            UnityEngine.Debug.Log("[JestSDK] Debug register triggered (mock)");
+        }
+
+        private static void JS_redirectToExplorePage()
+        {
+            UnityEngine.Debug.Log("[JestSDK] Redirect to explore page (mock)");
+        }
+
+        private static void JS_getFeatureFlag(IntPtr taskPtr, string key, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            // Return empty string in mock (simulates undefined flag)
+            onSuccess(taskPtr, "");
+        }
+
+        private static void JS_reserveLoginMessage(IntPtr taskPtr, string optionsJson, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            // Return mock reservation
+            var mockResponse = "{\"reservation\":{\"id\":\"mock-reservation-id\",\"message\":\"mock-message\"}}";
+            onSuccess(taskPtr, mockResponse);
+            UnityEngine.Debug.Log("[JestSDK] Reserve login message (mock)");
+        }
+
+        private static void JS_sendReservedLoginMessage(string reservationJson)
+        {
+            UnityEngine.Debug.Log($"[JestSDK] Send reserved login message (mock): {reservationJson}");
+        }
+
 #endif
 
         private static IBridgeMock _bridgeMock = new DebugBridgeMock("playerId", true);
@@ -270,11 +315,6 @@ namespace com.jest.sdk
             return new JestSDKTask((System.IntPtr ptr) => { JS_flush(ptr, HandleSuccess, HandleError); });
         }
 
-        internal static void ScheduleNotification(string options)
-        {
-            JS_scheduleNotification(options);
-        }
-
         internal static void ScheduleNotificationV2(string options)
         {
             JS_scheduleNotificationV2(options);
@@ -293,11 +333,6 @@ namespace com.jest.sdk
         internal static string GetEvent(string eventName)
         {
             return _bridgeMock.GetEvent(eventName);
-        }
-
-        internal static List<string> GetNotifications()
-        {
-            return _bridgeMock.GetNotifications();
         }
 
         internal static List<string> GetNotificationsV2()
@@ -375,6 +410,32 @@ namespace com.jest.sdk
             return new JestSDKTask<string>((System.IntPtr ptr) =>
                             { JS_callAsyncString(ptr, call, HandleSuccessString, HandleErrorString); });
         }
+
+        internal static void DebugRegister()
+        {
+            JS_debugRegister();
+        }
+
+        internal static void RedirectToExplorePage()
+        {
+            JS_redirectToExplorePage();
+        }
+
+        internal static JestSDKTask<string> GetFeatureFlag(string key)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_getFeatureFlag(ptr, key, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static JestSDKTask<string> ReserveLoginMessage(string optionsJson)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_reserveLoginMessage(ptr, optionsJson, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static void SendReservedLoginMessage(string reservationJson)
+        {
+            JS_sendReservedLoginMessage(reservationJson);
+        }
+
         [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, float>))]
         public static void HandleSuccessNumber(System.IntPtr taskPtr, float result) => HandleSuccess(taskPtr, result);

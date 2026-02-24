@@ -12,7 +12,6 @@ namespace com.jest.sdk
     {
         private readonly Dictionary<string, string> _events = new();
         private readonly Dictionary<string, string> _playerValues = new();
-        private readonly List<string> _notifications = new();
         private readonly List<RichNotifications.Options> _notificationsV2 = new();
         private string _entryPayload;
 
@@ -86,16 +85,7 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Schedules a notification using the provided options.
-        /// </summary>
-        /// <param name="options">A JSON string containing notification options.</param>
-        public void ScheduleNotification(string options)
-        {
-            _notifications.Add(options);
-        }
-
-        /// <summary>
-        /// Schedules a version 2 notification using the provided options.
+        /// Schedules a rich notification using the provided options.
         /// </summary>
         /// <param name="options">A JSON string containing the notification options.</param>
         public void ScheduleNotificationV2(string options)
@@ -123,16 +113,7 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Retrieves all scheduled notifications.
-        /// </summary>
-        /// <returns>A list of notification data in JSON format.</returns>
-        public List<string> GetNotifications()
-        {
-            return _notifications;
-        }
-
-        /// <summary>
-        /// Retrieves all scheduled version 2 notifications.
+        /// Retrieves all scheduled rich notifications.
         /// </summary>
         /// <returns>A list of notification data in JSON format.</returns>
         public List<string> GetNotificationsV2()

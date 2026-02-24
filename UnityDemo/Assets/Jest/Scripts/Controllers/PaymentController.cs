@@ -90,7 +90,11 @@ namespace com.jest.demo
             {
                 if (t.IsFaulted)
                 {
-                    UIManager.Instance.m_toastUI.ShowToast("Loadin Incomplete Failed: " + t.Exception.Message);
+                    UIManager.Instance.m_toastUI.ShowToast("Loading Incomplete Failed: " + t.Exception.Message);
+                }
+                else if (t.Result == null)
+                {
+                    UIManager.Instance.m_toastUI.ShowToast("No incomplete purchases response");
                 }
                 else
                 {
@@ -108,6 +112,12 @@ namespace com.jest.demo
             foreach (Transform child in m_completePurchaseCellsContainer)
             {
                 Destroy(child.gameObject);
+            }
+
+            if (m_incompletePurchases?.purchases == null || m_incompletePurchases.purchases.Count == 0)
+            {
+                UIManager.Instance.m_toastUI.ShowToast("No incomplete purchases found");
+                return;
             }
 
             foreach (PurchaseData purchase in m_incompletePurchases.purchases)
@@ -141,7 +151,7 @@ namespace com.jest.demo
                     else if (t.Result.result == "success")
                     {
                         UIManager.Instance.m_toastUI.ShowToast("Purchase Completion success!");
-                        m_incompletePurchases.purchases.RemoveAll(p => p.purchaseToken == purchaseToken);
+                        m_incompletePurchases?.purchases?.RemoveAll(p => p.purchaseToken == purchaseToken);
                         UpdateIncompletePurchasesInUI();
                         StartCoroutine(RefreshLayout(m_completePurchaseCellsContainer.GetComponent<RectTransform>()));
                     }
@@ -161,7 +171,7 @@ namespace com.jest.demo
         public void Purchase(string sku)
         {
             UIManager.Instance.ShowLoadingSpinner();
-            JestSDK.Instance.Payment.Purchase(sku).ContinueWith(t => {
+            JestSDK.Instance.Payment.BeginPurchase(sku).ContinueWith(t => {
                 try
                 {
                     if (t.IsFaulted)

@@ -105,7 +105,7 @@ namespace com.jest.demo
                 plainText = body,
                 body = fallback,
                 ctaText = callToAction,
-                image = imageString,
+                imageReference = imageString,
                 notificationPriority = m_selected,
                 identifier = uniqueKey,
                 date = System.DateTime.Now.AddMinutes(float.Parse(timeString)),
@@ -128,7 +128,7 @@ namespace com.jest.demo
                 }
                 foreach (var kvp in payloadDataObject)
                 {
-                    options.data[kvp.Key] = kvp.Value;
+                    options.entryPayloadData[kvp.Key] = kvp.Value;
                 }
 
             }

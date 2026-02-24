@@ -17,12 +17,7 @@ namespace com.jest.sdk
         private JestSDK() { }
 
         /// <summary>
-        /// Provides access to notification management functionality.
-        /// </summary>
-        public readonly Notifications Notifications = new();
-
-        /// <summary>
-        /// Provides access to notification management functionality.
+        /// Provides access to rich notification management functionality.
         /// </summary>
         public readonly RichNotifications RichNotifications = new();
 
@@ -52,12 +47,18 @@ namespace com.jest.sdk
         public readonly Navigation Navigation = new();
 
         /// <summary>
+        /// Provides access to internal/experimental SDK functionality.
+        /// These methods may change without notice.
+        /// </summary>
+        public readonly Internal Internal = new();
+
+        /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.
         /// </summary>
         /// <returns>A task that completes when the SDK is ready</returns>
         public JestSDKTask Init()
         {
-            return JsBridge.CallAsyncVoid("isReady");
+            return JsBridge.Init();
         }
 
         /// <summary>
@@ -113,6 +114,25 @@ namespace com.jest.sdk
         public void OpenCopyright()
         {
             JsBridge.OpenLegalPage("copyright");
+        }
+
+        /// <summary>
+        /// Triggers debug registration flow. In WebGL, this posts a message to the parent window
+        /// to bypass the normal login flow for testing purposes.
+        /// </summary>
+        public void DebugRegister()
+        {
+            JsBridge.DebugRegister();
+        }
+
+        /// <summary>
+        /// Gets the value of a feature flag by key.
+        /// </summary>
+        /// <param name="key">The feature flag key to look up.</param>
+        /// <returns>A task resolving to the flag value, or empty string if not found.</returns>
+        public JestSDKTask<string> GetFeatureFlag(string key)
+        {
+            return JsBridge.GetFeatureFlag(key);
         }
     }
 }

@@ -23,7 +23,6 @@ namespace com.jest.sdk
         [SerializeField] private List<ValuePair> _values;
 
         [Header("Notifications")]
-        [SerializeField] private List<Notifications.Options> _notifications;
         [SerializeField] private List<RichNotifications.Options> _notificationsV2;
 
         [Header("Events")]
@@ -96,15 +95,7 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Schedules a notification using the provided options.
-        /// </summary>
-        public void ScheduleNotification(string options)
-        {
-            _notifications.Add(JsonUtility.FromJson<Notifications.Options>(options));
-        }
-
-        /// <summary>
-        /// Schedules a version 2 notification using the provided options.
+        /// Schedules a rich notification using the provided options.
         /// </summary>
         public void ScheduleNotificationV2(string options)
         {
@@ -128,15 +119,7 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Retrieves all scheduled notifications.
-        /// </summary>
-        public List<string> GetNotifications()
-        {
-            return _notifications.Select(n => JsonUtility.ToJson(n)).ToList();
-        }
-
-        /// <summary>
-        /// Retrieves all scheduled version 2 notifications.
+        /// Retrieves all scheduled rich notifications.
         /// </summary>
         public List<string> GetNotificationsV2()
         {

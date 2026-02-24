@@ -18,5 +18,11 @@ namespace com.jest.demo
         {
             m_playerStateText.text = JestSDK.Instance.Player.GetPlayerData();
         }
+
+        public void CopyPlayerState()
+        {
+            GUIUtility.systemCopyBuffer = m_playerStateText.text;
+            UIManager.Instance.m_toastUI.ShowToast("Copied!");
+        }
     }
 }
