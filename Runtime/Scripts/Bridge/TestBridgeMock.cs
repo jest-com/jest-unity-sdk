@@ -155,7 +155,6 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing product data.</returns>
         public string GetProducts()
         {
-            Debug.Log("[JestSDK] GetProducts");
             return "[{\"sku\":\"gems_100\",\"name\":\"100 Gems\",\"description\":\"Get 100 gems to use in the game\",\"price\":99.0}]";
         }
 
@@ -165,7 +164,6 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing purchase response data.</returns>
         public string GetPurchaseResponse()
         {
-            Debug.Log("[JestSDK] GetPurchaseResponse");
             switch (purchaseResult)
             {
                 case PurchaseReult.success:
@@ -181,7 +179,6 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing incomplete purchase response data.</returns>
         public string GetIncompletePurchaseResponse()
         {
-            Debug.Log("[JestSDK] GetIncompletePurchaseResponse");
             return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null}]}";
         }
 
@@ -191,7 +188,6 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing complete purchase response data.</returns>
         public string GetPurchaseCompleteResponse()
         {
-            Debug.Log("[JestSDK] GetPurchaseCompleteResponse");
             switch (purchaseCompleteResult)
             {
                 case PurchaseReult.success:
@@ -207,7 +203,7 @@ namespace com.jest.sdk
         /// <param name="optionsJson">The referral options in JSON format.</param>
         public void OpenReferralDialog(string optionsJson)
         {
-            Debug.Log($"[JestSDK] OpenReferralDialog {optionsJson}");
+            // Mock implementation - no-op
         }
 
         /// <summary>
@@ -216,7 +212,6 @@ namespace com.jest.sdk
         /// <returns>A JSON string containing mock referral data.</returns>
         public string GetListReferralsResponse()
         {
-            Debug.Log("[JestSDK] GetListReferralsResponse");
             return "{\"referrals\":[{\"reference\":\"test-ref-123\",\"registrations\":[\"user1\",\"user2\"]}],\"referralsSigned\":\"mock_signed_data\"}";
         }
 
@@ -226,7 +221,7 @@ namespace com.jest.sdk
         /// <param name="optionsJson">The redirect options in JSON format.</param>
         public void RedirectToGame(string optionsJson)
         {
-            Debug.Log($"[JestSDK] RedirectToGame {optionsJson}");
+            // Mock implementation - no-op
         }
 
         /// <summary>
@@ -235,7 +230,7 @@ namespace com.jest.sdk
         /// <param name="page">The page type.</param>
         public void OpenLegalPage(string page)
         {
-            Debug.Log($"[JestSDK] OpenLegalPage {page}");
+            // Mock implementation - no-op
         }
 
         /// <summary>
@@ -244,7 +239,6 @@ namespace com.jest.sdk
         /// <returns>A JSON string containing mock signed player data.</returns>
         public string GetPlayerSignedResponse()
         {
-            Debug.Log("[JestSDK] GetPlayerSignedResponse");
             return $"{{\"player\":{{\"playerId\":\"{playerId}\",\"registered\":{isRegistered.ToLower()}}},\"playerSigned\":\"mock_signed_data\"}}";
         }
     }

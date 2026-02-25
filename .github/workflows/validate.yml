@@ -45,6 +45,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: validate
+    permissions:
+      contents: read
+      checks: write
     env:
       UNITY_VERSION: 2022.3.20f1
       TEST_PROJECT: .test-project
