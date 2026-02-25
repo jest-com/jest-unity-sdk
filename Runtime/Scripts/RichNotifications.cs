@@ -263,10 +263,17 @@ namespace com.jest.sdk
                     }
                 }
 
-                // Parse date
+                // Parse date - JsonConvert may auto-convert to DateTime
                 if (dict.TryGetValue("scheduledAt", out var scheduledAt) && scheduledAt != null)
                 {
-                    options.date = DateTimeExtensions.FromJsString(scheduledAt.ToString());
+                    if (scheduledAt is DateTime dt)
+                    {
+                        options.date = dt;
+                    }
+                    else
+                    {
+                        options.date = DateTimeExtensions.FromJsString(scheduledAt.ToString());
+                    }
                 }
 
                 // Parse scheduledInDays
