@@ -17,7 +17,7 @@ A Unity package that provides seamless integration with the Jest platform for ga
 
 1. Open the Unity Package Manager (Window > Package Manager)
 2. Click the "+" button and select "Add package from git URL"
-3. Enter: `https://github.com/jest-com/jest-unity-sdk.git?path=jest-unity-sdk`
+3. Enter: `https://github.com/jest-com/jest-unity-sdk.git`
 
 ### Importing the Demo Sample
 
