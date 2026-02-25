@@ -1,12 +1,16 @@
 # Jest SDK for Unity
 
-A Unity package that provides seamless integration with the JestSDK platform for game analytics, player management, and notification scheduling.
+A Unity package that provides seamless integration with the Jest platform for game analytics, player management, notifications, payments, referrals, and more.
 
 ## Features
 
-- **Player Management**: Easily store and retrieve player data
+- **Player Management**: Store, retrieve, and sync player data
 - **Analytics**: Track in-game events and player behavior
-- **Notifications**: Schedule in-game and push notifications
+- **Notifications**: Schedule in-game and push notifications with rich content support
+- **Payments**: In-app purchases with purchase verification
+- **Referrals**: Player referral system with tracking
+- **Navigation**: Redirect players between games
+- **Legal Pages**: Display privacy policy, terms of service, and copyright pages
 - **Mock System**: Built-in mocking capabilities for testing
 
 ## Installation
@@ -14,6 +18,17 @@ A Unity package that provides seamless integration with the JestSDK platform for
 1. Open the Unity Package Manager (Window > Package Manager)
 2. Click the "+" button and select "Add package from git URL"
 3. Enter: `https://github.com/jest-com/jest-unity-sdk.git`
+
+### Importing the Demo Sample
+
+After installing the SDK, you can optionally import a complete demo scene:
+
+1. Open Package Manager (Window > Package Manager)
+2. Find "Jest SDK" in the list
+3. Expand the "Samples" section
+4. Click "Import" next to "Demo Scene"
+
+The demo showcases all SDK features including login, player state management, payments, notifications, events, referrals, and navigation.
 
 ## Examples
 
@@ -31,6 +46,20 @@ if (entryPayload.TryGetValue("key", out var value))
 {
     // Do something with the value
 }
+```
+
+### Login
+
+Register the current player. The optional payload can be used to pass additional context.
+
+```csharp
+var jest = JestSDK.Instance;
+
+// Login without payload
+jest.Login();
+
+// Login with payload
+jest.Login(new Dictionary<string, object> {});
 ```
 
 ### Player Data Management
@@ -74,6 +103,43 @@ player.Set("stats", new PlayerStats {
     losses = 2,
     winRate = 0.83f
 });
+```
+
+#### Deleting Player Data
+
+```csharp
+var player = JestSDK.Instance.Player;
+
+// Delete a specific key
+player.Delete("temporaryBoost");
+```
+
+#### Syncing Player Data
+
+```csharp
+var player = JestSDK.Instance.Player;
+
+// Ensure all pending updates are synced to the server
+await player.Flush();
+```
+
+#### Getting Signed Player Data
+
+For server-side verification, you can get signed player data:
+
+```csharp
+var player = JestSDK.Instance.Player;
+
+var signedTask = player.GetSigned();
+await signedTask;
+
+if (signedTask.IsCompleted)
+{
+    var response = signedTask.Result;
+    string playerId = response.player.playerId;
+    bool isRegistered = response.player.registered;
+    string signedPayload = response.playerSigned; // JWS format for server verification
+}
 ```
 
 ### Analytics Events
@@ -138,22 +204,30 @@ notifications.ScheduleNotification(new Notifications.Options {
 ```csharp
 var richNotifications = JestSDK.Instance.RichNotifications;
 
-// Schedule for specific time
+// Schedule for specific date/time
 richNotifications.ScheduleNotification(new RichNotifications.Options {
-    
     body = <The text of the notification>,
     plainText = <Simple formatting (for SMS)>,
     ctaText = <Call to Action text: what is shown next to the button>,
-    image = <Base64 data URL for the notification image>, //Optional
-    notificationPriority = <low, medium, high, critical>,
+    imageReference = <URL for the notification image>, // Optional
+    notificationPriority = <Low, Medium, High, Critical>,
     identifier = <unique Identifier>,
-    date = <When should it be scheduled for>
+    date = <When should it be scheduled for>,
+    entryPayloadData = <Dictionary of custom data> // Optional
+});
+
+// Or schedule using fuzzy timing (1-14 days) instead of exact date
+richNotifications.ScheduleNotification(new RichNotifications.Options {
+    body = <The text of the notification>,
+    plainText = <Simple formatting (for SMS)>,
+    ctaText = <Call to Action text>,
+    notificationPriority = <Low, Medium, High, Critical>,
+    identifier = <unique Identifier>,
+    scheduledInDays = <Number of days from now (1-14)>
 });
 
 // Unschedule with unique notification key
-
 richNotifications.UnscheduleNotification(<unique Identifier>);
-
 ```
 
 
@@ -179,7 +253,7 @@ if (productsTask.IsCompleted)
 
 #### Making Purchase
 ```csharp
-var purchaseTask = JestSDK.Instance.Payment.Purchase("gems_100");
+var purchaseTask = JestSDK.Instance.Payment.BeginPurchase("gems_100");
 await purchaseTask;
 
 if (purchaseTask.Result.result == "success")
@@ -193,6 +267,9 @@ else
 ```
 
 #### Completing an Incomplete Purchase
+
+Note: The player must be logged in to retrieve and complete incomplete purchases.
+
 ```csharp
 var incompletePurchasesTask = JestSDK.Instance.Payment.GetIncompletePurchases();
 await incompletePurchasesTask;
@@ -204,6 +281,97 @@ foreach (var purchase in incompletePurchasesTask.Result)
 }
 ```
 
+
+### Referrals
+
+The referral system allows players to invite others and track registrations.
+
+#### Opening Referral Dialog
+
+```csharp
+var referrals = JestSDK.Instance.Referrals;
+
+// Open native share dialog with referral link
+referrals.OpenReferralDialog(new Referrals.OpenDialogOptions {
+    reference = "summer_campaign",
+    shareTitle = "Join me in this awesome game!",
+    shareText = "Use my link to get bonus rewards!",
+    entryPayload = new Dictionary<string, object> {
+        { "referrer_level", 25 }
+    }
+});
+```
+
+#### Listing Referrals
+
+```csharp
+var referrals = JestSDK.Instance.Referrals;
+var listTask = referrals.ListReferrals();
+
+await listTask;
+if (listTask.IsCompleted)
+{
+    var response = listTask.Result;
+    foreach (var referral in response.referrals)
+    {
+        Debug.Log($"Reference: {referral.reference}, Registrations: {referral.registrations.Count}");
+    }
+    // Use response.referralsSigned for server-side verification
+}
+```
+
+
+### Navigation
+
+Redirect players to other games or the flagship game.
+
+#### Redirect to Flagship Game
+
+```csharp
+var navigation = JestSDK.Instance.Navigation;
+
+// Simple redirect
+navigation.RedirectToFlagshipGame();
+
+// Redirect with entry payload
+navigation.RedirectToFlagshipGame(new Navigation.RedirectToFlagshipGameOptions {
+    entryPayload = new Dictionary<string, object> {
+        { "from_game", "puzzle_master" },
+        { "reward_claimed", true }
+    }
+});
+```
+
+#### Redirect to Specific Game
+
+```csharp
+var navigation = JestSDK.Instance.Navigation;
+
+navigation.RedirectToGame(new Navigation.RedirectToGameOptions {
+    gameSlug = "adventure-quest",
+    entryPayload = new Dictionary<string, object> {
+        { "cross_promo", true }
+    }
+});
+```
+
+
+### Legal Pages
+
+Display legal pages to players.
+
+```csharp
+var jest = JestSDK.Instance;
+
+// Open privacy policy
+jest.OpenPrivacyPolicy();
+
+// Open terms of service
+jest.OpenTermsOfService();
+
+// Open copyright information
+jest.OpenCopyright();
+```
 
 
 ## Testing
@@ -223,6 +391,7 @@ The SDK includes a ScriptableObject-based mock system for testing in the Unity E
    - View analytics events
    - Monitor scheduled notifications
    - Toggle registered/unregistered state
+   - Configure purchase responses
 
 This is especially useful for:
 
@@ -231,10 +400,11 @@ This is especially useful for:
 - Testing notification scheduling
 - Simulating different player scenarios
 - Testing payments
+- Testing referral flows
 
 The mock configuration persists in edit mode, allowing you to maintain test data between play sessions.
 
 ## Requirements and dependencies
 
-- Unity 6000.0 or later
+- Unity 2022.3 or later
 - Newtonsoft.Json 3.2.1 or later

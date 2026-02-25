@@ -1,0 +1,17 @@
+{
+  "name": "com.jest.sdk.Demo",
+  "rootNamespace": "",
+  "references": [
+    "com.jest.sdk",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
