@@ -7,5 +7,12 @@
   "unity": "2022.3",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1"
-  }
+  },
+  "samples": [
+    {
+      "displayName": "Demo Scene",
+      "description": "Complete demo showcasing all Jest SDK features: login, player state, payments, notifications, events, referrals, and navigation.",
+      "path": "Samples~/Demo"
+    }
+  ]
 }

@@ -17,7 +17,18 @@ A Unity package that provides seamless integration with the Jest platform for ga
 
 1. Open the Unity Package Manager (Window > Package Manager)
 2. Click the "+" button and select "Add package from git URL"
-3. Enter: `https://github.com/jest-com/jest-unity-sdk.git`
+3. Enter: `https://github.com/jest-com/jest-unity-sdk.git?path=jest-unity-sdk`
+
+### Importing the Demo Sample
+
+After installing the SDK, you can optionally import a complete demo scene:
+
+1. Open Package Manager (Window > Package Manager)
+2. Find "Jest SDK" in the list
+3. Expand the "Samples" section
+4. Click "Import" next to "Demo Scene"
+
+The demo showcases all SDK features including login, player state management, payments, notifications, events, referrals, and navigation.
 
 ## Examples
 
@@ -395,5 +406,5 @@ The mock configuration persists in edit mode, allowing you to maintain test data
 
 ## Requirements and dependencies
 
-- Unity 6000.0 or later
+- Unity 2022.3 or later
 - Newtonsoft.Json 3.2.1 or later

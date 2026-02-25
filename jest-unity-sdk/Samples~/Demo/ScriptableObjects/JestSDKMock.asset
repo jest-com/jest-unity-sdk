@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22b483cb2619b4d6098755dbb7fb2033, type: 3}
+  m_Name: JestSDKMock
+  m_EditorClassIdentifier: 
+  _playerId: 1234
+  _isRegistered: 1
+  _values: []
+  _notifications: []
+  _notificationsV2: []
+  _events: []
+  _entryPayload:
+  - key: level
+    value: 5
+  - key: score
+    value: 100
+  _purchaseProducts:
+  - sku: gems_100
+    name: 100 Gems
+    description: Get 100 gems to use in the game
+    price: 99
+  - sku: gems_500
+    name: 500 Gems
+    description: Get 500 gems to use in the game
+    price: 499
+  _purchaseResult: 0
+  _incompletePurchaseResult: 0
+  _purchaseSuccessResponse:
+    result: success
+    error: 
+    purchase:
+      purchaseToken: mock_token_bcwux13xvm4
+      productSku: gems_100
+      credits: 99
+      createdAt: 1761729039
+    purchaseSigned: JWS
+  _purchaseFailResponse:
+    result: error
+    error: purchase failed
+    purchase:
+      purchaseToken: 
+      productSku: 
+      credits: 0
+      createdAt: 0
+    purchaseSigned: 
+  _incompletePurchaseSuccessResponse:
+    hasMore: 0
+    purchasesSigned: JWS
+    purchases:
+    - purchaseToken: mock_token_bcwux13xvm4
+      productSku: gems_100
+      credits: 99
+      createdAt: 1761729039
+  _purchaseCompleteResponse:
+    result: success
+    error: 
