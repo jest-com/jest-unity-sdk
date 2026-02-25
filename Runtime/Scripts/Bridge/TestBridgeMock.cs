@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace com.jest.sdk
@@ -12,7 +13,7 @@ namespace com.jest.sdk
     {
         private readonly Dictionary<string, string> _events = new();
         private readonly Dictionary<string, string> _playerValues = new();
-        private readonly List<RichNotifications.Options> _notificationsV2 = new();
+        private readonly List<string> _notificationsV2 = new();
         private string _entryPayload;
 
         /// <summary>
@@ -90,7 +91,7 @@ namespace com.jest.sdk
         /// <param name="options">A JSON string containing the notification options.</param>
         public void ScheduleNotificationV2(string options)
         {
-            _notificationsV2.Add(JsonUtility.FromJson<RichNotifications.Options>(options));
+            _notificationsV2.Add(options);
         }
 
         /// <summary>
@@ -99,7 +100,10 @@ namespace com.jest.sdk
         /// <param name="key">The identifier of the notification to unschedule.</param>
         public void UnscheduleNotificationV2(string key)
         {
-            _notificationsV2.RemoveAll(n => n.identifier == key);
+            _notificationsV2.RemoveAll(n => {
+                var parsed = JsonConvert.DeserializeObject<Dictionary<string, object>>(n);
+                return parsed != null && parsed.TryGetValue("identifier", out var id) && id?.ToString() == key;
+            });
         }
 
         /// <summary>
@@ -118,7 +122,7 @@ namespace com.jest.sdk
         /// <returns>A list of notification data in JSON format.</returns>
         public List<string> GetNotificationsV2()
         {
-            return _notificationsV2.Select(n => JsonUtility.ToJson(n)).ToList();
+            return _notificationsV2.ToList();
         }
 
         /// <summary>

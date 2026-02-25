@@ -62,7 +62,7 @@ namespace com.jest.sdk
         {
             return JsBridge
                 .GetNotificationsV2()
-                .Select(n => JsonUtility.FromJson<Options>(n))
+                .Select(Options.FromJson)
                 .ToList();
         }
 
@@ -235,6 +235,57 @@ namespace com.jest.sdk
                 }
 
                 return JsonConvert.SerializeObject(jsonObj);
+            }
+
+            /// <summary>
+            /// Deserializes a JSON string (created by ToJson) back into an Options object.
+            /// </summary>
+            internal static Options FromJson(string json)
+            {
+                var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                if (dict == null) return new Options();
+
+                var options = new Options
+                {
+                    plainText = dict.TryGetValue("plainText", out var pt) ? pt?.ToString() : null,
+                    body = dict.TryGetValue("body", out var b) ? b?.ToString() : null,
+                    ctaText = dict.TryGetValue("ctaText", out var cta) ? cta?.ToString() : null,
+                    imageReference = dict.TryGetValue("imageReference", out var img) ? img?.ToString() : null,
+                    identifier = dict.TryGetValue("identifier", out var id) ? id?.ToString() : null
+                };
+
+                // Parse priority
+                if (dict.TryGetValue("priority", out var priority) && priority != null)
+                {
+                    if (Enum.TryParse<Severity>(priority.ToString(), true, out var sev))
+                    {
+                        options.notificationPriority = sev;
+                    }
+                }
+
+                // Parse date
+                if (dict.TryGetValue("scheduledAt", out var scheduledAt) && scheduledAt != null)
+                {
+                    options.date = DateTimeExtensions.FromJsString(scheduledAt.ToString());
+                }
+
+                // Parse scheduledInDays
+                if (dict.TryGetValue("scheduledInDays", out var days) && days != null)
+                {
+                    if (int.TryParse(days.ToString(), out var daysInt))
+                    {
+                        options.scheduledInDays = daysInt;
+                    }
+                }
+
+                // Parse entryPayload
+                if (dict.TryGetValue("entryPayload", out var payload) && payload != null)
+                {
+                    options._entryPayloadData = Convert.FromString<Dictionary<string, object>>(
+                        JsonConvert.SerializeObject(payload));
+                }
+
+                return options;
             }
         }
     }
