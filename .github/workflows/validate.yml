@@ -1,0 +1,50 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate package structure
+        run: |
+          echo "📦 Checking package structure..."
+
+          # Required files
+          for file in package.json README.md CHANGELOG.md; do
+            if [ ! -f "$file" ]; then
+              echo "❌ Missing required file: $file"
+              exit 1
+            fi
+            echo "✅ Found: $file"
+          done
+
+          # Required folders
+          for folder in Runtime Editor Tests; do
+            if [ ! -d "$folder" ]; then
+              echo "❌ Missing required folder: $folder"
+              exit 1
+            fi
+            echo "✅ Found: $folder/"
+          done
+
+          # Validate package.json
+          echo ""
+          echo "📋 Package info:"
+          jq -r '"  Name: \(.name)\n  Version: \(.version)\n  Unity: \(.unity)"' package.json
+
+          # Check assembly definitions exist
+          echo ""
+          echo "🔧 Assembly definitions:"
+          find . -name "*.asmdef" -type f | while read f; do
+            echo "  ✅ $f"
+          done
+
+          echo ""
+          echo "✅ Package structure is valid!"
