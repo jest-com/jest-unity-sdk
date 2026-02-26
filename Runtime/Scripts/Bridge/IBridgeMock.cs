@@ -56,20 +56,6 @@ namespace com.jest.sdk
         void UnscheduleNotificationV2(string key);
 
         /// <summary>
-        /// Captures an event with the specified name and properties.
-        /// </summary>
-        /// <param name="eventName">The name of the event to capture.</param>
-        /// <param name="properties">A JSON string containing the event properties.</param>
-        void CaptureEvent(string eventName, string properties);
-
-        /// <summary>
-        /// Retrieves an event by its name.
-        /// </summary>
-        /// <param name="eventName">The name of the event to retrieve.</param>
-        /// <returns>A JSON string containing the event data.</returns>
-        string GetEvent(string eventName);
-
-        /// <summary>
         /// Retrieves all scheduled rich notifications.
         /// </summary>
         /// <returns>A list of notification data as JSON strings.</returns>

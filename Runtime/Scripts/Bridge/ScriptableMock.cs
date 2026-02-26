@@ -25,9 +25,6 @@ namespace com.jest.sdk
         [Header("Notifications")]
         [SerializeField] private List<RichNotifications.Options> _notificationsV2;
 
-        [Header("Events")]
-        [SerializeField] private List<ValuePair> _events;
-
         [Header("Entry Payload")]
         [SerializeField] private List<ValuePair> _entryPayload;
 
@@ -55,14 +52,6 @@ namespace com.jest.sdk
 
         public PurchaseReult purchaseResult => _purchaseResult;
         public PurchaseReult purchaseCompleteResult => _purchaseCompleteResult;
-
-        /// <summary>
-        /// Captures an event with the specified name and properties.
-        /// </summary>
-        public void CaptureEvent(string eventName, string properties)
-        {
-            _events.Add(new ValuePair { key = eventName, value = properties });
-        }
 
         /// <summary>
         /// Retrieves a player value by its key.
@@ -108,14 +97,6 @@ namespace com.jest.sdk
         public void UnscheduleNotificationV2(string key)
         {
             _notificationsV2.RemoveAll(n => n.identifier == key);
-        }
-
-        /// <summary>
-        /// Retrieves the properties of an event by its name.
-        /// </summary>
-        public string GetEvent(string eventName)
-        {
-            return _events.Find(e => e.key == eventName).value;
         }
 
         /// <summary>

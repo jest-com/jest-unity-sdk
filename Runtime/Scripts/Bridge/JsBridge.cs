@@ -42,9 +42,6 @@ namespace com.jest.sdk
         private static extern void JS_unscheduleNotificationV2(string identifier);
 
         [DllImport("__Internal")]
-        private static extern void JS_captureEvent(string eventName, string properties);
-
-        [DllImport("__Internal")]
         private static extern void JS_callAsyncVoid(System.IntPtr ptr, string call, System.Action<System.IntPtr> successCallback,
                                          System.Action<System.IntPtr, string> errorCallback);
 
@@ -135,8 +132,6 @@ namespace com.jest.sdk
         private static void JS_scheduleNotificationV2(string optionsJson) { _bridgeMock.ScheduleNotificationV2(optionsJson); }
 
         private static void JS_unscheduleNotificationV2(string identifier) { _bridgeMock.UnscheduleNotificationV2(identifier); }
-
-        private static void JS_captureEvent(string eventName, string properties) { _bridgeMock.CaptureEvent(eventName, properties); }
 
         private static void JS_callAsyncNumber(System.IntPtr ptr, string call, System.Action<System.IntPtr, float> successCallback,
                                          System.Action<System.IntPtr, string> errorCallback)
@@ -323,16 +318,6 @@ namespace com.jest.sdk
         internal static void UnscheduleNotificationV2(string options)
         {
             JS_unscheduleNotificationV2(options);
-        }
-
-        internal static void CaptureEvent(string eventName, string properties)
-        {
-            JS_captureEvent(eventName, properties);
-        }
-
-        internal static string GetEvent(string eventName)
-        {
-            return _bridgeMock.GetEvent(eventName);
         }
 
         internal static List<string> GetNotificationsV2()

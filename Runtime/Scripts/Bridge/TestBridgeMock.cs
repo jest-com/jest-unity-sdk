@@ -11,7 +11,6 @@ namespace com.jest.sdk
     /// </summary>
     public class TestBridgeMock : IBridgeMock
     {
-        private readonly Dictionary<string, string> _events = new();
         private readonly Dictionary<string, string> _playerValues = new();
         private readonly List<string> _notificationsV2 = new();
         private string _entryPayload;
@@ -44,16 +43,6 @@ namespace com.jest.sdk
         {
             this.playerId = playerId;
             this.isRegistered = isRegistered.ToString();
-        }
-
-        /// <summary>
-        /// Captures an event with the specified name and properties.
-        /// </summary>
-        /// <param name="eventName">The name of the event to capture.</param>
-        /// <param name="properties">A JSON string containing event properties.</param>
-        public void CaptureEvent(string eventName, string properties)
-        {
-            _events[eventName] = properties;
         }
 
         /// <summary>
@@ -104,16 +93,6 @@ namespace com.jest.sdk
                 var parsed = JsonConvert.DeserializeObject<Dictionary<string, object>>(n);
                 return parsed != null && parsed.TryGetValue("identifier", out var id) && id?.ToString() == key;
             });
-        }
-
-        /// <summary>
-        /// Retrieves an event by its name.
-        /// </summary>
-        /// <param name="eventName">The name of the event to retrieve.</param>
-        /// <returns>A JSON string containing event properties, or an empty string if not found.</returns>
-        public string GetEvent(string eventName)
-        {
-            return _events.TryGetValue(eventName, out var evnt) ? evnt : "";
         }
 
         /// <summary>

@@ -89,30 +89,6 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
-        public void Analytics_CaptureEvent_StoresEventData()
-        {
-            var eventName = "test-event";
-            var eventData = new TestEventData { stringValue = "test", numberValue = 42 };
-            JestSDK.Instance.Analytics.CaptureEvent(eventName, eventData);
-
-            var parsedEvent = JestSDK.Instance.Analytics.GetEvent<TestEventData>(eventName);
-
-            Assert.AreEqual(eventData, parsedEvent);
-        }
-
-        [Test]
-        public void Analytics_CaptureEvent_StoresEventData_Dictionary()
-        {
-            var eventName = "test-event";
-            var eventData = new Dictionary<string, object> { { "stringValue", "test" }, { "numberValue", 42 } };
-            JestSDK.Instance.Analytics.CaptureEvent(eventName, eventData);
-
-            var parsedData = JestSDK.Instance.Analytics.GetEvent(eventName);
-
-            Assert.AreEqual(eventData, parsedData);
-        }
-
-        [Test]
         public void RichNotifications_ScheduleNotification_StoresNotification()
         {
             var options = new RichNotifications.Options

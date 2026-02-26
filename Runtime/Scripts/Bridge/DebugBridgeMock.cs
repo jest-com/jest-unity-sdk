@@ -38,16 +38,6 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Logs an event capture request to the Unity console.
-        /// </summary>
-        /// <param name="eventName">The name of the event to capture.</param>
-        /// <param name="properties">The event properties in JSON format.</param>
-        public void CaptureEvent(string eventName, string properties)
-        {
-            Debug.Log($"[JestSDK] CaptureEvent {eventName} {properties}");
-        }
-
-        /// <summary>
         /// Logs a player value retrieval request to the Unity console.
         /// </summary>
         /// <param name="key">The key of the value to retrieve.</param>
@@ -93,16 +83,6 @@ namespace com.jest.sdk
         public void DeletePlayerValue(string key)
         {
             Debug.Log($"[JestSDK] DeletePlayerValue {key}");
-        }
-
-        /// <summary>
-        /// Retrieves mock event data for the specified event.
-        /// </summary>
-        /// <param name="eventName">The name of the event.</param>
-        /// <returns>An empty string representing mock event data.</returns>
-        public string GetEvent(string eventName)
-        {
-            return "";
         }
 
         /// <summary>
