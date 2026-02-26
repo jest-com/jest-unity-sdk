@@ -20,7 +20,6 @@ This sample demonstrates all features of the Jest SDK.
 - **Player State**: Set, get, delete, and flush player data
 - **Payments**: Product listing, purchase flow, incomplete purchase handling
 - **Rich Notifications**: Schedule and manage notifications
-- **Events/Analytics**: Track custom events
 - **Referrals**: Referral system integration
 - **Navigation**: In-app navigation controls
 - **Legal Pages**: Open terms of service and privacy policy

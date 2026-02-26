@@ -1,11 +1,10 @@
 # Jest SDK for Unity
 
-A Unity package that provides seamless integration with the Jest platform for game analytics, player management, notifications, payments, referrals, and more.
+A Unity package that provides seamless integration with the Jest platform for player management, notifications, payments, referrals, and more.
 
 ## Features
 
 - **Player Management**: Store, retrieve, and sync player data
-- **Analytics**: Track in-game events and player behavior
 - **Notifications**: Schedule in-game and push notifications with rich content support
 - **Payments**: In-app purchases with purchase verification
 - **Referrals**: Player referral system with tracking
@@ -28,7 +27,7 @@ After installing the SDK, you can optionally import a complete demo scene:
 3. Expand the "Samples" section
 4. Click "Import" next to "Demo Scene"
 
-The demo showcases all SDK features including login, player state management, payments, notifications, events, referrals, and navigation.
+The demo showcases all SDK features including login, player state management, payments, notifications, referrals, and navigation.
 
 ## Examples
 
@@ -140,48 +139,6 @@ if (signedTask.IsCompleted)
     bool isRegistered = response.player.registered;
     string signedPayload = response.playerSigned; // JWS format for server verification
 }
-```
-
-### Analytics Events
-
-#### Basic Events
-
-```csharp
-var analytics = JestSDK.Instance.Analytics;
-
-// Simple event without properties
-analytics.CaptureEvent("game_started");
-
-// Event with dictionary properties
-analytics.CaptureEvent("item_purchased", new Dictionary<string, object> {
-    { "itemId", "power_boost" },
-    { "price", 99 },
-    { "currency", "coins" },
-    { "balance", 901 }
-});
-```
-
-#### Structured Events
-
-```csharp
-// Define event structure
-public struct LevelCompleteEvent
-{
-    public int level;
-    public int score;
-    public float timeSpent;
-    public bool perfectRun;
-    public string difficulty;
-}
-
-// Capture structured event
-analytics.CaptureEvent("level_complete", new LevelCompleteEvent {
-    level = 5,
-    score = 1000,
-    timeSpent = 120.5f,
-    perfectRun = true,
-    difficulty = "hard"
-});
 ```
 
 ### Notifications
@@ -388,7 +345,6 @@ The SDK includes a ScriptableObject-based mock system for testing in the Unity E
 3. In the Inspector, you can:
    - Set the mock player ID
    - Configure initial player data
-   - View analytics events
    - Monitor scheduled notifications
    - Toggle registered/unregistered state
    - Configure purchase responses
@@ -396,7 +352,6 @@ The SDK includes a ScriptableObject-based mock system for testing in the Unity E
 This is especially useful for:
 
 - Debugging player progression
-- Verifying analytics event data
 - Testing notification scheduling
 - Simulating different player scenarios
 - Testing payments

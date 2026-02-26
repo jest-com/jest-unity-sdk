@@ -264,13 +264,6 @@ mergeInto(LibraryManager.library, {
             type: 'GetPlayerSigned'
           }, 'GetPlayerSignedResponse');
         },
-        captureEvent: function(name, props) {
-          helper.sendMessage({
-            type: 'CaptureEvent',
-            event: name,
-            properties: props || {}
-          });
-        },
         login: function(opts) {
           helper.sendMessage({
             type: 'BeginPlatformLogin',
@@ -435,7 +428,6 @@ mergeInto(LibraryManager.library, {
           setPlayerDataVal: function(key, value) { mp.data[key] = value; },
           flush: function() { return Promise.resolve(); },
           getPlayerSigned: function() { return Promise.resolve({ player: mp, playerSigned: "mock-signed" }); },
-          captureEvent: function(name, props) { console.log("[Mock] captureEvent:", name, props); },
           login: function(opts) { console.log("[Mock] login:", opts); },
           notifications: {
             scheduleNotification: function(opts) { console.log("[Mock] scheduleNotification:", opts); },
@@ -555,15 +547,6 @@ mergeInto(LibraryManager.library, {
     window.JestSDK.notifications.unscheduleNotification({
       identifier: UTF8ToString(identifier),
     });
-  },
-
-  JS_captureEvent__deps: ['$JestSDKHelper'],
-  JS_captureEvent: function (eventName, properties) {
-    JestSDKHelper.ensureSDK();
-    window.JestSDK.captureEvent(
-      UTF8ToString(eventName),
-      JSON.parse(UTF8ToString(properties))
-    );
   },
 
   JS_login__deps: ['$JestSDKHelper'],

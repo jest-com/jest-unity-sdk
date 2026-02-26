@@ -22,11 +22,6 @@ namespace com.jest.sdk
         public readonly RichNotifications RichNotifications = new();
 
         /// <summary>
-        /// Provides access to analytics tracking and reporting.
-        /// </summary>
-        public readonly Analytics Analytics = new();
-
-        /// <summary>
         /// Provides access to player-related functionality and data.
         /// </summary>
         public readonly Player Player = new();
