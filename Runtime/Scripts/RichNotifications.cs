@@ -24,11 +24,14 @@ namespace com.jest.sdk
             Medium,
 
             /// <summary>High priority notification.</summary>
-            High,
-
-            /// <summary>Critical priority notification requiring immediate attention.</summary>
-            Critical
+            High
         }
+
+        /// <summary>Maximum number of characters allowed in the CTA text.</summary>
+        public const int CTA_CHAR_LIMIT = 25;
+
+        /// <summary>Maximum number of days a notification can be scheduled ahead.</summary>
+        public const int MAX_SCHEDULE_DAYS = 7;
 
         /// <summary>
         /// Internal constructor to prevent external instantiation.
@@ -39,8 +42,40 @@ namespace com.jest.sdk
         /// Schedules a new rich notification using the specified options.
         /// </summary>
         /// <param name="options">The notification configuration options.</param>
+        /// <exception cref="ArgumentException">Thrown when options fail validation.</exception>
         public void ScheduleNotification(Options options)
         {
+            if (string.IsNullOrEmpty(options.body))
+                throw new ArgumentException("body is required");
+
+            if (string.IsNullOrEmpty(options.ctaText))
+                throw new ArgumentException("ctaText is required");
+
+            if (options.ctaText.Length > CTA_CHAR_LIMIT)
+                throw new ArgumentException($"ctaText must be {CTA_CHAR_LIMIT} characters or fewer");
+
+            if (string.IsNullOrEmpty(options.identifier))
+                throw new ArgumentException("identifier is required");
+
+            bool hasDate = options.date != default;
+            bool hasDays = options.scheduledInDays.HasValue;
+
+            if (!hasDate && !hasDays)
+                throw new ArgumentException("Either date or scheduledInDays must be provided");
+
+            if (hasDate && hasDays)
+                throw new ArgumentException("date and scheduledInDays are mutually exclusive");
+
+            if (hasDays && (options.scheduledInDays.Value < 1 || options.scheduledInDays.Value > MAX_SCHEDULE_DAYS))
+                throw new ArgumentException($"scheduledInDays must be between 1 and {MAX_SCHEDULE_DAYS}");
+
+            if (hasDate)
+            {
+                var maxDate = DateTime.UtcNow.AddDays(MAX_SCHEDULE_DAYS);
+                if (options.date.ToUniversalTime() > maxDate)
+                    throw new ArgumentException($"date must be within {MAX_SCHEDULE_DAYS} days");
+            }
+
             var payload = options.ToJson();
             JsBridge.ScheduleNotificationV2(payload);
         }
@@ -78,34 +113,20 @@ namespace com.jest.sdk
             [SerializeField] private string priority;
 
             /// <summary>
-            /// The title or plain text displayed in the notification.
-            /// </summary>
-            public string plainText;
-
-            /// <summary>
             /// The main body text of the notification.
             /// </summary>
             public string body;
 
             /// <summary>
             /// The text displayed on the call-to-action (CTA) button.
+            /// Must be 1-25 characters.
             /// </summary>
             public string ctaText;
 
             /// <summary>
-            /// The URL or path to an image displayed with the notification.
+            /// The reference to a pre-approved image to display with the notification.
             /// </summary>
             public string imageReference;
-
-            /// <summary>
-            /// The URL or path to an image displayed with the notification.
-            /// </summary>
-            [Obsolete("Use imageReference instead")]
-            public string image
-            {
-                get => imageReference;
-                set => imageReference = value;
-            }
 
             /// <summary>
             /// The severity or importance level of this notification.
@@ -114,7 +135,8 @@ namespace com.jest.sdk
             public Severity notificationPriority = Severity.Low;
 
             /// <summary>
-            /// The unique identifier of the notification.
+            /// The unique identifier of the notification. Required.
+            /// Notifications can be rescheduled or unscheduled using this identifier.
             /// </summary>
             public string identifier;
 
@@ -133,24 +155,14 @@ namespace com.jest.sdk
             }
 
             /// <summary>
-            /// Additional custom key-value data payload associated with the notification.
-            /// </summary>
-            [Obsolete("Use entryPayloadData instead")]
-            public Dictionary<string, object> data
-            {
-                get => _entryPayloadData;
-                set => _entryPayloadData = value ?? new Dictionary<string, object>();
-            }
-
-            /// <summary>
             /// The scheduled date and time of the notification.
-            /// Mutually exclusive with <see cref="scheduledInDays"/>.
+            /// Must be within 7 days. Mutually exclusive with <see cref="scheduledInDays"/>.
             /// </summary>
             [NonSerialized]
             public DateTime date;
 
             /// <summary>
-            /// Schedule the notification in a specified number of days (1-14).
+            /// Schedule the notification in a specified number of days (1-7).
             /// Uses fuzzy timing without an exact time.
             /// Mutually exclusive with <see cref="date"/>.
             /// </summary>
@@ -205,7 +217,6 @@ namespace com.jest.sdk
             {
                 var jsonObj = new Dictionary<string, object>
                 {
-                    ["plainText"] = plainText,
                     ["body"] = body,
                     ["ctaText"] = ctaText,
                     ["priority"] = notificationPriority.ToString().ToLower(),
@@ -247,7 +258,6 @@ namespace com.jest.sdk
 
                 var options = new Options
                 {
-                    plainText = dict.TryGetValue("plainText", out var pt) ? pt?.ToString() : null,
                     body = dict.TryGetValue("body", out var b) ? b?.ToString() : null,
                     ctaText = dict.TryGetValue("ctaText", out var cta) ? cta?.ToString() : null,
                     imageReference = dict.TryGetValue("imageReference", out var img) ? img?.ToString() : null,

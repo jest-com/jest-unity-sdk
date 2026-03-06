@@ -13,15 +13,19 @@ namespace com.jest.demo
     {
 
         [SerializeField] private TMP_InputField m_notificationBodyInput;
-        [SerializeField] private TMP_InputField m_fallbackBodyInput;
         [SerializeField] private TMP_InputField m_callToActionInput;
         [SerializeField] private TMP_InputField m_imageBase64Input;
+        [SerializeField] private TMP_Dropdown m_schedulingModeDropDown;
+        [SerializeField] private GameObject m_exactSchedulingWrapper;
         [SerializeField] private TMP_InputField m_minutesFromNowInput;
+        [SerializeField] private GameObject m_fuzzySchedulingWrapper;
+        [SerializeField] private TMP_InputField m_scheduledInDaysInput;
         [SerializeField] private TMP_InputField m_uniqueKeyInput;
         [SerializeField] private TMP_InputField m_entryPayloadInput;
         [SerializeField] private TMP_Dropdown m_priorityDropDown;
         [SerializeField] private TMP_InputField m_unscheduleUniqueKeyInput;
         RichNotifications.Severity m_selected = RichNotifications.Severity.Low;
+        bool m_useFuzzyScheduling = false;
 
         private void Start()
         {
@@ -36,12 +40,29 @@ namespace com.jest.demo
             m_priorityDropDown.ClearOptions();
             m_priorityDropDown.AddOptions(names);
 
-            m_priorityDropDown.onValueChanged.AddListener(OnDropdownValueChanged);
+            m_priorityDropDown.onValueChanged.AddListener(OnPriorityChanged);
+
+            m_schedulingModeDropDown.ClearOptions();
+            m_schedulingModeDropDown.AddOptions(new List<string> { "Exact (minutes from now)", "Fuzzy (days from now)" });
+            m_schedulingModeDropDown.onValueChanged.AddListener(OnSchedulingModeChanged);
+            UpdateSchedulingFields();
         }
 
-        private void OnDropdownValueChanged(int index)
+        private void OnPriorityChanged(int index)
         {
             m_selected = (RichNotifications.Severity)index;
+        }
+
+        private void OnSchedulingModeChanged(int index)
+        {
+            m_useFuzzyScheduling = index == 1;
+            UpdateSchedulingFields();
+        }
+
+        private void UpdateSchedulingFields()
+        {
+            m_exactSchedulingWrapper.SetActive(!m_useFuzzyScheduling);
+            m_fuzzySchedulingWrapper.SetActive(m_useFuzzyScheduling);
         }
 
         public void UseRedImage()
@@ -59,24 +80,14 @@ namespace com.jest.demo
             }
 
             string body = m_notificationBodyInput.text;
-            string fallback = m_fallbackBodyInput.text;
             string callToAction = m_callToActionInput.text;
             string imageString = m_imageBase64Input.text;
-            string timeString = m_minutesFromNowInput.text;
             string uniqueKey = m_uniqueKeyInput.text;
             string entryPayloadJson = m_entryPayloadInput.text;
-
-
 
             if (string.IsNullOrEmpty(body))
             {
                 UIManager.Instance.m_toastUI.ShowToast("Notification body is empty");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(fallback))
-            {
-                UIManager.Instance.m_toastUI.ShowToast("Fallback body is empty");
                 return;
             }
 
@@ -86,30 +97,41 @@ namespace com.jest.demo
                 return;
             }
 
-            if (string.IsNullOrEmpty(timeString))
-            {
-                UIManager.Instance.m_toastUI.ShowToast("Minutes field is empty");
-                return;
-            }
-
             if (string.IsNullOrEmpty(uniqueKey))
             {
                 UIManager.Instance.m_toastUI.ShowToast("Unique key is empty");
                 return;
             }
 
-
-
             RichNotifications.Options options = new RichNotifications.Options
             {
-                plainText = body,
-                body = fallback,
+                body = body,
                 ctaText = callToAction,
                 imageReference = imageString,
                 notificationPriority = m_selected,
                 identifier = uniqueKey,
-                date = System.DateTime.Now.AddMinutes(float.Parse(timeString)),
             };
+
+            if (m_useFuzzyScheduling)
+            {
+                string daysString = m_scheduledInDaysInput.text;
+                if (string.IsNullOrEmpty(daysString) || !int.TryParse(daysString, out int days))
+                {
+                    UIManager.Instance.m_toastUI.ShowToast("Days field must be a number (1-7)");
+                    return;
+                }
+                options.scheduledInDays = days;
+            }
+            else
+            {
+                string timeString = m_minutesFromNowInput.text;
+                if (string.IsNullOrEmpty(timeString))
+                {
+                    UIManager.Instance.m_toastUI.ShowToast("Minutes field is empty");
+                    return;
+                }
+                options.date = DateTime.Now.AddMinutes(float.Parse(timeString));
+            }
 
 
             if (!string.IsNullOrEmpty(entryPayloadJson))
@@ -138,10 +160,10 @@ namespace com.jest.demo
 
 
             m_notificationBodyInput.text = "";
-            m_fallbackBodyInput.text = "";
             m_callToActionInput.text = "";
             m_imageBase64Input.text = "";
             m_minutesFromNowInput.text = "";
+            m_scheduledInDaysInput.text = "";
             m_uniqueKeyInput.text = "";
 
             GameManager.Instance.TriggerGameStateChangeEvent();

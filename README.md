@@ -1,5 +1,7 @@
 # Jest SDK for Unity
 
+Full documentation is available at https://docs.jest.com/sdk/index
+
 A Unity package that provides seamless integration with the Jest platform for player management, notifications, payments, referrals, and more.
 
 ## Features
@@ -144,47 +146,33 @@ if (signedTask.IsCompleted)
 ### Notifications
 
 ```csharp
-var notifications = JestSDK.Instance.Notifications;
+var notifications = JestSDK.Instance.RichNotifications;
 
-// Schedule for specific time
-notifications.ScheduleNotification(new Notifications.Options {
-    message = "Your energy is full!",
-    date = DateTime.Now.AddHours(1),
-    attemptPushNotification = true
+// Schedule with exact date/time (must be within 7 days)
+notifications.ScheduleNotification(new RichNotifications.Options {
+    body = "Your energy is full! Come back and play!",
+    ctaText = "Play Now",                              // Required, 1-25 characters
+    identifier = "energy_full",                        // Required, used to reschedule/unschedule
+    date = DateTime.Now.AddHours(1),                   // Exact scheduling
+    notificationPriority = RichNotifications.Severity.Medium, // Low, Medium, or High
+    imageReference = "energy_banner",                  // Optional, must be pre-approved
+    entryPayloadData = new Dictionary<string, object>  // Optional
+    {
+        { "source", "energy_notification" }
+    }
 });
 
-```
-
-
-### RichNotifications
-
-```csharp
-var richNotifications = JestSDK.Instance.RichNotifications;
-
-// Schedule for specific date/time
-richNotifications.ScheduleNotification(new RichNotifications.Options {
-    body = <The text of the notification>,
-    plainText = <Simple formatting (for SMS)>,
-    ctaText = <Call to Action text: what is shown next to the button>,
-    imageReference = <URL for the notification image>, // Optional
-    notificationPriority = <Low, Medium, High, Critical>,
-    identifier = <unique Identifier>,
-    date = <When should it be scheduled for>,
-    entryPayloadData = <Dictionary of custom data> // Optional
+// Or schedule using fuzzy timing (1-7 days) instead of exact date
+notifications.ScheduleNotification(new RichNotifications.Options {
+    body = "New challenges await!",
+    ctaText = "Let's Go",
+    identifier = "daily_reminder",
+    scheduledInDays = 1,                               // 1-7 days from now
+    notificationPriority = RichNotifications.Severity.Low
 });
 
-// Or schedule using fuzzy timing (1-14 days) instead of exact date
-richNotifications.ScheduleNotification(new RichNotifications.Options {
-    body = <The text of the notification>,
-    plainText = <Simple formatting (for SMS)>,
-    ctaText = <Call to Action text>,
-    notificationPriority = <Low, Medium, High, Critical>,
-    identifier = <unique Identifier>,
-    scheduledInDays = <Number of days from now (1-14)>
-});
-
-// Unschedule with unique notification key
-richNotifications.UnscheduleNotification(<unique Identifier>);
+// Unschedule by identifier
+notifications.UnscheduleNotification("energy_full");
 ```
 
 

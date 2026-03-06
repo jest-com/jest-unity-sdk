@@ -93,24 +93,22 @@ namespace com.jest.sdk.Tests
         {
             var options = new RichNotifications.Options
             {
-                plainText = "Test notification",
                 body = "Test Body",
                 ctaText = "Play Now!",
-                data = { { "stringValue", "test" }, { "numberValue", 42 } },
                 identifier = "test-key",
                 date = DateTime.Now,
                 notificationPriority = RichNotifications.Severity.Low
             };
-            
+            options.entryPayloadData["stringValue"] = "test";
+            options.entryPayloadData["numberValue"] = 42;
+
             JestSDK.Instance.RichNotifications.ScheduleNotification(options);
             var notifications = JestSDK.Instance.RichNotifications.GetNotifications();
             Assert.That(notifications, Has.Count.EqualTo(1));
             var result = notifications[0];
-            Assert.AreEqual(options.plainText, result.plainText);
             Assert.AreEqual(options.body, result.body);
             Assert.AreEqual(options.ctaText, result.ctaText);
             Assert.AreEqual(options.date, result.date);
-            Assert.AreEqual(options.data, result.data);
             Assert.AreEqual(options.identifier, result.identifier);
             Assert.AreEqual(options.notificationPriority, result.notificationPriority);
         }
@@ -424,7 +422,6 @@ namespace com.jest.sdk.Tests
         {
             var options = new RichNotifications.Options
             {
-                plainText = "Test notification",
                 body = "Test Body",
                 ctaText = "Play Now!",
                 imageReference = "image://test-image",
@@ -444,7 +441,6 @@ namespace com.jest.sdk.Tests
         {
             var options = new RichNotifications.Options
             {
-                plainText = "Test notification",
                 body = "Test Body",
                 ctaText = "Play Now!",
                 identifier = "test-key",
@@ -464,7 +460,6 @@ namespace com.jest.sdk.Tests
         {
             var options = new RichNotifications.Options
             {
-                plainText = "Test notification",
                 body = "Test Body",
                 ctaText = "Play Now!",
                 identifier = "test-key",
@@ -477,21 +472,11 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
-        public void RichNotifications_DeprecatedAliases_StillWork()
+        public void RichNotifications_ImageReference_Works()
         {
             var options = new RichNotifications.Options();
-
-            // Test deprecated 'image' alias
-            #pragma warning disable CS0618 // Disable obsolete warning for test
-            options.image = "test-image-url";
+            options.imageReference = "test-image-url";
             Assert.That(options.imageReference, Is.EqualTo("test-image-url"));
-            Assert.That(options.image, Is.EqualTo("test-image-url"));
-
-            // Test deprecated 'data' alias
-            options.data["testKey"] = "testValue";
-            Assert.That(options.entryPayloadData["testKey"], Is.EqualTo("testValue"));
-            Assert.That(options.data["testKey"], Is.EqualTo("testValue"));
-            #pragma warning restore CS0618
         }
 
         #endregion
