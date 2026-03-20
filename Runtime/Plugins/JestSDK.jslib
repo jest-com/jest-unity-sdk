@@ -332,6 +332,9 @@ mergeInto(LibraryManager.library, {
             }, 'GetReferralsResponse');
           },
         },
+        setLoadingProgress: function(progress) {
+            helper.sendMessage({ type: 'SetLoadingProgress', progress: progress });
+        },
         internal: {
           redirectToGame: function(opts) {
             var msg = { type: 'RedirectToGame' };
@@ -429,6 +432,7 @@ mergeInto(LibraryManager.library, {
           flush: function() { return Promise.resolve(); },
           getPlayerSigned: function() { return Promise.resolve({ player: mp, playerSigned: "mock-signed" }); },
           login: function(opts) { console.log("[Mock] login:", opts); },
+          setLoadingProgress: function(progress) { console.log("[Mock] setLoadingProgress:", progress); },
           notifications: {
             scheduleNotification: function(opts) { console.log("[Mock] scheduleNotification:", opts); },
             unscheduleNotification: function(opts) { console.log("[Mock] unscheduleNotification:", opts); },
@@ -924,6 +928,12 @@ mergeInto(LibraryManager.library, {
     JestSDKHelper.ensureSDK();
     const reservation = JSON.parse(UTF8ToString(reservationJson));
     window.JestSDK.internal.sendReservedLoginMessage(reservation);
+  },
+
+  JS_setLoadingProgress__deps: ['$JestSDKHelper'],
+  JS_setLoadingProgress: function (progress) {
+    JestSDKHelper.ensureSDK();
+    window.JestSDK.setLoadingProgress(progress);
   },
 
 });
