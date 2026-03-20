@@ -111,6 +111,9 @@ namespace com.jest.sdk
         [DllImport("__Internal")]
         private static extern void JS_sendReservedLoginMessage(string reservationJson);
 
+        [DllImport("__Internal")]
+        private static extern void JS_setLoadingProgress(int progress);
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -251,6 +254,11 @@ namespace com.jest.sdk
         private static void JS_sendReservedLoginMessage(string reservationJson)
         {
             UnityEngine.Debug.Log($"[JestSDK] Send reserved login message (mock): {reservationJson}");
+        }
+
+        private static void JS_setLoadingProgress(int progress)
+        {
+            UnityEngine.Debug.Log($"[JestSDK] SetLoadingProgress: {progress}% (mock)");
         }
 
 #endif
@@ -419,6 +427,12 @@ namespace com.jest.sdk
         internal static void SendReservedLoginMessage(string reservationJson)
         {
             JS_sendReservedLoginMessage(reservationJson);
+        }
+
+        internal static void SetLoadingProgress(float progress)
+        {
+            int clamped = UnityEngine.Mathf.RoundToInt(UnityEngine.Mathf.Clamp(progress, 0f, 100f));
+            JS_setLoadingProgress(clamped);
         }
 
         [Preserve]

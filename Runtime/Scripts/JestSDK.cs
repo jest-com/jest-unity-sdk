@@ -129,5 +129,16 @@ namespace com.jest.sdk
         {
             return JsBridge.GetFeatureFlag(key);
         }
+
+        /// <summary>
+        /// Reports loading progress to the platform loading screen overlay.
+        /// Only works when the game's loading screen mode is set to "manual" in the management console.
+        /// The overlay is shown automatically when the game loads in manual mode.
+        /// </summary>
+        /// <param name="progress">Loading progress from 0 to 100. Setting progress to 100 dismisses the overlay.</param>
+        public void SetLoadingProgress(float progress)
+        {
+            JsBridge.SetLoadingProgress(progress);
+        }
     }
 }
