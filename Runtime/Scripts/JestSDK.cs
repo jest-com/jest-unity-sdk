@@ -57,6 +57,16 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Initializes the Jest SDK with the specified options.
+        /// </summary>
+        /// <param name="options">Configuration options for SDK initialization.</param>
+        /// <returns>A task that completes when the SDK is ready</returns>
+        public JestSDKTask Init(InitOptions options)
+        {
+            return JsBridge.Init(options?.AutoLoginReminders ?? true);
+        }
+
+        /// <summary>
         /// Retrieves the entry payload data associated with the current session entry.
         /// </summary>
         /// <returns>A dictionary containing the entry payload data</returns>
@@ -140,5 +150,19 @@ namespace com.jest.sdk
         {
             JsBridge.SetLoadingProgress(progress);
         }
+    }
+
+    /// <summary>
+    /// Configuration options for Jest SDK initialization.
+    /// </summary>
+    public class InitOptions
+    {
+        /// <summary>
+        /// Whether to show automatic login reminder popups for unregistered users.
+        /// When set to false, disables the platform's automatic login reminders.
+        /// Manual login via <see cref="JestSDK.Login"/> is unaffected.
+        /// Defaults to true.
+        /// </summary>
+        public bool AutoLoginReminders = true;
     }
 }

@@ -54,7 +54,7 @@ namespace com.jest.sdk
                                          System.Action<System.IntPtr, string> errorCallback);
 
         [DllImport("__Internal")]
-        private static extern void JS_initSdk(System.IntPtr ptr, System.Action<System.IntPtr> successCallback,
+        private static extern void JS_initSdk(System.IntPtr ptr, bool autoLoginReminders, System.Action<System.IntPtr> successCallback,
                                          System.Action<System.IntPtr, string> errorCallback);
 
         [DllImport("__Internal")]
@@ -148,7 +148,7 @@ namespace com.jest.sdk
                                          System.Action<System.IntPtr, string> errorCallback)
         { successCallback(ptr); }
 
-        private static void JS_initSdk(System.IntPtr ptr, System.Action<System.IntPtr> successCallback,
+        private static void JS_initSdk(System.IntPtr ptr, bool autoLoginReminders, System.Action<System.IntPtr> successCallback,
                                  System.Action<System.IntPtr, string> errorCallback)
         { successCallback(ptr); }
 
@@ -333,9 +333,9 @@ namespace com.jest.sdk
             return _bridgeMock.GetNotificationsV2();
         }
 
-        internal static JestSDKTask Init()
+        internal static JestSDKTask Init(bool autoLoginReminders = true)
         {
-            return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, HandleSuccess, HandleError); });
+            return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, HandleSuccess, HandleError); });
         }
 
         internal static void Login(string payload)

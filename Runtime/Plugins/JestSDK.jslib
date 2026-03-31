@@ -10,6 +10,54 @@ mergeInto(LibraryManager.library, {
     sdkContextId: null,
     sdkVersion: "unity-sdk-1.0",
     playerDataUpdateId: 0,
+    autoLoginReminders: true,
+    getClientIframeUrl: function() {
+      return typeof window !== 'undefined' ? window.location.href : 'unknown';
+    },
+
+    // SDK telemetry helpers
+    emitSdkMethodCalled: function(method, args) {
+      JestSDKHelper.sendMessage({
+        type: 'SdkMethodCalled',
+        method: method,
+        args: args,
+        clientSdkContextId: JestSDKHelper.getSdkContextId(),
+        clientIframeUrl: JestSDKHelper.getClientIframeUrl()
+      });
+    },
+
+    emitSdkMethodError: function(method, args, error) {
+      JestSDKHelper.sendMessage({
+        type: 'SdkMethodError',
+        method: method,
+        args: args,
+        error: typeof error === 'string' ? error : (error && error.toString ? error.toString() : 'Unknown error')
+      });
+    },
+
+    // Wraps an SDK method call with telemetry
+    instrumentMethod: function(method, args, fn) {
+      var argString;
+      try {
+        argString = JSON.stringify(args);
+      } catch (e) {
+        argString = 'Could not serialize args';
+      }
+      JestSDKHelper.emitSdkMethodCalled(method, argString);
+      try {
+        var result = fn();
+        if (result && typeof result.then === 'function') {
+          return result.catch(function(error) {
+            JestSDKHelper.emitSdkMethodError(method, argString, error);
+            throw error;
+          });
+        }
+        return result;
+      } catch (error) {
+        JestSDKHelper.emitSdkMethodError(method, argString, error);
+        throw error;
+      }
+    },
 
     // Get sdkContextId from URL parameter
     getSdkContextId: function() {
@@ -208,8 +256,21 @@ mergeInto(LibraryManager.library, {
       JestSDKHelper.sendMessage({
         type: 'Initialized',
         sdkContextId: JestSDKHelper.getSdkContextId(),
-        windowLocationHref: window.location.href
+        windowLocationHref: window.location.href,
+        autoLoginReminders: JestSDKHelper.autoLoginReminders
       });
+
+      // Listen for BFCache restoration
+      window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+          JestSDKHelper.sendMessage({
+            type: 'IframeBfcacheRestore',
+            sdkContextId: JestSDKHelper.getSdkContextId(),
+            windowLocationHref: window.location.href
+          });
+        }
+      });
+
       console.log("[JestSDK] PostMessage bridge initialized (TextClub protocol)");
     },
 
@@ -245,7 +306,7 @@ mergeInto(LibraryManager.library, {
           helper.sendMessage({
             type: 'UpdatePlayerData',
             id: ++helper.playerDataUpdateId,
-            update: update
+            update: { update: update }
           });
         },
         flush: function() {
@@ -256,7 +317,7 @@ mergeInto(LibraryManager.library, {
           return helper.sendAndWaitForResponse({
             type: 'UpdatePlayerData',
             id: id,
-            update: helper.cachedPlayer ? helper.cachedPlayer.data : {}
+            update: { update: helper.cachedPlayer ? helper.cachedPlayer.data : {} }
           }, 'AckUpdatePlayerData');
         },
         getPlayerSigned: function() {
@@ -273,16 +334,22 @@ mergeInto(LibraryManager.library, {
         notifications: {
           scheduleNotification: function(opts) {
             // Convert to V2 format
-            helper.sendMessage({
+            var msg = {
               type: 'ScheduleNotificationV2',
               identifier: opts.identifier,
               body: opts.body || opts.message,
               ctaText: opts.ctaText || 'Play Now',
               priority: opts.priority || 'medium',
-              scheduledAt: opts.scheduledAt instanceof Date ? opts.scheduledAt.toISOString() : opts.scheduledAt,
               imageReference: opts.image,
               entryPayload: opts.entryPayload
-            });
+            };
+            // scheduledAt and scheduledInDays are mutually exclusive
+            if (opts.scheduledInDays !== undefined && opts.scheduledInDays !== null) {
+              msg.scheduledInDays = opts.scheduledInDays;
+            } else {
+              msg.scheduledAt = opts.scheduledAt instanceof Date ? opts.scheduledAt.toISOString() : opts.scheduledAt;
+            }
+            helper.sendMessage(msg);
           },
           unscheduleNotification: function(opts) {
             helper.sendMessage({
@@ -509,7 +576,11 @@ mergeInto(LibraryManager.library, {
   JS_setPlayerValue__deps: ['$JestSDKHelper'],
   JS_setPlayerValue: function (key, value) {
     JestSDKHelper.ensureSDK();
-    window.JestSDK.setPlayerDataVal(UTF8ToString(key), UTF8ToString(value));
+    var k = UTF8ToString(key);
+    var v = UTF8ToString(value);
+    JestSDKHelper.instrumentMethod('setPlayerDataVal', { key: k }, function() {
+      window.JestSDK.setPlayerDataVal(k, v);
+    });
   },
 
   JS_deletePlayerValue__deps: ['$JestSDKHelper'],
@@ -521,7 +592,9 @@ mergeInto(LibraryManager.library, {
   JS_flush__deps: ['$JestSDKHelper'],
   JS_flush: function (taskPtr, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
-    window.JestSDK.flush()
+    JestSDKHelper.instrumentMethod('flush', {}, function() {
+      return window.JestSDK.flush();
+    })
       .then(function () {
         {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
       })
@@ -535,14 +608,19 @@ mergeInto(LibraryManager.library, {
   JS_scheduleNotificationV2: function (options) {
     JestSDKHelper.ensureSDK();
     let opts = JSON.parse(UTF8ToString(options));
-    opts.scheduledAt = new Date(opts.scheduledAt);
+    // scheduledAt and scheduledInDays are mutually exclusive
+    if (opts.scheduledAt) {
+      opts.scheduledAt = new Date(opts.scheduledAt);
+    }
     if (opts.entryPayload) {
       opts.entryPayload = JSON.parse(opts.entryPayload);
     }
     if (typeof opts.image === "string" && opts.image === "") {
       delete opts.image;
     }
-    window.JestSDK.notifications.scheduleNotification(opts);
+    JestSDKHelper.instrumentMethod('scheduleNotification', opts, function() {
+      window.JestSDK.notifications.scheduleNotification(opts);
+    });
   },
 
   JS_unscheduleNotificationV2__deps: ['$JestSDKHelper'],
@@ -563,12 +641,14 @@ mergeInto(LibraryManager.library, {
     } catch (e) {
       console.error("Invalid JSON passed:", payloadJson);
     }
-    console.log("➡ Received from Unity:", data);
-    window.JestSDK.login({ entryPayload: data });
+    JestSDKHelper.instrumentMethod('login', { entryPayload: data }, function() {
+      window.JestSDK.login({ entryPayload: data });
+    });
   },
 
   JS_initSdk__deps: ['$JestSDKHelper'],
-  JS_initSdk: function (taskPtr, successCallback, errorCallback) {
+  JS_initSdk: function (taskPtr, autoLoginReminders, successCallback, errorCallback) {
+    JestSDKHelper.autoLoginReminders = !!autoLoginReminders;
     // Check if we're in an iframe
     var inIframe = false;
     try {
@@ -702,14 +782,14 @@ mergeInto(LibraryManager.library, {
   JS_getProducts__deps: ['$JestSDKHelper'],
   JS_getProducts: function (taskPtr, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
-    window.JestSDK.payments.getProducts()
+    JestSDKHelper.instrumentMethod('getProducts', {}, function() {
+      return window.JestSDK.payments.getProducts();
+    })
       .then(function (products) {
-        console.log("[JestSDK] getProducts success:", products);
         const json = JSON.stringify(products);
         {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
       })
       .catch(function (err) {
-        console.error("[JestSDK] getProducts error:", err);
         const msg = err && err.message ? err.message : String(err);
         {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
       });
@@ -719,7 +799,9 @@ mergeInto(LibraryManager.library, {
   JS_beginPurchase: function (taskPtr, sku, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
     const productSku = UTF8ToString(sku);
-    window.JestSDK.payments.beginPurchase({ productSku })
+    JestSDKHelper.instrumentMethod('beginPurchase', { productSku: productSku }, function() {
+      return window.JestSDK.payments.beginPurchase({ productSku: productSku });
+    })
       .then(function (result) {
         const json = JSON.stringify(result);
         {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
@@ -734,7 +816,9 @@ mergeInto(LibraryManager.library, {
   JS_completePurchase: function (taskPtr, purchaseToken, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
     const token = UTF8ToString(purchaseToken);
-    window.JestSDK.payments.completePurchase({ purchaseToken: token })
+    JestSDKHelper.instrumentMethod('completePurchase', { purchaseToken: token }, function() {
+      return window.JestSDK.payments.completePurchase({ purchaseToken: token });
+    })
       .then(function (result) {
         const json = JSON.stringify(result);
         {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
@@ -748,7 +832,9 @@ mergeInto(LibraryManager.library, {
   JS_getIncompletePurchases__deps: ['$JestSDKHelper'],
   JS_getIncompletePurchases: function (taskPtr, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
-    window.JestSDK.payments.getIncompletePurchases()
+    JestSDKHelper.instrumentMethod('getIncompletePurchases', {}, function() {
+      return window.JestSDK.payments.getIncompletePurchases();
+    })
       .then(function (result) {
         const json = JSON.stringify(result);
         {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
@@ -764,7 +850,9 @@ mergeInto(LibraryManager.library, {
     JestSDKHelper.ensureSDK();
     try {
       const options = JSON.parse(UTF8ToString(optionsJson));
-      const result = window.JestSDK.referrals.shareReferralLink(options);
+      const result = JestSDKHelper.instrumentMethod('shareReferralLink', options, function() {
+        return window.JestSDK.referrals.shareReferralLink(options);
+      });
 
       // Handle both promise and non-promise returns
       if (result && typeof result.then === 'function') {
@@ -815,7 +903,9 @@ mergeInto(LibraryManager.library, {
     }
 
     try {
-      const result = window.JestSDK.referrals.listReferrals();
+      const result = JestSDKHelper.instrumentMethod('listReferrals', {}, function() {
+        return window.JestSDK.referrals.listReferrals();
+      });
 
       // Handle both promise and non-promise returns
       if (result && typeof result.then === 'function') {
@@ -870,7 +960,9 @@ mergeInto(LibraryManager.library, {
   JS_getPlayerSigned__deps: ['$JestSDKHelper'],
   JS_getPlayerSigned: function (taskPtr, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
-    window.JestSDK.getPlayerSigned()
+    JestSDKHelper.instrumentMethod('getPlayerSigned', {}, function() {
+      return window.JestSDK.getPlayerSigned();
+    })
       .then(function (result) {
         const json = JSON.stringify(result);
         {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
@@ -897,7 +989,9 @@ mergeInto(LibraryManager.library, {
   JS_getFeatureFlag: function (taskPtr, key, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
     const flagKey = UTF8ToString(key);
-    window.JestSDK.internal.getFeatureFlag(flagKey)
+    JestSDKHelper.instrumentMethod('getFeatureFlag', { key: flagKey }, function() {
+      return window.JestSDK.internal.getFeatureFlag(flagKey);
+    })
       .then(function (result) {
         const value = result !== undefined ? result : "";
         {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(value));
@@ -912,7 +1006,9 @@ mergeInto(LibraryManager.library, {
   JS_reserveLoginMessage: function (taskPtr, optionsJson, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
     const options = JSON.parse(UTF8ToString(optionsJson));
-    window.JestSDK.internal.reserveLoginMessageAsync(options)
+    JestSDKHelper.instrumentMethod('reserveLoginMessage', options, function() {
+      return window.JestSDK.internal.reserveLoginMessageAsync(options);
+    })
       .then(function (result) {
         const json = JSON.stringify(result);
         {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
