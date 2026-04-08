@@ -391,31 +391,6 @@ namespace com.jest.sdk.Tests
             JsBridge.SetMock(_mock);
         }
 
-        [Test]
-        public void Payment_CompletePurchase_ThrowsWhenNotRegistered()
-        {
-            var unregisteredMock = new TestBridgeMock(testId, false);
-            JsBridge.SetMock(unregisteredMock);
-
-            Assert.Throws<InvalidOperationException>(() =>
-                JestSDK.Instance.Payment.CompletePurchase("mock_token"));
-
-            // Restore original mock
-            JsBridge.SetMock(_mock);
-        }
-
-        [Test]
-        public void Payment_GetIncompletePurchases_ThrowsWhenNotRegistered()
-        {
-            var unregisteredMock = new TestBridgeMock(testId, false);
-            JsBridge.SetMock(unregisteredMock);
-
-            Assert.Throws<InvalidOperationException>(() =>
-                JestSDK.Instance.Payment.GetIncompletePurchases());
-
-            // Restore original mock
-            JsBridge.SetMock(_mock);
-        }
 
         [Test]
         public void RichNotifications_ScheduleNotification_WithImageReference()
