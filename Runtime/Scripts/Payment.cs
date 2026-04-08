@@ -111,17 +111,11 @@ namespace com.jest.sdk
         /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="PurchaseCompleteResult"/>.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when purchaseToken is null or empty.</exception>
-        /// <exception cref="InvalidOperationException">Thrown when player is not registered.</exception>
         public JestSDKTask<PurchaseCompleteResult> CompletePurchase(string purchaseToken)
         {
             if (string.IsNullOrWhiteSpace(purchaseToken))
             {
                 throw new ArgumentException("Purchase token cannot be null or empty", nameof(purchaseToken));
-            }
-
-            if (!JestSDK.Instance.Player.isRegistered)
-            {
-                throw new InvalidOperationException("Player must be registered to complete a purchase");
             }
 
             var task = new JestSDKTask<PurchaseCompleteResult>();
@@ -156,14 +150,8 @@ namespace com.jest.sdk
         /// <returns>
         /// A <see cref="JestSDKTask{TResult}"/> resolving to an <see cref="IncompletePurchasesResponse"/>.
         /// </returns>
-        /// <exception cref="InvalidOperationException">Thrown when player is not registered.</exception>
         public JestSDKTask<IncompletePurchasesResponse> GetIncompletePurchases()
         {
-            if (!JestSDK.Instance.Player.isRegistered)
-            {
-                throw new InvalidOperationException("Player must be registered to retrieve incomplete purchases");
-            }
-
             var task = new JestSDKTask<IncompletePurchasesResponse>();
             var getIncompletePurchasesTask = JsBridge.GetIncompletePurchases();
 
@@ -245,7 +233,7 @@ namespace com.jest.sdk
             public string result;
 
             /// <summary>
-            /// Error message if the purchase process failed.(e.g., login_required, internal_error, invalid_product).
+            /// Error message if the purchase process failed (e.g., internal_error, invalid_product).
             /// </summary>
             public string error;
 
