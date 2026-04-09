@@ -318,7 +318,10 @@ mergeInto(LibraryManager.library, {
             type: 'UpdatePlayerData',
             id: id,
             update: { update: helper.cachedPlayer ? helper.cachedPlayer.data : {} }
-          }, 'AckUpdatePlayerData');
+          }, 'AckUpdatePlayerData').then(function(result) {
+            helper.playerDataUpdateId = 0;
+            return result;
+          });
         },
         getPlayerSigned: function() {
           return helper.sendAndWaitForResponse({
