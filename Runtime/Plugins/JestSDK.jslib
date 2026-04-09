@@ -881,8 +881,8 @@ mergeInto(LibraryManager.library, {
   JS_listReferrals: function (taskPtr, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
     // Transform API response format to match C# model
-    // API returns: {referrals: {"ref1": ["user1"], "ref2": []}, referralsSigned: "..."}
-    // C# expects:  {referrals: [{reference: "ref1", registrations: ["user1"]}, ...], referralsSigned: "..."}
+    // API returns: {referrals: {"ref1": [{playerId, joinedAt}], "ref2": []}, referralsSigned: "..."}
+    // C# expects:  {referrals: [{reference: "ref1", registrations: [{playerId, joinedAt}]}, ...], referralsSigned: "..."}
     function transformResponse(data) {
       if (!data) return {referrals: [], referralsSigned: ""};
 

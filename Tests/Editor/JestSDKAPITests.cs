@@ -532,6 +532,8 @@ namespace com.jest.sdk.Tests
             Assert.That(response.referrals, Has.Count.EqualTo(1));
             Assert.That(response.referrals[0].reference, Is.EqualTo("test-ref-123"));
             Assert.That(response.referrals[0].registrations, Has.Count.EqualTo(2));
+            Assert.That(response.referrals[0].registrations[0].playerId, Is.EqualTo("user1"));
+            Assert.That(response.referrals[0].registrations[0].joinedAt, Is.Not.Empty);
             Assert.That(response.referralsSigned, Is.Not.Empty);
         }
 
