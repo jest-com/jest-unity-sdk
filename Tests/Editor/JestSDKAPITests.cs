@@ -136,7 +136,8 @@ namespace com.jest.sdk.Tests
             Assert.AreEqual("success", result.result);
             Assert.That(result.purchase, Is.Not.Null);
             Assert.AreEqual(products[0].sku, result.purchase.productSku);
-            Assert.AreEqual(products[0].price, result.purchase.credits);
+            Assert.AreEqual((decimal)products[0].price, result.purchase.credits);
+            Assert.That(result.purchase.estimatedRevenue, Is.GreaterThan(0m));
         }
 
         [Test]

@@ -265,9 +265,9 @@ namespace com.jest.sdk
             public string productSku;
 
             /// <summary>
-            /// The number of credits purchased (if applicable).
+            /// The total value in Jest Tokens.
             /// </summary>
-            public long credits;
+            public decimal credits;
 
             /// <summary>
             /// The timestamp (Unix epoch) when the purchase was created.
@@ -278,6 +278,11 @@ namespace com.jest.sdk
             /// The timestamp (Unix epoch) when the purchase was completed.
             /// </summary>
             public long? completedAt;
+
+            /// <summary>
+            /// The estimated USD share of revenue from this purchase that the publisher will receive.
+            /// </summary>
+            public decimal estimatedRevenue;
         }
 
         /// <summary>

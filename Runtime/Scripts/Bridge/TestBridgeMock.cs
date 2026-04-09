@@ -150,7 +150,7 @@ namespace com.jest.sdk
             switch (purchaseResult)
             {
                 case PurchaseReult.success:
-                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null},\"purchaseSigned\":\"JWS\"}";
+                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30},\"purchaseSigned\":\"JWS\"}";
                 default:
                     return "{\"result\":\"error\",\"error\":\"internal_error\"}";
             }
@@ -162,7 +162,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing incomplete purchase response data.</returns>
         public string GetIncompletePurchaseResponse()
         {
-            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null}]}";
+            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30}]}";
         }
 
         /// <summary>
