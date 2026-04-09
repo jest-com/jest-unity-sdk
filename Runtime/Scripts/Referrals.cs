@@ -140,6 +140,23 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Represents a player who joined via a referral link.
+        /// </summary>
+        [Serializable]
+        public class ReferralRegistration
+        {
+            /// <summary>
+            /// The player ID of the referred user.
+            /// </summary>
+            public string playerId;
+
+            /// <summary>
+            /// ISO datetime string of when the player joined.
+            /// </summary>
+            public string joinedAt;
+        }
+
+        /// <summary>
         /// Represents a single referral entry with its registration data.
         /// </summary>
         [Serializable]
@@ -151,9 +168,9 @@ namespace com.jest.sdk
             public string reference;
 
             /// <summary>
-            /// List of registration IDs associated with this referral.
+            /// List of players who joined via this referral.
             /// </summary>
-            public List<string> registrations;
+            public List<ReferralRegistration> registrations;
         }
 
         /// <summary>

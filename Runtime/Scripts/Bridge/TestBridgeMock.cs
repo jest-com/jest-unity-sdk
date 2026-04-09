@@ -195,7 +195,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string containing mock referral data.</returns>
         public string GetListReferralsResponse()
         {
-            return "{\"referrals\":[{\"reference\":\"test-ref-123\",\"registrations\":[\"user1\",\"user2\"]}],\"referralsSigned\":\"mock_signed_data\"}";
+            return "{\"referrals\":[{\"reference\":\"test-ref-123\",\"registrations\":[{\"playerId\":\"user1\",\"joinedAt\":\"2026-01-01T00:00:00Z\"},{\"playerId\":\"user2\",\"joinedAt\":\"2026-01-02T00:00:00Z\"}]}],\"referralsSigned\":\"mock_signed_data\"}";
         }
 
         /// <summary>
