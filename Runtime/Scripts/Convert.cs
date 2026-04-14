@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,19 +20,30 @@ namespace com.jest.sdk
         /// <returns>A string representation of the object.</returns>
         public static string ToString<T>(T obj)
         {
+            if (obj is string str)
+            {
+                return str;
+            }
+
             var type = typeof(T);
             if (type.IsPrimitive || obj is Vector2 || obj is Vector3)
             {
                 return obj.ToString();
             }
-            else if (obj is Dictionary<string, object>)
+            if (obj is decimal d)
             {
-                return JsonConvert.SerializeObject(obj);
+                return d.ToString(CultureInfo.InvariantCulture);
             }
-            else
+            if (type.IsEnum)
             {
-                return JsonUtility.ToJson(obj);
+                return obj.ToString();
             }
+            if (obj is System.DateTime dt)
+            {
+                return dt.ToString("O");
+            }
+
+            return JsonConvert.SerializeObject(obj);
         }
 
         /// <summary>
@@ -45,15 +57,19 @@ namespace com.jest.sdk
             System.Type type = typeof(T);
             return type switch
             {
+                System.Type t when t == typeof(string) => (T)(object)value,
                 System.Type t when t == typeof(int) => (T)(object)int.Parse(value),
                 System.Type t when t == typeof(float) => (T)(object)float.Parse(value),
+                System.Type t when t == typeof(double) => (T)(object)double.Parse(value, CultureInfo.InvariantCulture),
+                System.Type t when t == typeof(long) => (T)(object)long.Parse(value),
                 System.Type t when t == typeof(bool) => (T)(object)bool.Parse(value),
-                System.Type t when t == typeof(System.Enum) => (T)System.Enum.Parse(type, value),
+                System.Type t when t == typeof(decimal) => (T)(object)decimal.Parse(value, CultureInfo.InvariantCulture),
+                System.Type t when t.IsEnum => (T)System.Enum.Parse(type, value),
+                System.Type t when t == typeof(System.DateTime) => (T)(object)System.DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                 System.Type t when t == typeof(Vector3) => (T)(object)ParseVector3(value),
                 System.Type t when t == typeof(Vector2) => (T)(object)ParseVector2(value),
-                System.Type t when t == typeof(string) => (T)(object)value,
                 System.Type t when t == typeof(Dictionary<string, object>) => (T)(object)DeserializeDictionary(value),
-                _ => JsonUtility.FromJson<T>(value)
+                _ => JsonConvert.DeserializeObject<T>(value)
             };
         }
 
