@@ -10,9 +10,38 @@ mergeInto(LibraryManager.library, {
     sdkContextId: null,
     sdkVersion: "unity-sdk-1.0",
     playerDataUpdateId: 0,
+    flushedUpToId: 0,
+    verboseLogging: false,
     autoLoginReminders: true,
     getClientIframeUrl: function() {
       return typeof window !== 'undefined' ? window.location.href : 'unknown';
+    },
+    logVerbose: function() {
+      if (!JestSDKHelper.verboseLogging) return;
+      var args = Array.prototype.slice.call(arguments);
+      args[0] = "[JestSDK] " + args[0];
+      console.log.apply(console, args);
+    },
+    initVerboseLogging: function() {
+      try {
+        // Check iframe URL first
+        var params = new URLSearchParams(window.location.search);
+        JestSDKHelper.verboseLogging = params.get('jest_debug') === 'true';
+        // If not found, try parent URL (may throw in cross-origin iframes)
+        if (!JestSDKHelper.verboseLogging) {
+          try {
+            var parentParams = new URLSearchParams(window.parent.location.search);
+            JestSDKHelper.verboseLogging = parentParams.get('jest_debug') === 'true';
+          } catch (e) {
+            // Cross-origin — can't read parent URL, ignore
+          }
+        }
+      } catch (e) {
+        JestSDKHelper.verboseLogging = false;
+      }
+      if (JestSDKHelper.verboseLogging) {
+        console.log("[JestSDK] Verbose logging enabled (jest_debug=true)");
+      }
     },
 
     // SDK telemetry helpers
@@ -35,7 +64,7 @@ mergeInto(LibraryManager.library, {
       });
     },
 
-    // Wraps an SDK method call with telemetry
+    // Wraps an SDK method call with telemetry and verbose logging
     instrumentMethod: function(method, args, fn) {
       var argString;
       try {
@@ -43,17 +72,23 @@ mergeInto(LibraryManager.library, {
       } catch (e) {
         argString = 'Could not serialize args';
       }
+      JestSDKHelper.logVerbose(method + "(" + argString + ")");
       JestSDKHelper.emitSdkMethodCalled(method, argString);
       try {
         var result = fn();
         if (result && typeof result.then === 'function') {
-          return result.catch(function(error) {
+          return result.then(function(res) {
+            JestSDKHelper.logVerbose(method + " completed");
+            return res;
+          }).catch(function(error) {
+            JestSDKHelper.logVerbose(method + " failed: " + error);
             JestSDKHelper.emitSdkMethodError(method, argString, error);
             throw error;
           });
         }
         return result;
       } catch (error) {
+        JestSDKHelper.logVerbose(method + " failed: " + error);
         JestSDKHelper.emitSdkMethodError(method, argString, error);
         throw error;
       }
@@ -64,9 +99,27 @@ mergeInto(LibraryManager.library, {
       if (JestSDKHelper.sdkContextId) return JestSDKHelper.sdkContextId;
       try {
         var params = new URLSearchParams(window.location.search);
-        JestSDKHelper.sdkContextId = params.get('sdk_context_id') || 'unity-' + Date.now();
+        var id = params.get('sdk_context_id');
+        var source = 'url';
+        if (!id) {
+          try {
+            id = sessionStorage.getItem('jest_sdk_context_id');
+            source = 'sessionStorage';
+            if (!id) {
+              id = 'unity-' + Date.now();
+              sessionStorage.setItem('jest_sdk_context_id', id);
+              source = 'generated';
+            }
+          } catch (e) {
+            id = 'unity-' + Date.now();
+            source = 'generated (sessionStorage unavailable)';
+          }
+        }
+        JestSDKHelper.sdkContextId = id;
+        JestSDKHelper.logVerbose("sdkContextId=" + id + " (source: " + source + ")");
       } catch (e) {
         JestSDKHelper.sdkContextId = 'unity-' + Date.now();
+        JestSDKHelper.logVerbose("sdkContextId=" + JestSDKHelper.sdkContextId + " (source: generated, error fallback)");
       }
       return JestSDKHelper.sdkContextId;
     },
@@ -127,6 +180,7 @@ mergeInto(LibraryManager.library, {
     initPostMessageBridge: function() {
       if (JestSDKHelper.postMessageInitialized) return;
       JestSDKHelper.postMessageInitialized = true;
+      JestSDKHelper.initVerboseLogging();
 
       window.addEventListener('message', function(event) {
         var data = event.data;
@@ -134,8 +188,28 @@ mergeInto(LibraryManager.library, {
 
         // Handle SetPlayer - initial player data from parent
         if (data.type === 'SetPlayer') {
-          console.log("[JestSDK] Received SetPlayer from parent");
           JestSDKHelper.cachedPlayer = data.player;
+          // Normalize server shape (playerData) into local shape (data)
+          // so that getPlayerDataVal/setPlayerDataVal operate on a single map
+          var pdKeys = JestSDKHelper.cachedPlayer && JestSDKHelper.cachedPlayer.playerData
+            ? Object.keys(JestSDKHelper.cachedPlayer.playerData) : [];
+          var dKeys = JestSDKHelper.cachedPlayer && JestSDKHelper.cachedPlayer.data
+            ? Object.keys(JestSDKHelper.cachedPlayer.data) : [];
+          if (JestSDKHelper.cachedPlayer) {
+            JestSDKHelper.cachedPlayer.data = Object.assign(
+              {},
+              JestSDKHelper.cachedPlayer.playerData || {},
+              JestSDKHelper.cachedPlayer.data || {}
+            );
+          }
+          var mergedKeys = JestSDKHelper.cachedPlayer && JestSDKHelper.cachedPlayer.data
+            ? Object.keys(JestSDKHelper.cachedPlayer.data) : [];
+          console.log("[JestSDK] SetPlayer received — playerId=" +
+            (JestSDKHelper.cachedPlayer ? JestSDKHelper.cachedPlayer.playerId : 'null') +
+            ", playerData keys=" + pdKeys.length +
+            ", data keys=" + dKeys.length +
+            ", merged keys=" + mergedKeys.length +
+            " [" + mergedKeys.join(", ") + "]");
           // Entry payload comes in player.entryPayload or separately
           if (data.player && data.player.entryPayload) {
             JestSDKHelper.cachedEntryPayload = data.player.entryPayload;
@@ -281,8 +355,10 @@ mergeInto(LibraryManager.library, {
 
       return {
         isReady: function() {
-          // isReady is implicit - if we got SetPlayer, we're ready
-          // Just return resolved promise since Initialized was sent
+          // This resolves immediately — it is only called by JS_initSdk's
+          // proceedWithInit() AFTER the polling loop has confirmed that
+          // cachedPlayer is populated (i.e. SetPlayer was received).
+          // Do not call this standalone to gate on player data readiness.
           return Promise.resolve();
         },
         getPlayer: function() {
@@ -300,26 +376,37 @@ mergeInto(LibraryManager.library, {
           if (!helper.cachedPlayer.data) helper.cachedPlayer.data = {};
           helper.cachedPlayer.data[key] = value;
 
-          // Send UpdatePlayerData message
+          // Send UpdatePlayerData message (fire-and-forget, durability requires flush)
           var update = {};
           update[key] = value;
+          var newId = ++helper.playerDataUpdateId;
           helper.sendMessage({
             type: 'UpdatePlayerData',
-            id: ++helper.playerDataUpdateId,
+            id: newId,
             update: { update: update }
           });
         },
         flush: function() {
           // Flush sends pending player data updates and waits for ack
           var id = helper.playerDataUpdateId;
-          if (id === 0) return Promise.resolve();
+          if (id === 0 || id === helper.flushedUpToId) {
+            JestSDKHelper.logVerbose("flush skipped — no pending updates (id=" + id + ", flushedUpToId=" + helper.flushedUpToId + ")");
+            return Promise.resolve();
+          }
 
+          JestSDKHelper.logVerbose("flush sending (id=" + id + ")");
           return helper.sendAndWaitForResponse({
             type: 'UpdatePlayerData',
             id: id,
             update: { update: helper.cachedPlayer ? helper.cachedPlayer.data : {} }
           }, 'AckUpdatePlayerData').then(function(result) {
-            helper.playerDataUpdateId = 0;
+            JestSDKHelper.logVerbose("flush ack received (id=" + id + ", currentId=" + helper.playerDataUpdateId + ")");
+            helper.flushedUpToId = id;
+            // Only reset if no new sets happened during the flush
+            if (helper.playerDataUpdateId === id) {
+              helper.playerDataUpdateId = 0;
+              helper.flushedUpToId = 0;
+            }
             return result;
           });
         },
@@ -572,7 +659,9 @@ mergeInto(LibraryManager.library, {
   JS_getPlayerValue__deps: ['$JestSDKHelper'],
   JS_getPlayerValue: function (key) {
     JestSDKHelper.ensureSDK();
-    const val = window.JestSDK.getPlayerDataVal(UTF8ToString(key));
+    var k = UTF8ToString(key);
+    const val = window.JestSDK.getPlayerDataVal(k);
+    JestSDKHelper.logVerbose("getPlayerValue key='" + k + "' -> '" + (val || '') + "'");
     return JestSDKHelper.marshalString(val);
   },
 
@@ -589,15 +678,15 @@ mergeInto(LibraryManager.library, {
   JS_deletePlayerValue__deps: ['$JestSDKHelper'],
   JS_deletePlayerValue: function (key) {
     JestSDKHelper.ensureSDK();
-    window.JestSDK.setPlayerDataVal(UTF8ToString(key), undefined);
+    var k = UTF8ToString(key);
+    JestSDKHelper.logVerbose("deletePlayerValue key='" + k + "'");
+    window.JestSDK.setPlayerDataVal(k, undefined);
   },
 
   JS_flush__deps: ['$JestSDKHelper'],
   JS_flush: function (taskPtr, successCallback, errorCallback) {
     JestSDKHelper.ensureSDK();
-    JestSDKHelper.instrumentMethod('flush', {}, function() {
-      return window.JestSDK.flush();
-    })
+    window.JestSDK.flush()
       .then(function () {
         {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
       })
@@ -629,8 +718,10 @@ mergeInto(LibraryManager.library, {
   JS_unscheduleNotificationV2__deps: ['$JestSDKHelper'],
   JS_unscheduleNotificationV2: function (identifier) {
     JestSDKHelper.ensureSDK();
+    var id = UTF8ToString(identifier);
+    JestSDKHelper.logVerbose("unscheduleNotification id='" + id + "'");
     window.JestSDK.notifications.unscheduleNotification({
-      identifier: UTF8ToString(identifier),
+      identifier: id,
     });
   },
 
@@ -726,7 +817,7 @@ mergeInto(LibraryManager.library, {
   ) {
     JestSDKHelper.ensureSDK();
     var name = UTF8ToString(callName);
-    console.log("[JestSDK] JS_callAsyncVoid called:", name);
+    JestSDKHelper.logVerbose("callAsyncVoid: " + name);
 
     if (typeof window.JestSDK[name] !== 'function') {
       console.error("[JestSDK] Method not found:", name);
@@ -736,7 +827,7 @@ mergeInto(LibraryManager.library, {
 
     window.JestSDK[name]()
       .then(function () {
-        console.log("[JestSDK] JS_callAsyncVoid success:", name);
+        JestSDKHelper.logVerbose("callAsyncVoid success: " + name);
         {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
       })
       .catch(function (err) {
@@ -938,6 +1029,7 @@ mergeInto(LibraryManager.library, {
   JS_redirectToGame: function (optionsJson) {
     JestSDKHelper.ensureSDK();
     const options = JSON.parse(UTF8ToString(optionsJson));
+    JestSDKHelper.logVerbose("redirectToGame", options);
     window.JestSDK.internal.redirectToGame(options);
   },
 
@@ -985,6 +1077,7 @@ mergeInto(LibraryManager.library, {
   JS_redirectToExplorePage__deps: ['$JestSDKHelper'],
   JS_redirectToExplorePage: function () {
     JestSDKHelper.ensureSDK();
+    JestSDKHelper.logVerbose("redirectToExplorePage");
     window.JestSDK.internal.redirectToExplorePage();
   },
 
@@ -1026,12 +1119,14 @@ mergeInto(LibraryManager.library, {
   JS_sendReservedLoginMessage: function (reservationJson) {
     JestSDKHelper.ensureSDK();
     const reservation = JSON.parse(UTF8ToString(reservationJson));
+    JestSDKHelper.logVerbose("sendReservedLoginMessage");
     window.JestSDK.internal.sendReservedLoginMessage(reservation);
   },
 
   JS_setLoadingProgress__deps: ['$JestSDKHelper'],
   JS_setLoadingProgress: function (progress) {
     JestSDKHelper.ensureSDK();
+    JestSDKHelper.logVerbose("setLoadingProgress: " + progress);
     window.JestSDK.setLoadingProgress(progress);
   },
 
