@@ -94,31 +94,37 @@ mergeInto(LibraryManager.library, {
       }
     },
 
-    // Get sdkContextId from URL parameter
+    // Get sdkContextId from URL parameter.
+    // The host uses the `ctxid_` prefix to identify clients that can recover
+    // from a context mismatch via iframe reload — keep the prefix on any
+    // generated fallback so the platform opts this client in.
     getSdkContextId: function() {
       if (JestSDKHelper.sdkContextId) return JestSDKHelper.sdkContextId;
       try {
         var params = new URLSearchParams(window.location.search);
-        var id = params.get('sdk_context_id');
+        // Prefer the server-provided `sid` (already ctxid_-prefixed) so the
+        // id matches the host's expected value. Fall back to the legacy
+        // `sdk_context_id` param for older hosts.
+        var id = params.get('sid') || params.get('sdk_context_id');
         var source = 'url';
         if (!id) {
           try {
             id = sessionStorage.getItem('jest_sdk_context_id');
             source = 'sessionStorage';
             if (!id) {
-              id = 'unity-' + Date.now();
+              id = 'ctxid_unity-' + Date.now();
               sessionStorage.setItem('jest_sdk_context_id', id);
               source = 'generated';
             }
           } catch (e) {
-            id = 'unity-' + Date.now();
+            id = 'ctxid_unity-' + Date.now();
             source = 'generated (sessionStorage unavailable)';
           }
         }
         JestSDKHelper.sdkContextId = id;
         JestSDKHelper.logVerbose("sdkContextId=" + id + " (source: " + source + ")");
       } catch (e) {
-        JestSDKHelper.sdkContextId = 'unity-' + Date.now();
+        JestSDKHelper.sdkContextId = 'ctxid_unity-' + Date.now();
         JestSDKHelper.logVerbose("sdkContextId=" + JestSDKHelper.sdkContextId + " (source: generated, error fallback)");
       }
       return JestSDKHelper.sdkContextId;
