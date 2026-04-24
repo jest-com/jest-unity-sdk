@@ -24,7 +24,10 @@ namespace com.jest.sdk
             Medium,
 
             /// <summary>High priority notification.</summary>
-            High
+            High,
+
+            /// <summary>Critical priority notification.</summary>
+            Critical
         }
 
         /// <summary>Maximum number of characters allowed in the CTA text.</summary>
@@ -118,14 +121,25 @@ namespace com.jest.sdk
             public string body;
 
             /// <summary>
+            /// Optional title shown above the body.
+            /// </summary>
+            public string title;
+
+            /// <summary>
             /// The text displayed on the call-to-action (CTA) button.
             /// Must be 1-25 characters.
             /// </summary>
             public string ctaText;
 
             /// <summary>
-            /// The reference to a pre-approved image to display with the notification.
+            /// The reference to a pre-approved asset (image or video) to display with the notification.
             /// </summary>
+            public string assetReference;
+
+            /// <summary>
+            /// Deprecated. Use <see cref="assetReference"/> instead.
+            /// </summary>
+            [Obsolete("Use assetReference instead")]
             public string imageReference;
 
             /// <summary>
@@ -223,10 +237,18 @@ namespace com.jest.sdk
                     ["identifier"] = identifier
                 };
 
-                // Add optional imageReference
-                if (!string.IsNullOrEmpty(imageReference))
+                if (!string.IsNullOrEmpty(title))
                 {
-                    jsonObj["imageReference"] = imageReference;
+                    jsonObj["title"] = title;
+                }
+
+                // assetReference is preferred; fall back to imageReference for compatibility.
+#pragma warning disable CS0618
+                var resolvedAssetRef = !string.IsNullOrEmpty(assetReference) ? assetReference : imageReference;
+#pragma warning restore CS0618
+                if (!string.IsNullOrEmpty(resolvedAssetRef))
+                {
+                    jsonObj["assetReference"] = resolvedAssetRef;
                 }
 
                 // Add entryPayload if present
@@ -256,13 +278,17 @@ namespace com.jest.sdk
                 var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
                 if (dict == null) return new Options();
 
+#pragma warning disable CS0618
                 var options = new Options
                 {
                     body = dict.TryGetValue("body", out var b) ? b?.ToString() : null,
+                    title = dict.TryGetValue("title", out var ti) ? ti?.ToString() : null,
                     ctaText = dict.TryGetValue("ctaText", out var cta) ? cta?.ToString() : null,
+                    assetReference = dict.TryGetValue("assetReference", out var ar) ? ar?.ToString() : null,
                     imageReference = dict.TryGetValue("imageReference", out var img) ? img?.ToString() : null,
                     identifier = dict.TryGetValue("identifier", out var id) ? id?.ToString() : null
                 };
+#pragma warning restore CS0618
 
                 // Parse priority
                 if (dict.TryGetValue("priority", out var priority) && priority != null)

@@ -48,6 +48,11 @@ namespace com.jest.sdk
         public readonly Internal Internal = new();
 
         /// <summary>
+        /// Provides access to the platform registration overlay flow.
+        /// </summary>
+        public readonly RegistrationOverlay RegistrationOverlay = new();
+
+        /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.
         /// </summary>
         /// <returns>A task that completes when the SDK is ready</returns>

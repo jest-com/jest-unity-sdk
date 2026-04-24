@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.6.0] - 2026-04-24
+
+### Added
+- `Player.username` and `Player.avatarUrl` properties — mirror the new fields
+  returned by the platform's `getPlayer()` response.
+- `PlayerInfo` DTO (returned from `Player.GetSigned()`) now carries `username`
+  and `avatarUrl`.
+- `RichNotifications.Options.title` — optional notification title.
+- `RichNotifications.Options.assetReference` — preferred replacement for
+  `imageReference` (now deprecated but still honored).
+- `RichNotifications.Severity.Critical` — highest priority level.
+- `JestSDK.Instance.RegistrationOverlay.Show(options)` — opens the platform
+  registration overlay with game-rendered UI. Returns a `Handle` with
+  `LoginButtonAction()`, `CloseButtonAction()`, and an `OnClose` event.
+- `Internal.ValidateName(name)` — validates a player name against platform rules.
+- `Internal.CaptureOnboardingEvent(eventName, properties)` — reports onboarding
+  analytics events. Event-name constants live on `Internal.OnboardingEvents`.
+
+### Changed
+- `sdkVersion` sent on postMessage envelopes now tracks the package version
+  dynamically (propagated via `JS_setSdkVersion` at init time).
+- Version bumped from `1.5.2` to `1.6.0`. CHANGELOG reconciled with package.json.
+
+### Deprecated
+- `RichNotifications.Options.imageReference` — use `assetReference` instead.
+
 ## [1.2.0] - 2026-03-06
 
 ### Breaking Changes

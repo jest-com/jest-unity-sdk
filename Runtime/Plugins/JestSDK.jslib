@@ -8,7 +8,8 @@ mergeInto(LibraryManager.library, {
     cachedPlayer: null,
     cachedEntryPayload: null,
     sdkContextId: null,
-    sdkVersion: "unity-sdk-1.0",
+    // Default; overwritten at runtime by JS_setSdkVersion from SdkVersion.WireName.
+    sdkVersion: "unity-sdk-unknown",
     playerDataUpdateId: 0,
     flushedUpToId: 0,
     verboseLogging: false,
@@ -321,6 +322,22 @@ mergeInto(LibraryManager.library, {
               pending.resolve();
               break;
 
+            case 'PlatformRegistrationOverlayClosed':
+              pending.resolve();
+              break;
+
+            case 'ValidateNameResponse':
+              if (data.success) {
+                if (data.status === 'valid') {
+                  pending.resolve({ status: 'valid' });
+                } else {
+                  pending.resolve({ status: 'invalid', validationError: data.validationError });
+                }
+              } else {
+                pending.reject(new Error(data.error || 'Failed to validate name'));
+              }
+              break;
+
             default:
               // Generic success/error handling
               if (data.success === false || data.error) {
@@ -434,9 +451,10 @@ mergeInto(LibraryManager.library, {
               type: 'ScheduleNotificationV2',
               identifier: opts.identifier,
               body: opts.body || opts.message,
+              title: opts.title,
               ctaText: opts.ctaText || 'Play Now',
               priority: opts.priority || 'medium',
-              imageReference: opts.image,
+              assetReference: opts.assetReference || opts.imageReference || opts.image,
               entryPayload: opts.entryPayload
             };
             // scheduledAt and scheduledInDays are mutually exclusive
@@ -543,6 +561,48 @@ mergeInto(LibraryManager.library, {
             // The link from LoginLeaseAcquired response is used directly
             console.log("[JestSDK] sendReservedLoginMessage - use the link from reserveLoginMessageAsync");
           },
+          validateName: function(name) {
+            return helper.sendAndWaitForResponse({
+              type: 'ValidateName',
+              name: name
+            }, 'ValidateNameResponse');
+          },
+          captureOnboardingEvent: function(event, properties) {
+            helper.sendMessage({
+              type: 'OnboardingCaptureEvent',
+              event: event,
+              properties: properties
+            });
+          },
+        },
+        showRegistrationOverlay: function(opts) {
+          opts = opts || {};
+          var conversationId = opts.conversationId || helper.generateConversationId();
+          // Wait for PlatformRegistrationOverlayClosed to resolve onClose.
+          var closePromise = helper.sendAndWaitForResponse({
+            type: 'BeginPlatformRegistrationOverlay',
+            conversationId: conversationId,
+            theme: opts.theme,
+            entryPayload: opts.entryPayload ? JSON.stringify(opts.entryPayload) : undefined
+          }, 'PlatformRegistrationOverlayClosed');
+          if (typeof opts.onClose === 'function') {
+            closePromise.then(opts.onClose, opts.onClose);
+          }
+          return {
+            conversationId: conversationId,
+            closePromise: closePromise,
+            loginButtonAction: function() {
+              helper.sendMessage({
+                type: 'PlatformRegistrationOverlayLogin',
+                conversationId: conversationId
+              });
+            },
+            closeButtonAction: function() {
+              helper.sendMessage({
+                type: 'DismissPlatformRegistrationOverlay'
+              });
+            }
+          };
         },
       };
     },
@@ -619,6 +679,20 @@ mergeInto(LibraryManager.library, {
             getFeatureFlag: function(key) { return Promise.resolve(undefined); },
             reserveLoginMessageAsync: function(opts) { return Promise.resolve({ reservationId: "mock-id" }); },
             sendReservedLoginMessage: function(res) { console.log("[Mock] sendReservedLoginMessage:", res); },
+            validateName: function(name) { return Promise.resolve({ status: "valid" }); },
+            captureOnboardingEvent: function(event, properties) { console.log("[Mock] captureOnboardingEvent:", event, properties); },
+          },
+          showRegistrationOverlay: function(opts) {
+            console.log("[Mock] showRegistrationOverlay:", opts);
+            var closePromise = Promise.resolve();
+            if (opts && typeof opts.onClose === 'function') {
+              closePromise.then(opts.onClose);
+            }
+            return {
+              closePromise: closePromise,
+              loginButtonAction: function() { console.log("[Mock] registrationOverlay.loginButtonAction"); },
+              closeButtonAction: function() { console.log("[Mock] registrationOverlay.closeButtonAction"); }
+            };
           },
         };
       }
@@ -660,6 +734,20 @@ mergeInto(LibraryManager.library, {
     JestSDKHelper.ensureSDK();
     const val = window.JestSDK.getPlayer().registered ? "true" : "false";
     return JestSDKHelper.marshalString(val);
+  },
+
+  JS_getPlayerUsername__deps: ['$JestSDKHelper'],
+  JS_getPlayerUsername: function () {
+    JestSDKHelper.ensureSDK();
+    const val = window.JestSDK.getPlayer().username;
+    return JestSDKHelper.marshalString(val || "");
+  },
+
+  JS_getPlayerAvatarUrl__deps: ['$JestSDKHelper'],
+  JS_getPlayerAvatarUrl: function () {
+    JestSDKHelper.ensureSDK();
+    const val = window.JestSDK.getPlayer().avatarUrl;
+    return JestSDKHelper.marshalString(val || "");
   },
 
   JS_getPlayerValue__deps: ['$JestSDKHelper'],
@@ -1134,6 +1222,116 @@ mergeInto(LibraryManager.library, {
     JestSDKHelper.ensureSDK();
     JestSDKHelper.logVerbose("setLoadingProgress: " + progress);
     window.JestSDK.setLoadingProgress(progress);
+  },
+
+  JS_setSdkVersion__deps: ['$JestSDKHelper'],
+  JS_setSdkVersion: function (version) {
+    var v = UTF8ToString(version);
+    if (v && v.length > 0) {
+      JestSDKHelper.sdkVersion = v;
+    }
+  },
+
+  JS_beginPlatformRegistrationOverlay__deps: ['$JestSDKHelper'],
+  JS_beginPlatformRegistrationOverlay: function (taskPtr, optionsJson, onClose, onError) {
+    JestSDKHelper.ensureSDK();
+    try {
+      var opts = JSON.parse(UTF8ToString(optionsJson));
+      JestSDKHelper._overlayHandles = JestSDKHelper._overlayHandles || {};
+      // Wire onClose through to the C# handle. Works for both the real SDK
+      // (which accepts an onClose callback) and our postMessage proxy.
+      var notified = false;
+      opts.onClose = function () {
+        if (notified) return;
+        notified = true;
+        if (opts.conversationId) delete JestSDKHelper._overlayHandles[opts.conversationId];
+        {{{ makeDynCall("vi", 'onClose') }}}(taskPtr);
+      };
+      var handle = JestSDKHelper.instrumentMethod('showRegistrationOverlay', { theme: opts.theme }, function() {
+        return window.JestSDK.showRegistrationOverlay(opts);
+      });
+      if (handle && opts.conversationId) {
+        JestSDKHelper._overlayHandles[opts.conversationId] = handle;
+      }
+      // The postMessage proxy also exposes closePromise for belt-and-braces.
+      if (handle && handle.closePromise && typeof handle.closePromise.catch === 'function') {
+        handle.closePromise.catch(function (err) {
+          if (notified) return;
+          notified = true;
+          if (opts.conversationId) delete JestSDKHelper._overlayHandles[opts.conversationId];
+          var msg = err && err.message ? err.message : String(err);
+          {{{ makeDynCall("vii", 'onError') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+        });
+      }
+    } catch (err) {
+      var msg = err && err.message ? err.message : String(err);
+      {{{ makeDynCall("vii", 'onError') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    }
+  },
+
+  JS_platformRegistrationOverlayLogin__deps: ['$JestSDKHelper'],
+  JS_platformRegistrationOverlayLogin: function (conversationId) {
+    JestSDKHelper.ensureSDK();
+    var convId = UTF8ToString(conversationId);
+    JestSDKHelper.logVerbose("registrationOverlay.loginButtonAction conversationId=" + convId);
+    var handles = JestSDKHelper._overlayHandles || {};
+    var handle = handles[convId];
+    if (handle && typeof handle.loginButtonAction === 'function') {
+      handle.loginButtonAction();
+    } else {
+      console.warn("[JestSDK] No active registration overlay for conversationId " + convId);
+    }
+  },
+
+  JS_dismissPlatformRegistrationOverlay__deps: ['$JestSDKHelper'],
+  JS_dismissPlatformRegistrationOverlay: function () {
+    JestSDKHelper.ensureSDK();
+    JestSDKHelper.logVerbose("registrationOverlay.closeButtonAction");
+    var handles = JestSDKHelper._overlayHandles || {};
+    // Dismiss the most recently opened overlay — envelope has no conversationId.
+    var keys = Object.keys(handles);
+    if (keys.length > 0) {
+      var handle = handles[keys[keys.length - 1]];
+      if (handle && typeof handle.closeButtonAction === 'function') {
+        handle.closeButtonAction();
+        return;
+      }
+    }
+    console.warn("[JestSDK] No active registration overlay to dismiss");
+  },
+
+  JS_validateName__deps: ['$JestSDKHelper'],
+  JS_validateName: function (taskPtr, name, successCallback, errorCallback) {
+    JestSDKHelper.ensureSDK();
+    var nameStr = UTF8ToString(name);
+    JestSDKHelper.instrumentMethod('validateName', { name: nameStr }, function() {
+      return window.JestSDK.internal.validateName(nameStr);
+    })
+      .then(function (result) {
+        var json = JSON.stringify(result);
+        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
+      })
+      .catch(function (err) {
+        var msg = err && err.message ? err.message : String(err);
+        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+      });
+  },
+
+  JS_captureOnboardingEvent__deps: ['$JestSDKHelper'],
+  JS_captureOnboardingEvent: function (eventName, propertiesJson) {
+    JestSDKHelper.ensureSDK();
+    var name = UTF8ToString(eventName);
+    var raw = UTF8ToString(propertiesJson);
+    var props;
+    if (raw && raw.length > 0) {
+      try { props = JSON.parse(raw); } catch (e) { props = undefined; }
+    }
+    JestSDKHelper.logVerbose("captureOnboardingEvent: " + name);
+    if (props !== undefined) {
+      window.JestSDK.internal.captureOnboardingEvent(name, props);
+    } else {
+      window.JestSDK.internal.captureOnboardingEvent(name);
+    }
   },
 
 });

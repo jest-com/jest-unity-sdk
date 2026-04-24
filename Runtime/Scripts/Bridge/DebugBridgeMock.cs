@@ -26,6 +26,16 @@ namespace com.jest.sdk
         public string isRegistered { get; private set; }
 
         /// <summary>
+        /// Gets the player's display username.
+        /// </summary>
+        public string username { get; private set; } = "";
+
+        /// <summary>
+        /// Gets the player's avatar URL.
+        /// </summary>
+        public string avatarUrl { get; private set; } = "";
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="DebugBridgeMock"/> class.
         /// </summary>
         /// <param name="playerId">The unique identifier for the player.</param>
@@ -206,7 +216,7 @@ namespace com.jest.sdk
         public string GetPlayerSignedResponse()
         {
             Debug.Log("[JestSDK] GetPlayerSignedResponse");
-            return $"{{\"player\":{{\"playerId\":\"{playerId}\",\"registered\":{isRegistered.ToLower()}}},\"playerSigned\":\"mock_signed_data\"}}";
+            return $"{{\"player\":{{\"playerId\":\"{playerId}\",\"registered\":{isRegistered.ToLower()},\"username\":null,\"avatarUrl\":null}},\"playerSigned\":\"mock_signed_data\"}}";
         }
     }
 }

@@ -50,6 +50,16 @@ namespace com.jest.sdk
         /// </summary>
         public string isRegistered => _isRegistered.ToString();
 
+        /// <summary>
+        /// Gets the player's display username (mock: empty string).
+        /// </summary>
+        public string username => "";
+
+        /// <summary>
+        /// Gets the player's avatar URL (mock: empty string).
+        /// </summary>
+        public string avatarUrl => "";
+
         public PurchaseReult purchaseResult => _purchaseResult;
         public PurchaseReult purchaseCompleteResult => _purchaseCompleteResult;
 
@@ -224,7 +234,7 @@ namespace com.jest.sdk
         /// </summary>
         public string GetPlayerSignedResponse()
         {
-            return $"{{\"player\":{{\"playerId\":\"{_playerId}\",\"registered\":{_isRegistered.ToString().ToLower()}}},\"playerSigned\":\"mock_signed_data\"}}";
+            return $"{{\"player\":{{\"playerId\":\"{_playerId}\",\"registered\":{_isRegistered.ToString().ToLower()},\"username\":null,\"avatarUrl\":null}},\"playerSigned\":\"mock_signed_data\"}}";
         }
 
 #if UNITY_EDITOR

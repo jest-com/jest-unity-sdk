@@ -24,6 +24,12 @@ namespace com.jest.sdk
         private static extern string JS_getIsRegistered();
 
         [DllImport("__Internal")]
+        private static extern string JS_getPlayerUsername();
+
+        [DllImport("__Internal")]
+        private static extern string JS_getPlayerAvatarUrl();
+
+        [DllImport("__Internal")]
         private static extern string JS_getPlayerValue(string key);
 
         [DllImport("__Internal")]
@@ -56,6 +62,9 @@ namespace com.jest.sdk
         [DllImport("__Internal")]
         private static extern void JS_initSdk(System.IntPtr ptr, bool autoLoginReminders, System.Action<System.IntPtr> successCallback,
                                          System.Action<System.IntPtr, string> errorCallback);
+
+        [DllImport("__Internal")]
+        private static extern void JS_setSdkVersion(string version);
 
         [DllImport("__Internal")]
         private static extern void JS_login(string payload);
@@ -114,6 +123,21 @@ namespace com.jest.sdk
         [DllImport("__Internal")]
         private static extern void JS_setLoadingProgress(int progress);
 
+        [DllImport("__Internal")]
+        private static extern void JS_beginPlatformRegistrationOverlay(IntPtr taskPtr, string optionsJson, Action<IntPtr> onClose, Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_platformRegistrationOverlayLogin(string conversationId);
+
+        [DllImport("__Internal")]
+        private static extern void JS_dismissPlatformRegistrationOverlay();
+
+        [DllImport("__Internal")]
+        private static extern void JS_validateName(IntPtr taskPtr, string name, Action<IntPtr, string> onSuccess, Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_captureOnboardingEvent(string eventName, string propertiesJson);
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -122,6 +146,10 @@ namespace com.jest.sdk
         private static string JS_getPlayerData() { return _bridgeMock.playerData; }
 
         private static string JS_getIsRegistered() { return _bridgeMock.isRegistered; }
+
+        private static string JS_getPlayerUsername() { return _bridgeMock.username; }
+
+        private static string JS_getPlayerAvatarUrl() { return _bridgeMock.avatarUrl; }
 
         private static string JS_getPlayerValue(string key) { return _bridgeMock.GetPlayerValue(key); }
 
@@ -151,6 +179,8 @@ namespace com.jest.sdk
         private static void JS_initSdk(System.IntPtr ptr, bool autoLoginReminders, System.Action<System.IntPtr> successCallback,
                                  System.Action<System.IntPtr, string> errorCallback)
         { successCallback(ptr); }
+
+        private static void JS_setSdkVersion(string version) { }
 
         private static void JS_login(string payload)
         { _bridgeMock.Login(payload); }
@@ -261,6 +291,32 @@ namespace com.jest.sdk
             UnityEngine.Debug.Log($"[JestSDK] SetLoadingProgress: {progress}% (mock)");
         }
 
+        private static void JS_beginPlatformRegistrationOverlay(IntPtr taskPtr, string optionsJson, Action<IntPtr> onClose, Action<IntPtr, string> onError)
+        {
+            UnityEngine.Debug.Log($"[JestSDK] BeginPlatformRegistrationOverlay (mock): {optionsJson}");
+            onClose(taskPtr);
+        }
+
+        private static void JS_platformRegistrationOverlayLogin(string conversationId)
+        {
+            UnityEngine.Debug.Log($"[JestSDK] PlatformRegistrationOverlayLogin (mock): {conversationId}");
+        }
+
+        private static void JS_dismissPlatformRegistrationOverlay()
+        {
+            UnityEngine.Debug.Log("[JestSDK] DismissPlatformRegistrationOverlay (mock)");
+        }
+
+        private static void JS_validateName(IntPtr taskPtr, string name, Action<IntPtr, string> onSuccess, Action<IntPtr, string> onError)
+        {
+            onSuccess(taskPtr, "{\"status\":\"valid\"}");
+        }
+
+        private static void JS_captureOnboardingEvent(string eventName, string propertiesJson)
+        {
+            UnityEngine.Debug.Log($"[JestSDK] CaptureOnboardingEvent (mock): {eventName} / {propertiesJson}");
+        }
+
 #endif
 
         private static IBridgeMock _bridgeMock = new DebugBridgeMock("playerId", true);
@@ -296,6 +352,16 @@ namespace com.jest.sdk
         internal static string GetIsRegistered()
         {
             return JS_getIsRegistered();
+        }
+
+        internal static string GetPlayerUsername()
+        {
+            return JS_getPlayerUsername();
+        }
+
+        internal static string GetPlayerAvatarUrl()
+        {
+            return JS_getPlayerAvatarUrl();
         }
 
         internal static string GetPlayerValue(string key)
@@ -335,6 +401,7 @@ namespace com.jest.sdk
 
         internal static JestSDKTask Init(bool autoLoginReminders = true)
         {
+            JS_setSdkVersion(SdkVersion.WireName);
             return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, HandleSuccess, HandleError); });
         }
 
@@ -433,6 +500,31 @@ namespace com.jest.sdk
         {
             int clamped = UnityEngine.Mathf.RoundToInt(UnityEngine.Mathf.Clamp(progress, 0f, 100f));
             JS_setLoadingProgress(clamped);
+        }
+
+        internal static JestSDKTask BeginPlatformRegistrationOverlay(string optionsJson)
+        {
+            return new JestSDKTask((System.IntPtr ptr) => { JS_beginPlatformRegistrationOverlay(ptr, optionsJson, HandleSuccess, HandleError); });
+        }
+
+        internal static void PlatformRegistrationOverlayLogin(string conversationId)
+        {
+            JS_platformRegistrationOverlayLogin(conversationId);
+        }
+
+        internal static void DismissPlatformRegistrationOverlay()
+        {
+            JS_dismissPlatformRegistrationOverlay();
+        }
+
+        internal static JestSDKTask<string> ValidateName(string name)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_validateName(ptr, name, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static void CaptureOnboardingEvent(string eventName, string propertiesJson)
+        {
+            JS_captureOnboardingEvent(eventName, propertiesJson ?? "");
         }
 
         [Preserve]
