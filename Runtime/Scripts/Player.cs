@@ -34,6 +34,30 @@ namespace com.jest.sdk
             }
         }
 
+        /// <summary>
+        /// Gets the player's display username, or null if not set.
+        /// </summary>
+        public string username
+        {
+            get
+            {
+                var val = JsBridge.GetPlayerUsername();
+                return string.IsNullOrEmpty(val) ? null : val;
+            }
+        }
+
+        /// <summary>
+        /// Gets the player's avatar URL, or null if not set.
+        /// </summary>
+        public string avatarUrl
+        {
+            get
+            {
+                var val = JsBridge.GetPlayerAvatarUrl();
+                return string.IsNullOrEmpty(val) ? null : val;
+            }
+        }
+
         internal Player() { }
 
         /// <summary>
@@ -233,6 +257,16 @@ namespace com.jest.sdk
             /// Whether the player is registered.
             /// </summary>
             public bool registered;
+
+            /// <summary>
+            /// The player's display username, or null if not set.
+            /// </summary>
+            public string username;
+
+            /// <summary>
+            /// The player's avatar URL, or null if not set.
+            /// </summary>
+            public string avatarUrl;
         }
     }
 }

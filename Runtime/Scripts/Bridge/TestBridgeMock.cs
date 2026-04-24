@@ -30,6 +30,16 @@ namespace com.jest.sdk
         /// </summary>
         public string isRegistered { get; private set; }
 
+        /// <summary>
+        /// Gets the player's display username (mock: empty string).
+        /// </summary>
+        public string username { get; set; } = "";
+
+        /// <summary>
+        /// Gets the player's avatar URL (mock: empty string).
+        /// </summary>
+        public string avatarUrl { get; set; } = "";
+
         public PurchaseReult purchaseResult { get; set; }
         public PurchaseReult purchaseCompleteResult { get; set; }
 
@@ -222,7 +232,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string containing mock signed player data.</returns>
         public string GetPlayerSignedResponse()
         {
-            return $"{{\"player\":{{\"playerId\":\"{playerId}\",\"registered\":{isRegistered.ToLower()}}},\"playerSigned\":\"mock_signed_data\"}}";
+            return $"{{\"player\":{{\"playerId\":\"{playerId}\",\"registered\":{isRegistered.ToLower()},\"username\":null,\"avatarUrl\":null}},\"playerSigned\":\"mock_signed_data\"}}";
         }
     }
 }

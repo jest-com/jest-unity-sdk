@@ -24,6 +24,16 @@ namespace com.jest.sdk
         string isRegistered { get; }
 
         /// <summary>
+        /// Gets the player's display username, or empty string if not set.
+        /// </summary>
+        string username { get; }
+
+        /// <summary>
+        /// Gets the player's avatar URL, or empty string if not set.
+        /// </summary>
+        string avatarUrl { get; }
+
+        /// <summary>
         /// Retrieves a stored player value by its key.
         /// </summary>
         /// <param name="key">The key of the value to retrieve.</param>
