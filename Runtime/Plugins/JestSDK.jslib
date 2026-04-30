@@ -162,7 +162,10 @@ mergeInto(LibraryManager.library, {
     // Send message and wait for response
     sendAndWaitForResponse: function(message, responseType) {
       return new Promise(function(resolve, reject) {
-        var conversationId = JestSDKHelper.generateConversationId();
+        // Honor a pre-set conversationId so callers that need to correlate
+        // unsolicited follow-up messages (e.g. registration overlay button
+        // actions) can share one id with the parent platform.
+        var conversationId = message.conversationId || JestSDKHelper.generateConversationId();
         message.conversationId = conversationId;
 
         JestSDKHelper.pendingCalls[conversationId] = {
@@ -599,7 +602,8 @@ mergeInto(LibraryManager.library, {
             },
             closeButtonAction: function() {
               helper.sendMessage({
-                type: 'DismissPlatformRegistrationOverlay'
+                type: 'DismissPlatformRegistrationOverlay',
+                conversationId: conversationId
               });
             }
           };
@@ -1284,20 +1288,17 @@ mergeInto(LibraryManager.library, {
   },
 
   JS_dismissPlatformRegistrationOverlay__deps: ['$JestSDKHelper'],
-  JS_dismissPlatformRegistrationOverlay: function () {
+  JS_dismissPlatformRegistrationOverlay: function (conversationId) {
     JestSDKHelper.ensureSDK();
-    JestSDKHelper.logVerbose("registrationOverlay.closeButtonAction");
+    var convId = UTF8ToString(conversationId);
+    JestSDKHelper.logVerbose("registrationOverlay.closeButtonAction conversationId=" + convId);
     var handles = JestSDKHelper._overlayHandles || {};
-    // Dismiss the most recently opened overlay — envelope has no conversationId.
-    var keys = Object.keys(handles);
-    if (keys.length > 0) {
-      var handle = handles[keys[keys.length - 1]];
-      if (handle && typeof handle.closeButtonAction === 'function') {
-        handle.closeButtonAction();
-        return;
-      }
+    var handle = handles[convId];
+    if (handle && typeof handle.closeButtonAction === 'function') {
+      handle.closeButtonAction();
+      return;
     }
-    console.warn("[JestSDK] No active registration overlay to dismiss");
+    console.warn("[JestSDK] No active registration overlay for conversationId " + convId);
   },
 
   JS_validateName__deps: ['$JestSDKHelper'],

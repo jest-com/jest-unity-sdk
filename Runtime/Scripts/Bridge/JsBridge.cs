@@ -130,7 +130,7 @@ namespace com.jest.sdk
         private static extern void JS_platformRegistrationOverlayLogin(string conversationId);
 
         [DllImport("__Internal")]
-        private static extern void JS_dismissPlatformRegistrationOverlay();
+        private static extern void JS_dismissPlatformRegistrationOverlay(string conversationId);
 
         [DllImport("__Internal")]
         private static extern void JS_validateName(IntPtr taskPtr, string name, Action<IntPtr, string> onSuccess, Action<IntPtr, string> onError);
@@ -302,9 +302,9 @@ namespace com.jest.sdk
             UnityEngine.Debug.Log($"[JestSDK] PlatformRegistrationOverlayLogin (mock): {conversationId}");
         }
 
-        private static void JS_dismissPlatformRegistrationOverlay()
+        private static void JS_dismissPlatformRegistrationOverlay(string conversationId)
         {
-            UnityEngine.Debug.Log("[JestSDK] DismissPlatformRegistrationOverlay (mock)");
+            UnityEngine.Debug.Log($"[JestSDK] DismissPlatformRegistrationOverlay (mock): {conversationId}");
         }
 
         private static void JS_validateName(IntPtr taskPtr, string name, Action<IntPtr, string> onSuccess, Action<IntPtr, string> onError)
@@ -512,9 +512,9 @@ namespace com.jest.sdk
             JS_platformRegistrationOverlayLogin(conversationId);
         }
 
-        internal static void DismissPlatformRegistrationOverlay()
+        internal static void DismissPlatformRegistrationOverlay(string conversationId)
         {
-            JS_dismissPlatformRegistrationOverlay();
+            JS_dismissPlatformRegistrationOverlay(conversationId);
         }
 
         internal static JestSDKTask<string> ValidateName(string name)

@@ -392,6 +392,61 @@ namespace com.jest.sdk.Tests
             JsBridge.SetMock(_mock);
         }
 
+        [Test]
+        public void ShowRegistrationOverlay_ReturnsHandleForUnregisteredPlayer()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            var handle = JestSDK.Instance.ShowRegistrationOverlay();
+
+            Assert.That(handle, Is.Not.Null);
+
+            JsBridge.SetMock(_mock);
+        }
+
+        [Test]
+        public void ShowRegistrationOverlay_InvokesOnCloseOption()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+            var closed = false;
+
+            JestSDK.Instance.ShowRegistrationOverlay(new RegistrationOverlay.Options
+            {
+                OnClose = () => closed = true
+            });
+
+            Assert.That(closed, Is.True);
+
+            JsBridge.SetMock(_mock);
+        }
+
+        [Test]
+        public void ShowRegistrationOverlay_ThrowsWhenAlreadyLoggedIn()
+        {
+            Assert.Throws<InvalidOperationException>(() =>
+                JestSDK.Instance.ShowRegistrationOverlay());
+        }
+
+        [Test]
+        public void RegistrationOverlay_HandleActionsDoNotThrow()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            var handle = JestSDK.Instance.ShowRegistrationOverlay(new RegistrationOverlay.Options
+            {
+                Theme = RegistrationOverlay.Theme.Light,
+                EntryPayload = new Dictionary<string, object> { { "source", "test" } }
+            });
+
+            Assert.DoesNotThrow(() => handle.LoginButtonAction());
+            Assert.DoesNotThrow(() => handle.CloseButtonAction());
+
+            JsBridge.SetMock(_mock);
+        }
+
 
         [Test]
         public void RichNotifications_ScheduleNotification_WithImageReference()

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.7.0] - 2026-04-29
+
+### Added
+- Custom registration overlay.
+
 ## [1.6.0] - 2026-04-24
 
 ### Added
