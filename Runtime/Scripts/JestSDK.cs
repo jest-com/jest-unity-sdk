@@ -103,6 +103,16 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Shows the platform registration overlay and returns actions that game UI can wire to login and close buttons.
+        /// </summary>
+        /// <param name="options">Optional overlay configuration.</param>
+        /// <returns>A handle exposing the login and close actions for this overlay.</returns>
+        public RegistrationOverlay.Handle ShowRegistrationOverlay(RegistrationOverlay.Options options = null)
+        {
+            return RegistrationOverlay.Show(options);
+        }
+
+        /// <summary>
         /// Opens the privacy policy page.
         /// </summary>
         public void OpenPrivacyPolicy()

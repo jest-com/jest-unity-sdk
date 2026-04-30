@@ -21,6 +21,11 @@ namespace com.jest.sdk
         /// <returns>A <see cref="Handle"/> exposing button actions and an <see cref="Handle.OnClose"/> event.</returns>
         public Handle Show(Options options = null)
         {
+            if (JestSDK.Instance.Player.isRegistered)
+            {
+                throw new InvalidOperationException("Player already logged in");
+            }
+
             var conversationId = Guid.NewGuid().ToString();
             var payload = new Dictionary<string, object>
             {
@@ -34,6 +39,11 @@ namespace com.jest.sdk
             }
 
             var handle = new Handle(conversationId);
+            if (options?.OnClose != null)
+            {
+                handle.OnClose += options.OnClose;
+            }
+
             var beginTask = JsBridge.BeginPlatformRegistrationOverlay(JsonConvert.SerializeObject(payload));
 
             beginTask.ContinueWith(t =>
@@ -72,6 +82,11 @@ namespace com.jest.sdk
             /// Optional payload accessible via <see cref="JestSDK.GetEntryPayload"/> after registration.
             /// </summary>
             public Dictionary<string, object> EntryPayload;
+
+            /// <summary>
+            /// Optional callback invoked when the platform reports the overlay has closed.
+            /// </summary>
+            public Action OnClose;
         }
 
         /// <summary>
@@ -110,7 +125,7 @@ namespace com.jest.sdk
             /// </summary>
             public void CloseButtonAction()
             {
-                JsBridge.DismissPlatformRegistrationOverlay();
+                JsBridge.DismissPlatformRegistrationOverlay(_conversationId);
             }
 
             internal void InvokeClose()
