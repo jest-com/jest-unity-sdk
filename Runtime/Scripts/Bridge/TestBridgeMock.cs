@@ -148,7 +148,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing product data.</returns>
         public string GetProducts()
         {
-            return "[{\"sku\":\"gems_100\",\"name\":\"100 Gems\",\"description\":\"Get 100 gems to use in the game\",\"price\":99.0}]";
+            return "[{\"sku\":\"gems_100\",\"name\":\"100 Gems\",\"description\":\"Get 100 gems to use in the game\",\"price\":99.0,\"currency\":\"USD\"}]";
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace com.jest.sdk
             switch (purchaseResult)
             {
                 case PurchaseReult.success:
-                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30},\"purchaseSigned\":\"JWS\"}";
+                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30,\"price\":99.0,\"currency\":\"USD\"},\"purchaseSigned\":\"JWS\"}";
                 default:
                     return "{\"result\":\"error\",\"error\":\"internal_error\"}";
             }
@@ -172,7 +172,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing incomplete purchase response data.</returns>
         public string GetIncompletePurchaseResponse()
         {
-            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30}]}";
+            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30,\"price\":99.0,\"currency\":\"USD\"}]}";
         }
 
         /// <summary>

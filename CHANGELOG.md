@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.8.0] - 2026-05-07
+
+### Added
+- `Payment.PurchaseData.price` (`decimal`) and `Payment.PurchaseData.currency`
+  (`string`, ISO 4217) — populated from the platform's purchase response so
+  games can display the amount paid in the original currency.
+- `Payment.Product.currency` (`string`, ISO 4217) — alongside `price`, returned
+  by `JestSDK.Instance.Payment.GetProducts()` so games can format prices correctly.
+- `JestSDK.Instance.GetBotAvatar(username, size = 1000)` — returns a CDN URL for
+  a deterministic bot avatar seeded by username. `size` accepts 64, 128, 256,
+  512, or 1000; intermediate values bucket down to the next supported size. The
+  hash is bit-compatible with the HTML5 SDK so the same username yields the same
+  avatar across SDKs.
+- `RichNotifications.BODY_CHAR_LIMIT` (2000) and `TITLE_CHAR_LIMIT` (200) public
+  constants alongside the existing `CTA_CHAR_LIMIT`.
+
+### Changed
+- `RichNotifications.ScheduleNotification` now also throws `ArgumentException` when:
+  - `body` exceeds 2000 characters.
+  - `title` (when set) exceeds 200 characters.
+  - `ctaText` limit raised from 25 to 50 characters (mirrors HTML5 SDK).
+- `JestSDK.Instance.OpenPrivacyPolicy()`, `OpenTermsOfService()`, and
+  `OpenCopyright()` doc-marked as internal. They remain callable but are not
+  part of the supported public API surface (mirrors the HTML5 SDK).
+
 ## [1.7.0] - 2026-04-29
 
 ### Added

@@ -13,6 +13,7 @@ namespace com.jest.demo
 
         [SerializeField] public TextMeshProUGUI m_productNameText;
         [SerializeField] public TextMeshProUGUI m_productDescriptionText;
+        [SerializeField] public TextMeshProUGUI m_productPriceText;
 
 
         private Payment.PurchaseData m_purchase;
@@ -27,6 +28,10 @@ namespace com.jest.demo
             m_shopController = shopController;
             m_productNameText.text = m_product.name;
             m_productDescriptionText.text = m_purchase.purchaseToken;
+            if (m_productPriceText != null)
+            {
+                m_productPriceText.text = $"{m_purchase.price:F2} {m_purchase.currency}";
+            }
         }
 
 

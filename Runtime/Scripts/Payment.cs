@@ -283,6 +283,16 @@ namespace com.jest.sdk
             /// The estimated USD share of revenue from this purchase that the publisher will receive.
             /// </summary>
             public decimal estimatedRevenue;
+
+            /// <summary>
+            /// Price paid for this purchase in the specified currency, in decimal.
+            /// </summary>
+            public decimal price;
+
+            /// <summary>
+            /// ISO currency code for the price, e.g. "USD", "EUR".
+            /// </summary>
+            public string currency;
         }
 
         /// <summary>
@@ -307,9 +317,14 @@ namespace com.jest.sdk
             public string description;
 
             /// <summary>
-            /// The price of the product, in the smallest currency unit (e.g., cents).
+            /// The price of the product in the specified currency, in decimal (e.g., 9.99 for $9.99).
             /// </summary>
             public double price;
+
+            /// <summary>
+            /// ISO currency code for the price, e.g. "USD", "EUR".
+            /// </summary>
+            public string currency;
         }
 
         #endregion
