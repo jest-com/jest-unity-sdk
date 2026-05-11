@@ -73,6 +73,120 @@ namespace com.jest.sdk.Tests
             Assert.That(JestSDK.Instance.Player.Get<Vector3>("vector3"), Is.EqualTo(vector3));
         }
 
+        // Bot avatar tests — vectors verified against the JS @textclub/common/prng
+        // implementation so all SDKs produce the same avatar for the same username.
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_RejectsBodyOverLimit()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = new string('x', RichNotifications.BODY_CHAR_LIMIT + 1),
+                ctaText = "Play",
+                identifier = "test",
+                scheduledInDays = 1,
+            };
+            var ex = Assert.Throws<ArgumentException>(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+            Assert.That(ex.Message, Does.Contain($"body must be {RichNotifications.BODY_CHAR_LIMIT}"));
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_AcceptsBodyAtLimit()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = new string('x', RichNotifications.BODY_CHAR_LIMIT),
+                ctaText = "Play",
+                identifier = "test-body-at-limit",
+                scheduledInDays = 1,
+            };
+            Assert.DoesNotThrow(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_RejectsTitleOverLimit()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = "Hello",
+                title = new string('x', RichNotifications.TITLE_CHAR_LIMIT + 1),
+                ctaText = "Play",
+                identifier = "test",
+                scheduledInDays = 1,
+            };
+            var ex = Assert.Throws<ArgumentException>(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+            Assert.That(ex.Message, Does.Contain($"title must be {RichNotifications.TITLE_CHAR_LIMIT}"));
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_AcceptsCtaAtLimit()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = "Hello",
+                ctaText = new string('x', RichNotifications.CTA_CHAR_LIMIT),
+                identifier = "test-cta-at-limit",
+                scheduledInDays = 1,
+            };
+            Assert.DoesNotThrow(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_RejectsCtaOverLimit()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = "Hello",
+                ctaText = new string('x', RichNotifications.CTA_CHAR_LIMIT + 1),
+                identifier = "test",
+                scheduledInDays = 1,
+            };
+            var ex = Assert.Throws<ArgumentException>(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+            Assert.That(ex.Message, Does.Contain($"ctaText must be {RichNotifications.CTA_CHAR_LIMIT}"));
+        }
+
+        [Test]
+        public void GetBotAvatar_ReturnsKnownVectors()
+        {
+            Assert.That(JestSDK.Instance.GetBotAvatar(""), Is.EqualTo("https://cdn.jest.com/avatar/bot/115.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("a"), Is.EqualTo("https://cdn.jest.com/avatar/bot/748.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("test"), Is.EqualTo("https://cdn.jest.com/avatar/bot/736.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("alice"), Is.EqualTo("https://cdn.jest.com/avatar/bot/982.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("Bob"), Is.EqualTo("https://cdn.jest.com/avatar/bot/160.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("bot"), Is.EqualTo("https://cdn.jest.com/avatar/bot/991.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("user_42"), Is.EqualTo("https://cdn.jest.com/avatar/bot/592.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("hello world"), Is.EqualTo("https://cdn.jest.com/avatar/bot/256.webp"));
+        }
+
+        [Test]
+        public void GetBotAvatar_WithSize_WrapsInCloudflareProxy()
+        {
+            var url = JestSDK.Instance.GetBotAvatar("test", 128);
+            Assert.That(url, Is.EqualTo("https://cdn.jestpub.com/cdn-cgi/image/format=auto%2Cfit=cover%2Cwidth=128%2C/https%3A%2F%2Fcdn.jest.com%2Favatar%2Fbot%2F736.webp"));
+        }
+
+        [Test]
+        public void GetBotAvatar_BucketsDownIntermediateSizes()
+        {
+            Assert.That(JestSDK.Instance.GetBotAvatar("bot", 999), Is.EqualTo(JestSDK.Instance.GetBotAvatar("bot", 512)));
+            Assert.That(JestSDK.Instance.GetBotAvatar("bot", 200), Is.EqualTo(JestSDK.Instance.GetBotAvatar("bot", 128)));
+            Assert.That(JestSDK.Instance.GetBotAvatar("bot", 1), Is.EqualTo(JestSDK.Instance.GetBotAvatar("bot", 64)));
+        }
+
+        [Test]
+        public void GetBotAvatar_SupplementaryPlaneUsername()
+        {
+            // Emoji 🎮 (U+1F3AE) — JS encodes as a UTF-16 surrogate pair, and C# strings are
+            // UTF-16 natively, so iterating chars matches String.charCodeAt directly.
+            Assert.That(JestSDK.Instance.GetBotAvatar("🎮"), Is.EqualTo("https://cdn.jest.com/avatar/bot/740.webp"));
+        }
+
+        [Test]
+        public void GetBotAvatar_IsDeterministic()
+        {
+            Assert.That(JestSDK.Instance.GetBotAvatar("alice"), Is.EqualTo(JestSDK.Instance.GetBotAvatar("alice")));
+        }
+
         [Test]
         public void GetEntryPayload_ReturnsCorrectValue()
         {

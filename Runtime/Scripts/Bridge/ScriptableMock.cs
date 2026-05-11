@@ -158,7 +158,7 @@ namespace com.jest.sdk
         /// </summary>
         public string GetProducts()
         {
-            return "[{\"sku\":\"gems_100\",\"name\":\"100 Gems\",\"description\":\"Get 100 gems to use in the game\",\"price\":99.0},{\"sku\":\"gems_500\",\"name\":\"500 Gems\",\"description\":\"Get 500 gems to use in the game\",\"price\":499.0}]";
+            return "[{\"sku\":\"gems_100\",\"name\":\"100 Gems\",\"description\":\"Get 100 gems to use in the game\",\"price\":99.0,\"currency\":\"USD\"},{\"sku\":\"gems_500\",\"name\":\"500 Gems\",\"description\":\"Get 500 gems to use in the game\",\"price\":499.0,\"currency\":\"USD\"}]";
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace com.jest.sdk
             switch (_purchaseResult)
             {
                 case PurchaseReult.success:
-                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30},\"purchaseSigned\":\"JWS\"}";
+                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30,\"price\":99.0,\"currency\":\"USD\"},\"purchaseSigned\":\"JWS\"}";
                 default:
                     return "{\"result\":\"error\",\"error\":\"internal_error\"}";
             }
@@ -180,7 +180,7 @@ namespace com.jest.sdk
         /// </summary>
         public string GetIncompletePurchaseResponse()
         {
-            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30}]}";
+            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":69.30,\"price\":99.0,\"currency\":\"USD\"}]}";
         }
 
         /// <summary>

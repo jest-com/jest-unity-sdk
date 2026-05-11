@@ -31,7 +31,13 @@ namespace com.jest.sdk
         }
 
         /// <summary>Maximum number of characters allowed in the CTA text.</summary>
-        public const int CTA_CHAR_LIMIT = 25;
+        public const int CTA_CHAR_LIMIT = 50;
+
+        /// <summary>Maximum number of characters allowed in the body text.</summary>
+        public const int BODY_CHAR_LIMIT = 2000;
+
+        /// <summary>Maximum number of characters allowed in the title text.</summary>
+        public const int TITLE_CHAR_LIMIT = 200;
 
         /// <summary>Maximum number of days a notification can be scheduled ahead.</summary>
         public const int MAX_SCHEDULE_DAYS = 7;
@@ -50,6 +56,12 @@ namespace com.jest.sdk
         {
             if (string.IsNullOrEmpty(options.body))
                 throw new ArgumentException("body is required");
+
+            if (options.body.Length > BODY_CHAR_LIMIT)
+                throw new ArgumentException($"body must be {BODY_CHAR_LIMIT} characters or fewer");
+
+            if (!string.IsNullOrEmpty(options.title) && options.title.Length > TITLE_CHAR_LIMIT)
+                throw new ArgumentException($"title must be {TITLE_CHAR_LIMIT} characters or fewer");
 
             if (string.IsNullOrEmpty(options.ctaText))
                 throw new ArgumentException("ctaText is required");
