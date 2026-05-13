@@ -171,7 +171,7 @@ namespace com.jest.sdk
         }
 
         private const string CLOUDFLARE_IMAGE_PROXY = "https://cdn.jestpub.com/cdn-cgi/image/";
-        private const string BOT_AVATAR_BASE_URL = "https://cdn.jest.com/avatar/bot/";
+        private const string BOT_AVATAR_BASE_URL = "https://cdn.jest.com/avatars/bot/";
         private const int AVAILABLE_AVATARS = 1000;
 
         /// <summary>

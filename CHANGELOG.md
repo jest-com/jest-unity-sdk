@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.8.1] - 2026-05-12
+
+### Changed
+- `JestSDK.Instance.GetBotAvatar()` URL path changed from
+  `cdn.jest.com/avatar/bot/<N>.webp` to `cdn.jest.com/avatars/bot/<N>.webp`,
+  aligning with player avatars (`cdn.jest.com/avatars/<uuid>.webp`) so both
+  live under a single `/avatars/*` prefix. The platform-side migration must
+  run before this SDK is shipped, or `GetBotAvatar()` will return URLs that
+  404.
+
 ## [1.8.0] - 2026-05-07
 
 ### Added

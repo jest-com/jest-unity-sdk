@@ -148,21 +148,21 @@ namespace com.jest.sdk.Tests
         [Test]
         public void GetBotAvatar_ReturnsKnownVectors()
         {
-            Assert.That(JestSDK.Instance.GetBotAvatar(""), Is.EqualTo("https://cdn.jest.com/avatar/bot/115.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("a"), Is.EqualTo("https://cdn.jest.com/avatar/bot/748.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("test"), Is.EqualTo("https://cdn.jest.com/avatar/bot/736.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("alice"), Is.EqualTo("https://cdn.jest.com/avatar/bot/982.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("Bob"), Is.EqualTo("https://cdn.jest.com/avatar/bot/160.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("bot"), Is.EqualTo("https://cdn.jest.com/avatar/bot/991.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("user_42"), Is.EqualTo("https://cdn.jest.com/avatar/bot/592.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("hello world"), Is.EqualTo("https://cdn.jest.com/avatar/bot/256.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar(""), Is.EqualTo("https://cdn.jest.com/avatars/bot/115.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("a"), Is.EqualTo("https://cdn.jest.com/avatars/bot/748.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("test"), Is.EqualTo("https://cdn.jest.com/avatars/bot/736.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("alice"), Is.EqualTo("https://cdn.jest.com/avatars/bot/982.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("Bob"), Is.EqualTo("https://cdn.jest.com/avatars/bot/160.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("bot"), Is.EqualTo("https://cdn.jest.com/avatars/bot/991.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("user_42"), Is.EqualTo("https://cdn.jest.com/avatars/bot/592.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("hello world"), Is.EqualTo("https://cdn.jest.com/avatars/bot/256.webp"));
         }
 
         [Test]
         public void GetBotAvatar_WithSize_WrapsInCloudflareProxy()
         {
             var url = JestSDK.Instance.GetBotAvatar("test", 128);
-            Assert.That(url, Is.EqualTo("https://cdn.jestpub.com/cdn-cgi/image/format=auto%2Cfit=cover%2Cwidth=128%2C/https%3A%2F%2Fcdn.jest.com%2Favatar%2Fbot%2F736.webp"));
+            Assert.That(url, Is.EqualTo("https://cdn.jestpub.com/cdn-cgi/image/format=auto%2Cfit=cover%2Cwidth=128%2C/https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F736.webp"));
         }
 
         [Test]
@@ -178,7 +178,7 @@ namespace com.jest.sdk.Tests
         {
             // Emoji 🎮 (U+1F3AE) — JS encodes as a UTF-16 surrogate pair, and C# strings are
             // UTF-16 natively, so iterating chars matches String.charCodeAt directly.
-            Assert.That(JestSDK.Instance.GetBotAvatar("🎮"), Is.EqualTo("https://cdn.jest.com/avatar/bot/740.webp"));
+            Assert.That(JestSDK.Instance.GetBotAvatar("🎮"), Is.EqualTo("https://cdn.jest.com/avatars/bot/740.webp"));
         }
 
         [Test]
