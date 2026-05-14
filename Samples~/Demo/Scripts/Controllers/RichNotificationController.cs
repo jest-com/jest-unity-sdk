@@ -155,8 +155,13 @@ namespace com.jest.demo
 
             }
 
-            JestSDK.Instance?.RichNotifications?.ScheduleNotification(options);
-            UIManager.Instance.m_toastUI.ShowToast("Rich Notification scheduled successfully.");
+            var scheduleTask = JestSDK.Instance?.RichNotifications?.ScheduleNotification(options);
+            scheduleTask?.ContinueWith(t =>
+            {
+                UIManager.Instance.m_toastUI.ShowToast(t.IsFaulted
+                    ? $"Rich Notification schedule failed: {t.Exception.Message}"
+                    : "Rich Notification schedule request sent.");
+            });
 
 
             m_notificationBodyInput.text = "";
@@ -183,8 +188,13 @@ namespace com.jest.demo
                 UIManager.Instance.m_toastUI.ShowToast("Unique key is empty");
                 return;
             }
-            JestSDK.Instance.RichNotifications.UnscheduleNotification(uniqueKey);
-            UIManager.Instance.m_toastUI.ShowToast("Rich Notification unscheduled successfully.");
+            var unscheduleTask = JestSDK.Instance.RichNotifications.UnscheduleNotification(uniqueKey);
+            unscheduleTask.ContinueWith(t =>
+            {
+                UIManager.Instance.m_toastUI.ShowToast(t.IsFaulted
+                    ? $"Rich Notification unschedule failed: {t.Exception.Message}"
+                    : "Rich Notification unschedule request sent.");
+            });
             m_unscheduleUniqueKeyInput.text = "";
             GameManager.Instance.TriggerGameStateChangeEvent();
         }

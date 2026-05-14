@@ -25,7 +25,7 @@ namespace com.jest.demo
                 return;
             }
 
-            string url = JestSDK.Instance.GetBotAvatar(username, 128);
+            string url = JestSDK.Instance.Social.GetBotAvatar(username, 128);
             if (m_urlLabel != null)
             {
                 m_urlLabel.text = url;

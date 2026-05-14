@@ -1,5 +1,33 @@
 # Changelog
 
+## [2.0.0] - 2026-05-13
+
+### Added
+- `JestSDK.Instance.Social.GetPlayerAvatar(size = 1000)` — returns a CDN URL for the
+  current player's avatar, routed through Cloudflare Image Resizing so the
+  response is a Unity-decodable format (PNG/JPEG) rather than the raw WebP
+  that lives in the bucket. Returns `null` when the player has no avatar.
+  `size` accepts 64, 128, 256, 512, or 1000; intermediate values bucket down
+  to the next supported size. Localhost URLs are passed through unwrapped
+  (Cloudflare can't fetch them in dev). Mirrors the HTML5 SDK's
+  `social.getProfile({ avatarSize })`.
+- `JestSDK.Instance.Social.GetBotAvatar(username, size = 1000)` is now the
+  public bot avatar helper.
+
+### Changed
+- WebGL loads `https://cdn.jest.com/sdk/latest/jestsdk.js` at runtime and
+  delegates platform behavior to the JavaScript SDK.
+- `RichNotifications.ScheduleNotification(...)` and
+  `RichNotifications.UnscheduleNotification(...)` now perform local shape
+  validation and return `JestSDKTask` for JavaScript bridge dispatch. Completion is not a
+  server-side delivery or deletion acknowledgement.
+- Notification validation in Unity is limited to C# shape checks; platform
+  policy limits are enforced by the JavaScript SDK/server.
+
+### Removed
+- Root avatar helpers moved from `JestSDK.Instance.GetPlayerAvatar(...)` and
+  `JestSDK.Instance.GetBotAvatar(...)` to `JestSDK.Instance.Social`.
+
 ## [1.8.1] - 2026-05-12
 
 ### Changed

@@ -148,10 +148,10 @@ if (signedTask.IsCompleted)
 ```csharp
 var notifications = JestSDK.Instance.RichNotifications;
 
-// Schedule with exact date/time (must be within 7 days)
-notifications.ScheduleNotification(new RichNotifications.Options {
+// Schedule with exact date/time
+await notifications.ScheduleNotification(new RichNotifications.Options {
     body = "Your energy is full! Come back and play!",
-    ctaText = "Play Now",                              // Required, 1-25 characters
+    ctaText = "Play Now",                              // Required
     identifier = "energy_full",                        // Required, used to reschedule/unschedule
     date = DateTime.Now.AddHours(1),                   // Exact scheduling
     notificationPriority = RichNotifications.Severity.Medium, // Low, Medium, or High
@@ -162,17 +162,30 @@ notifications.ScheduleNotification(new RichNotifications.Options {
     }
 });
 
-// Or schedule using fuzzy timing (1-7 days) instead of exact date
-notifications.ScheduleNotification(new RichNotifications.Options {
+// Or schedule using fuzzy timing instead of exact date
+await notifications.ScheduleNotification(new RichNotifications.Options {
     body = "New challenges await!",
     ctaText = "Let's Go",
     identifier = "daily_reminder",
-    scheduledInDays = 1,                               // 1-7 days from now
+    scheduledInDays = 1,
     notificationPriority = RichNotifications.Severity.Low
 });
 
 // Unschedule by identifier
-notifications.UnscheduleNotification("energy_full");
+await notifications.UnscheduleNotification("energy_full");
+```
+
+Notification methods throw for local validation errors. The returned tasks cover
+JavaScript bridge dispatch; do not treat completion as confirmation that the
+platform will deliver a message.
+
+### Social
+
+```csharp
+var social = JestSDK.Instance.Social;
+
+string botAvatarUrl = social.GetBotAvatar("level-boss", 128);
+string playerAvatarUrl = social.GetPlayerAvatar(256);
 ```
 
 

@@ -21,7 +21,7 @@ namespace com.jest.demo
                 return;
             }
 
-            string url = JestSDK.Instance.Player.avatarUrl;
+            string url = JestSDK.Instance.Social.GetPlayerAvatar(256);
             if (string.IsNullOrEmpty(url))
             {
                 UIManager.Instance.m_toastUI.ShowToast("Player has no avatar URL");
