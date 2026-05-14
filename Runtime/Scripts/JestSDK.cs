@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -41,6 +40,11 @@ namespace com.jest.sdk
         /// Provides access to navigation functionality for redirecting between games.
         /// </summary>
         public readonly Navigation Navigation = new();
+
+        /// <summary>
+        /// Provides access to social/profile helpers.
+        /// </summary>
+        public readonly Social Social = new();
 
         /// <summary>
         /// Provides access to internal/experimental SDK functionality.
@@ -170,69 +174,6 @@ namespace com.jest.sdk
             JsBridge.SetLoadingProgress(progress);
         }
 
-        private const string CLOUDFLARE_IMAGE_PROXY = "https://cdn.jestpub.com/cdn-cgi/image/";
-        private const string BOT_AVATAR_BASE_URL = "https://cdn.jest.com/avatar/bot/";
-        private const int AVAILABLE_AVATARS = 1000;
-
-        /// <summary>
-        /// Returns a CDN URL for a bot avatar, deterministically seeded by <paramref name="username"/>.
-        /// Use the smallest <paramref name="size"/> that fits your UI for best performance.
-        /// </summary>
-        /// <param name="username">Used as a seed; the same username always returns the same avatar.</param>
-        /// <param name="size">Supported sizes are 64, 128, 256, 512, and 1000 (default). Other values are bucketed down to the next supported size.</param>
-        /// <returns>A CDN URL for the bot avatar image.</returns>
-        public string GetBotAvatar(string username, int size = 1000)
-        {
-            int bucketed = BucketBotAvatarSize(size);
-            double rand = SeedRandomFirst(username ?? "");
-            int index = (int)Math.Floor(rand * AVAILABLE_AVATARS);
-            string botUrl = $"{BOT_AVATAR_BASE_URL}{index}.webp";
-            return bucketed >= AVAILABLE_AVATARS
-                ? botUrl
-                : BuildCloudflareImageUrl(botUrl, bucketed);
-        }
-
-        private static int BucketBotAvatarSize(int size)
-        {
-            if (size >= 1000) return 1000;
-            if (size >= 512) return 512;
-            if (size >= 256) return 256;
-            if (size >= 128) return 128;
-            return 64;
-        }
-
-        // Computes the first sfc32 PRNG output seeded with cyrb128(seed), in [0, 1).
-        // Bit-compatible with the JS implementation in @textclub/common/prng so all
-        // SDKs return the same avatar for the same username. C# strings are UTF-16,
-        // so iterating chars matches JS String.charCodeAt directly.
-        private static double SeedRandomFirst(string seed)
-        {
-            unchecked
-            {
-                uint h1 = 1779033703u, h2 = 3144134277u, h3 = 1013904242u, h4 = 2773480762u;
-                foreach (char c in seed)
-                {
-                    uint k = c;
-                    h1 = h2 ^ ((h1 ^ k) * 597399067u);
-                    h2 = h3 ^ ((h2 ^ k) * 2869860233u);
-                    h3 = h4 ^ ((h3 ^ k) * 951274213u);
-                    h4 = h1 ^ ((h4 ^ k) * 2716044179u);
-                }
-                h1 = (h3 ^ (h1 >> 18)) * 597399067u;
-                h2 = (h4 ^ (h2 >> 22)) * 2869860233u;
-                h3 = (h1 ^ (h3 >> 17)) * 951274213u;
-                h4 = (h2 ^ (h4 >> 19)) * 2716044179u;
-                h1 ^= h2 ^ h3 ^ h4;
-                h2 ^= h1; h3 ^= h1; h4 ^= h1;
-                uint t = h1 + h2 + h4;
-                return (double)t / 4294967296.0;
-            }
-        }
-
-        private static string BuildCloudflareImageUrl(string imageUrl, int width)
-        {
-            return $"{CLOUDFLARE_IMAGE_PROXY}format=auto%2Cfit=cover%2Cwidth={width}%2C/{Uri.EscapeDataString(imageUrl)}";
-        }
     }
 
     /// <summary>

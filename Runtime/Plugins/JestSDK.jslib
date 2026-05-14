@@ -1,707 +1,52 @@
 mergeInto(LibraryManager.library, {
   $JestSDKHelper: {
-    mockPlayer: { playerId: "mock-player-id", registered: false, data: {} },
-    sdkChecked: false,
-    usePostMessage: false,
-    postMessageInitialized: false,
-    pendingCalls: {},
-    cachedPlayer: null,
-    cachedEntryPayload: null,
-    sdkContextId: null,
-    // Default; overwritten at runtime by JS_setSdkVersion from SdkVersion.WireName.
+    sdkUrl: "https://cdn.jest.com/sdk/latest/jestsdk.js",
+    sdkLoadPromise: null,
+    initialized: false,
     sdkVersion: "unity-sdk-unknown",
-    playerDataUpdateId: 0,
-    flushedUpToId: 0,
-    verboseLogging: false,
-    autoLoginReminders: true,
-    getClientIframeUrl: function() {
-      return typeof window !== 'undefined' ? window.location.href : 'unknown';
-    },
-    logVerbose: function() {
-      if (!JestSDKHelper.verboseLogging) return;
-      var args = Array.prototype.slice.call(arguments);
-      args[0] = "[JestSDK] " + args[0];
-      console.log.apply(console, args);
-    },
-    initVerboseLogging: function() {
-      try {
-        // Check iframe URL first
-        var params = new URLSearchParams(window.location.search);
-        JestSDKHelper.verboseLogging = params.get('jest_debug') === 'true';
-        // If not found, try parent URL (may throw in cross-origin iframes)
-        if (!JestSDKHelper.verboseLogging) {
-          try {
-            var parentParams = new URLSearchParams(window.parent.location.search);
-            JestSDKHelper.verboseLogging = parentParams.get('jest_debug') === 'true';
-          } catch (e) {
-            // Cross-origin — can't read parent URL, ignore
+    overlayHandles: {},
+
+    loadSdk: function () {
+      if (typeof window === "undefined") {
+        return Promise.reject(new Error("JestSDK requires a browser window"));
+      }
+
+      if (window.JestSDK) {
+        return Promise.resolve(window.JestSDK);
+      }
+
+      if (JestSDKHelper.sdkLoadPromise) {
+        return JestSDKHelper.sdkLoadPromise;
+      }
+
+      JestSDKHelper.sdkLoadPromise = new Promise(function (resolve, reject) {
+        var script = document.createElement("script");
+        script.src = JestSDKHelper.sdkUrl;
+        script.async = true;
+        script.onload = function () {
+          if (window.JestSDK) {
+            resolve(window.JestSDK);
+          } else {
+            reject(new Error("Loaded jestsdk.js, but window.JestSDK was not defined"));
           }
-        }
-      } catch (e) {
-        JestSDKHelper.verboseLogging = false;
-      }
-      if (JestSDKHelper.verboseLogging) {
-        console.log("[JestSDK] Verbose logging enabled (jest_debug=true)");
-      }
-    },
-
-    // SDK telemetry helpers
-    emitSdkMethodCalled: function(method, args) {
-      JestSDKHelper.sendMessage({
-        type: 'SdkMethodCalled',
-        method: method,
-        args: args,
-        clientSdkContextId: JestSDKHelper.getSdkContextId(),
-        clientIframeUrl: JestSDKHelper.getClientIframeUrl()
-      });
-    },
-
-    emitSdkMethodError: function(method, args, error) {
-      JestSDKHelper.sendMessage({
-        type: 'SdkMethodError',
-        method: method,
-        args: args,
-        error: typeof error === 'string' ? error : (error && error.toString ? error.toString() : 'Unknown error')
-      });
-    },
-
-    // Wraps an SDK method call with telemetry and verbose logging
-    instrumentMethod: function(method, args, fn) {
-      var argString;
-      try {
-        argString = JSON.stringify(args);
-      } catch (e) {
-        argString = 'Could not serialize args';
-      }
-      JestSDKHelper.logVerbose(method + "(" + argString + ")");
-      JestSDKHelper.emitSdkMethodCalled(method, argString);
-      try {
-        var result = fn();
-        if (result && typeof result.then === 'function') {
-          return result.then(function(res) {
-            JestSDKHelper.logVerbose(method + " completed");
-            return res;
-          }).catch(function(error) {
-            JestSDKHelper.logVerbose(method + " failed: " + error);
-            JestSDKHelper.emitSdkMethodError(method, argString, error);
-            throw error;
-          });
-        }
-        return result;
-      } catch (error) {
-        JestSDKHelper.logVerbose(method + " failed: " + error);
-        JestSDKHelper.emitSdkMethodError(method, argString, error);
-        throw error;
-      }
-    },
-
-    // Get sdkContextId from URL parameter.
-    // The host uses the `ctxid_` prefix to identify clients that can recover
-    // from a context mismatch via iframe reload — keep the prefix on any
-    // generated fallback so the platform opts this client in.
-    getSdkContextId: function() {
-      if (JestSDKHelper.sdkContextId) return JestSDKHelper.sdkContextId;
-      try {
-        var params = new URLSearchParams(window.location.search);
-        // Prefer the server-provided `sid` (already ctxid_-prefixed) so the
-        // id matches the host's expected value. Fall back to the legacy
-        // `sdk_context_id` param for older hosts.
-        var id = params.get('sid') || params.get('sdk_context_id');
-        var source = 'url';
-        if (!id) {
-          try {
-            id = sessionStorage.getItem('jest_sdk_context_id');
-            source = 'sessionStorage';
-            if (!id) {
-              id = 'ctxid_unity-' + Date.now();
-              sessionStorage.setItem('jest_sdk_context_id', id);
-              source = 'generated';
-            }
-          } catch (e) {
-            id = 'ctxid_unity-' + Date.now();
-            source = 'generated (sessionStorage unavailable)';
-          }
-        }
-        JestSDKHelper.sdkContextId = id;
-        JestSDKHelper.logVerbose("sdkContextId=" + id + " (source: " + source + ")");
-      } catch (e) {
-        JestSDKHelper.sdkContextId = 'ctxid_unity-' + Date.now();
-        JestSDKHelper.logVerbose("sdkContextId=" + JestSDKHelper.sdkContextId + " (source: generated, error fallback)");
-      }
-      return JestSDKHelper.sdkContextId;
-    },
-
-    // Generate conversation ID for request/response correlation
-    generateConversationId: function() {
-      try {
-        return self.crypto.randomUUID();
-      } catch (e) {
-        return 'conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      }
-    },
-
-    // Check if message is from TextClub
-    isTextClubMessage: function(data) {
-      return data && typeof data === 'object' && data.source_channel === 'textclub';
-    },
-
-    // Send message to parent using TextClub protocol
-    sendMessage: function(message) {
-      var fullMessage = {
-        source_channel: 'textclub',
-        sdkContextId: JestSDKHelper.getSdkContextId(),
-        sdkVersion: JestSDKHelper.sdkVersion,
-        conversationId: message.conversationId || JestSDKHelper.generateConversationId()
-      };
-      for (var key in message) {
-        fullMessage[key] = message[key];
-      }
-      window.parent.postMessage(fullMessage, '*');
-    },
-
-    // Send message and wait for response
-    sendAndWaitForResponse: function(message, responseType) {
-      return new Promise(function(resolve, reject) {
-        // Honor a pre-set conversationId so callers that need to correlate
-        // unsolicited follow-up messages (e.g. registration overlay button
-        // actions) can share one id with the parent platform.
-        var conversationId = message.conversationId || JestSDKHelper.generateConversationId();
-        message.conversationId = conversationId;
-
-        JestSDKHelper.pendingCalls[conversationId] = {
-          resolve: resolve,
-          reject: reject,
-          responseType: responseType
         };
-
-        // Timeout after 30 seconds
-        setTimeout(function() {
-          if (JestSDKHelper.pendingCalls[conversationId]) {
-            delete JestSDKHelper.pendingCalls[conversationId];
-            reject(new Error('PostMessage timeout: ' + message.type));
-          }
-        }, 30000);
-
-        JestSDKHelper.sendMessage(message);
-      });
-    },
-
-    // PostMessage bridge for cross-origin iframe communication (bypasses COEP)
-    initPostMessageBridge: function() {
-      if (JestSDKHelper.postMessageInitialized) return;
-      JestSDKHelper.postMessageInitialized = true;
-      JestSDKHelper.initVerboseLogging();
-
-      window.addEventListener('message', function(event) {
-        var data = event.data;
-        if (!JestSDKHelper.isTextClubMessage(data)) return;
-
-        // Handle SetPlayer - initial player data from parent
-        if (data.type === 'SetPlayer') {
-          JestSDKHelper.cachedPlayer = data.player;
-          // Normalize server shape (playerData) into local shape (data)
-          // so that getPlayerDataVal/setPlayerDataVal operate on a single map
-          var pdKeys = JestSDKHelper.cachedPlayer && JestSDKHelper.cachedPlayer.playerData
-            ? Object.keys(JestSDKHelper.cachedPlayer.playerData) : [];
-          var dKeys = JestSDKHelper.cachedPlayer && JestSDKHelper.cachedPlayer.data
-            ? Object.keys(JestSDKHelper.cachedPlayer.data) : [];
-          if (JestSDKHelper.cachedPlayer) {
-            JestSDKHelper.cachedPlayer.data = Object.assign(
-              {},
-              JestSDKHelper.cachedPlayer.playerData || {},
-              JestSDKHelper.cachedPlayer.data || {}
-            );
-          }
-          var mergedKeys = JestSDKHelper.cachedPlayer && JestSDKHelper.cachedPlayer.data
-            ? Object.keys(JestSDKHelper.cachedPlayer.data) : [];
-          console.log("[JestSDK] SetPlayer received — playerId=" +
-            (JestSDKHelper.cachedPlayer ? JestSDKHelper.cachedPlayer.playerId : 'null') +
-            ", playerData keys=" + pdKeys.length +
-            ", data keys=" + dKeys.length +
-            ", merged keys=" + mergedKeys.length +
-            " [" + mergedKeys.join(", ") + "]");
-          // Entry payload comes in player.entryPayload or separately
-          if (data.player && data.player.entryPayload) {
-            JestSDKHelper.cachedEntryPayload = data.player.entryPayload;
-          }
-        }
-
-        // Handle responses - match by conversationId
-        if (data.conversationId && JestSDKHelper.pendingCalls[data.conversationId]) {
-          var pending = JestSDKHelper.pendingCalls[data.conversationId];
-          delete JestSDKHelper.pendingCalls[data.conversationId];
-
-          // Handle different response types
-          switch (data.type) {
-            case 'GetGameProductsResponse':
-              if (data.success) {
-                pending.resolve(data.products || []);
-              } else {
-                pending.reject(new Error('Failed to get products'));
-              }
-              break;
-
-            case 'BeginPlatformPurchaseResponse':
-              if (data.result === 'success') {
-                pending.resolve({
-                  purchaseToken: data.purchase.purchaseToken,
-                  status: 'success',
-                  purchase: data.purchase,
-                  purchaseSigned: data.purchaseSigned
-                });
-              } else if (data.result === 'cancel') {
-                pending.resolve({ status: 'canceled' });
-              } else {
-                pending.reject(new Error(data.error || 'Purchase failed'));
-              }
-              break;
-
-            case 'CompletePlatformPurchaseResponse':
-              if (data.result === 'success') {
-                pending.resolve({ success: true });
-              } else {
-                pending.reject(new Error(data.error || 'Complete purchase failed'));
-              }
-              break;
-
-            case 'GetIncompletePurchasesResponse':
-              if (data.success) {
-                pending.resolve({
-                  purchases: data.purchases || [],
-                  purchasesSigned: data.purchasesSigned
-                });
-              } else {
-                pending.reject(new Error('Failed to get incomplete purchases'));
-              }
-              break;
-
-            case 'GetPlayerSignedResponse':
-              if (data.success) {
-                pending.resolve({
-                  player: data.player,
-                  playerSigned: data.playerSigned
-                });
-              } else {
-                pending.reject(new Error('Failed to get signed player'));
-              }
-              break;
-
-            case 'ShareReferralLinkResponse':
-              if (data.success) {
-                pending.resolve({ canceled: data.canceled });
-              } else {
-                pending.reject(new Error(data.error || 'Share failed'));
-              }
-              break;
-
-            case 'GetReferralsResponse':
-              if (data.success) {
-                pending.resolve({
-                  referrals: data.referrals,
-                  referralsSigned: data.referralsSigned
-                });
-              } else {
-                pending.reject(new Error(data.error || 'Failed to get referrals'));
-              }
-              break;
-
-            case 'GetFeatureFlagResponse':
-              if (data.success) {
-                pending.resolve(data.value);
-              } else {
-                pending.reject(new Error(data.error || 'Failed to get feature flag'));
-              }
-              break;
-
-            case 'LoginLeaseAcquired':
-              if (data.success) {
-                pending.resolve({ link: data.link });
-              } else {
-                pending.reject(new Error(data.error || 'Failed to acquire login lease'));
-              }
-              break;
-
-            case 'AckUpdatePlayerData':
-              pending.resolve();
-              break;
-
-            case 'PlatformRegistrationOverlayClosed':
-              pending.resolve();
-              break;
-
-            case 'ValidateNameResponse':
-              if (data.success) {
-                if (data.status === 'valid') {
-                  pending.resolve({ status: 'valid' });
-                } else {
-                  pending.resolve({ status: 'invalid', validationError: data.validationError });
-                }
-              } else {
-                pending.reject(new Error(data.error || 'Failed to validate name'));
-              }
-              break;
-
-            default:
-              // Generic success/error handling
-              if (data.success === false || data.error) {
-                pending.reject(new Error(data.error || 'Request failed'));
-              } else {
-                pending.resolve(data);
-              }
-          }
-        }
-      });
-
-      // Send Initialized message to parent
-      JestSDKHelper.sendMessage({
-        type: 'Initialized',
-        sdkContextId: JestSDKHelper.getSdkContextId(),
-        windowLocationHref: window.location.href,
-        autoLoginReminders: JestSDKHelper.autoLoginReminders
-      });
-
-      // Listen for BFCache restoration
-      window.addEventListener('pageshow', function(event) {
-        if (event.persisted) {
-          JestSDKHelper.sendMessage({
-            type: 'IframeBfcacheRestore',
-            sdkContextId: JestSDKHelper.getSdkContextId(),
-            windowLocationHref: window.location.href
-          });
-        }
-      });
-
-      console.log("[JestSDK] PostMessage bridge initialized (TextClub protocol)");
-    },
-
-    // Create PostMessage-based SDK proxy using TextClub protocol
-    createPostMessageSDK: function() {
-      JestSDKHelper.initPostMessageBridge();
-      var helper = JestSDKHelper;
-
-      return {
-        isReady: function() {
-          // This resolves immediately — it is only called by JS_initSdk's
-          // proceedWithInit() AFTER the polling loop has confirmed that
-          // cachedPlayer is populated (i.e. SetPlayer was received).
-          // Do not call this standalone to gate on player data readiness.
-          return Promise.resolve();
-        },
-        getPlayer: function() {
-          return helper.cachedPlayer || { playerId: "", registered: false, data: {} };
-        },
-        getEntryPayload: function() {
-          return helper.cachedEntryPayload || {};
-        },
-        getPlayerDataVal: function(key) {
-          var player = helper.cachedPlayer;
-          return player && player.data ? player.data[key] : undefined;
-        },
-        setPlayerDataVal: function(key, value) {
-          if (!helper.cachedPlayer) helper.cachedPlayer = { data: {} };
-          if (!helper.cachedPlayer.data) helper.cachedPlayer.data = {};
-          helper.cachedPlayer.data[key] = value;
-
-          // Send UpdatePlayerData message (fire-and-forget, durability requires flush)
-          var update = {};
-          update[key] = value;
-          var newId = ++helper.playerDataUpdateId;
-          helper.sendMessage({
-            type: 'UpdatePlayerData',
-            id: newId,
-            update: { update: update }
-          });
-        },
-        flush: function() {
-          // Flush sends pending player data updates and waits for ack
-          var id = helper.playerDataUpdateId;
-          if (id === 0 || id === helper.flushedUpToId) {
-            JestSDKHelper.logVerbose("flush skipped — no pending updates (id=" + id + ", flushedUpToId=" + helper.flushedUpToId + ")");
-            return Promise.resolve();
-          }
-
-          JestSDKHelper.logVerbose("flush sending (id=" + id + ")");
-          return helper.sendAndWaitForResponse({
-            type: 'UpdatePlayerData',
-            id: id,
-            update: { update: helper.cachedPlayer ? helper.cachedPlayer.data : {} }
-          }, 'AckUpdatePlayerData').then(function(result) {
-            JestSDKHelper.logVerbose("flush ack received (id=" + id + ", currentId=" + helper.playerDataUpdateId + ")");
-            helper.flushedUpToId = id;
-            // Only reset if no new sets happened during the flush
-            if (helper.playerDataUpdateId === id) {
-              helper.playerDataUpdateId = 0;
-              helper.flushedUpToId = 0;
-            }
-            return result;
-          });
-        },
-        getPlayerSigned: function() {
-          return helper.sendAndWaitForResponse({
-            type: 'GetPlayerSigned'
-          }, 'GetPlayerSignedResponse');
-        },
-        login: function(opts) {
-          helper.sendMessage({
-            type: 'BeginPlatformLogin',
-            entryPayload: opts && opts.entryPayload ? JSON.stringify(opts.entryPayload) : undefined
-          });
-        },
-        notifications: {
-          scheduleNotification: function(opts) {
-            // Convert to V2 format
-            var msg = {
-              type: 'ScheduleNotificationV2',
-              identifier: opts.identifier,
-              body: opts.body || opts.message,
-              title: opts.title,
-              ctaText: opts.ctaText || 'Play Now',
-              priority: opts.priority || 'medium',
-              assetReference: opts.assetReference || opts.imageReference || opts.image,
-              entryPayload: opts.entryPayload
-            };
-            // scheduledAt and scheduledInDays are mutually exclusive
-            if (opts.scheduledInDays !== undefined && opts.scheduledInDays !== null) {
-              msg.scheduledInDays = opts.scheduledInDays;
-            } else {
-              msg.scheduledAt = opts.scheduledAt instanceof Date ? opts.scheduledAt.toISOString() : opts.scheduledAt;
-            }
-            helper.sendMessage(msg);
-          },
-          unscheduleNotification: function(opts) {
-            helper.sendMessage({
-              type: 'UnscheduleNotification',
-              identifier: opts.identifier
-            });
-          },
-        },
-        payments: {
-          getProducts: function() {
-            return helper.sendAndWaitForResponse({
-              type: 'GetGameProducts'
-            }, 'GetGameProductsResponse');
-          },
-          beginPurchase: function(opts) {
-            return helper.sendAndWaitForResponse({
-              type: 'BeginPlatformPurchase',
-              productSku: opts.productSku
-            }, 'BeginPlatformPurchaseResponse');
-          },
-          completePurchase: function(opts) {
-            return helper.sendAndWaitForResponse({
-              type: 'CompletePlatformPurchase',
-              purchaseToken: opts.purchaseToken
-            }, 'CompletePlatformPurchaseResponse');
-          },
-          getIncompletePurchases: function() {
-            return helper.sendAndWaitForResponse({
-              type: 'GetIncompletePurchases'
-            }, 'GetIncompletePurchasesResponse');
-          },
-        },
-        referrals: {
-          shareReferralLink: function(opts) {
-            return helper.sendAndWaitForResponse({
-              type: 'ShareReferralLink',
-              reference: opts.reference,
-              entryPayload: opts.entryPayload,
-              shareTitle: opts.shareTitle,
-              shareText: opts.shareText,
-              onboardingSlug: opts.onboardingSlug
-            }, 'ShareReferralLinkResponse');
-          },
-          listReferrals: function() {
-            return helper.sendAndWaitForResponse({
-              type: 'GetReferrals'
-            }, 'GetReferralsResponse');
-          },
-        },
-        setLoadingProgress: function(progress) {
-            helper.sendMessage({ type: 'SetLoadingProgress', progress: progress });
-        },
-        internal: {
-          redirectToGame: function(opts) {
-            var msg = { type: 'RedirectToGame' };
-            if (opts.redirectToFlagship) {
-              msg.redirectToFlagship = true;
-            } else {
-              msg.gameSlug = opts.gameSlug;
-            }
-            msg.entryPayload = opts.entryPayload ? JSON.stringify(opts.entryPayload) : undefined;
-            msg.skipGameExitConfirm = opts.skipGameExitConfirm;
-            helper.sendMessage(msg);
-          },
-          redirectToExplorePage: function() {
-            helper.sendMessage({ type: 'RedirectToExplorePage' });
-          },
-          openPrivacyPolicy: function() {
-            helper.sendMessage({ type: 'OpenLegalPage', page: 'privacy' });
-          },
-          openTermsOfService: function() {
-            helper.sendMessage({ type: 'OpenLegalPage', page: 'terms' });
-          },
-          openCopyright: function() {
-            helper.sendMessage({ type: 'OpenLegalPage', page: 'copyright' });
-          },
-          getFeatureFlag: function(key) {
-            return helper.sendAndWaitForResponse({
-              type: 'GetFeatureFlag',
-              key: key
-            }, 'GetFeatureFlagResponse');
-          },
-          reserveLoginMessageAsync: function(opts) {
-            return helper.sendAndWaitForResponse({
-              type: 'AcquireLoginLease',
-              message: opts.message,
-              replyMessage: opts.replyMessage || null,
-              reminderMessage: opts.reminderMessage || null,
-              keywords: opts.keywords || null,
-              entryPayload: opts.entryPayload ? JSON.stringify(opts.entryPayload) : undefined
-            }, 'LoginLeaseAcquired');
-          },
-          sendReservedLoginMessage: function(res) {
-            // This is handled by the platform after login lease is acquired
-            // The link from LoginLeaseAcquired response is used directly
-            console.log("[JestSDK] sendReservedLoginMessage - use the link from reserveLoginMessageAsync");
-          },
-          validateName: function(name) {
-            return helper.sendAndWaitForResponse({
-              type: 'ValidateName',
-              name: name
-            }, 'ValidateNameResponse');
-          },
-          captureOnboardingEvent: function(event, properties) {
-            helper.sendMessage({
-              type: 'OnboardingCaptureEvent',
-              event: event,
-              properties: properties
-            });
-          },
-        },
-        showRegistrationOverlay: function(opts) {
-          opts = opts || {};
-          var conversationId = opts.conversationId || helper.generateConversationId();
-          // Wait for PlatformRegistrationOverlayClosed to resolve onClose.
-          var closePromise = helper.sendAndWaitForResponse({
-            type: 'BeginPlatformRegistrationOverlay',
-            conversationId: conversationId,
-            theme: opts.theme,
-            entryPayload: opts.entryPayload ? JSON.stringify(opts.entryPayload) : undefined
-          }, 'PlatformRegistrationOverlayClosed');
-          if (typeof opts.onClose === 'function') {
-            closePromise.then(opts.onClose, opts.onClose);
-          }
-          return {
-            conversationId: conversationId,
-            closePromise: closePromise,
-            loginButtonAction: function() {
-              helper.sendMessage({
-                type: 'PlatformRegistrationOverlayLogin',
-                conversationId: conversationId
-              });
-            },
-            closeButtonAction: function() {
-              helper.sendMessage({
-                type: 'DismissPlatformRegistrationOverlay',
-                conversationId: conversationId
-              });
-            }
-          };
-        },
-      };
-    },
-
-    ensureSDK: function() {
-      if (typeof window !== 'undefined' && !window.JestSDK) {
-        // Check if we're running inside an iframe (platform)
-        var inIframe = false;
-        try {
-          inIframe = window.self !== window.top;
-        } catch (e) {
-          inIframe = true; // Cross-origin iframe
-        }
-
-        if (inIframe) {
-          // Running inside platform iframe - try to access parent SDK
-          var canAccessParent = false;
-          try {
-            // This will throw if cross-origin (COEP blocked)
-            canAccessParent = !!window.parent.JestSDK;
-          } catch (e) {
-            canAccessParent = false;
-          }
-
-          if (canAccessParent) {
-            // Direct access works - use parent's SDK
-            console.log("[JestSDK] Using parent window SDK directly");
-            window.JestSDK = window.parent.JestSDK;
-            return;
-          }
-
-          // Cross-origin or COEP blocked - use postMessage bridge
-          if (!JestSDKHelper.sdkChecked) {
-            JestSDKHelper.sdkChecked = true;
-            console.log("[JestSDK] Cross-origin iframe detected, using postMessage bridge");
-          }
-          JestSDKHelper.usePostMessage = true;
-          window.JestSDK = JestSDKHelper.createPostMessageSDK();
-          return;
-        }
-
-        console.warn("[JestSDK] No SDK found, creating mock for standalone testing");
-        var mp = JestSDKHelper.mockPlayer;
-        window.JestSDK = {
-          isReady: function() { return Promise.resolve(); },
-          getPlayer: function() { return mp; },
-          getEntryPayload: function() { return {}; },
-          getPlayerDataVal: function(key) { return mp.data[key]; },
-          setPlayerDataVal: function(key, value) { mp.data[key] = value; },
-          flush: function() { return Promise.resolve(); },
-          getPlayerSigned: function() { return Promise.resolve({ player: mp, playerSigned: "mock-signed" }); },
-          login: function(opts) { console.log("[Mock] login:", opts); },
-          setLoadingProgress: function(progress) { console.log("[Mock] setLoadingProgress:", progress); },
-          notifications: {
-            scheduleNotification: function(opts) { console.log("[Mock] scheduleNotification:", opts); },
-            unscheduleNotification: function(opts) { console.log("[Mock] unscheduleNotification:", opts); },
-          },
-          payments: {
-            getProducts: function() { return Promise.resolve([]); },
-            beginPurchase: function(opts) { return Promise.resolve({ purchaseToken: "mock-token", status: "mock" }); },
-            completePurchase: function(opts) { return Promise.resolve({ success: true }); },
-            getIncompletePurchases: function() { return Promise.resolve({ purchases: [] }); },
-          },
-          referrals: {
-            shareReferralLink: function(opts) { console.log("[Mock] shareReferralLink:", opts); return Promise.resolve({ canceled: false }); },
-            listReferrals: function() { return Promise.resolve({ referrals: {}, referralsSigned: "mock-signed" }); },
-          },
-          internal: {
-            redirectToGame: function(opts) { console.log("[Mock] redirectToGame:", opts); },
-            redirectToExplorePage: function() { console.log("[Mock] redirectToExplorePage"); },
-            openPrivacyPolicy: function() { console.log("[Mock] openPrivacyPolicy"); },
-            openTermsOfService: function() { console.log("[Mock] openTermsOfService"); },
-            openCopyright: function() { console.log("[Mock] openCopyright"); },
-            getFeatureFlag: function(key) { return Promise.resolve(undefined); },
-            reserveLoginMessageAsync: function(opts) { return Promise.resolve({ reservationId: "mock-id" }); },
-            sendReservedLoginMessage: function(res) { console.log("[Mock] sendReservedLoginMessage:", res); },
-            validateName: function(name) { return Promise.resolve({ status: "valid" }); },
-            captureOnboardingEvent: function(event, properties) { console.log("[Mock] captureOnboardingEvent:", event, properties); },
-          },
-          showRegistrationOverlay: function(opts) {
-            console.log("[Mock] showRegistrationOverlay:", opts);
-            var closePromise = Promise.resolve();
-            if (opts && typeof opts.onClose === 'function') {
-              closePromise.then(opts.onClose);
-            }
-            return {
-              closePromise: closePromise,
-              loginButtonAction: function() { console.log("[Mock] registrationOverlay.loginButtonAction"); },
-              closeButtonAction: function() { console.log("[Mock] registrationOverlay.closeButtonAction"); }
-            };
-          },
+        script.onerror = function () {
+          reject(new Error("Failed to load " + JestSDKHelper.sdkUrl));
         };
-      }
+        document.head.appendChild(script);
+      });
+
+      return JestSDKHelper.sdkLoadPromise;
     },
-    marshalString: function(value) {
+
+    getSdk: function () {
+      if (!window.JestSDK) {
+        throw new Error("JestSDK is not initialized. Call JestSDK.Instance.Init() first.");
+      }
+      return window.JestSDK;
+    },
+
+    marshalString: function (value) {
       if (value === undefined || value === null) value = "";
       var str = String(value);
       var length = lengthBytesUTF8(str) + 1;
@@ -709,630 +54,464 @@ mergeInto(LibraryManager.library, {
       if (!ptr) return 0;
       stringToUTF8(str, ptr, length);
       return ptr;
+    },
+
+    stringifyValue: function (value) {
+      if (value === undefined || value === null) return "";
+      if (typeof value === "string") return value;
+      try {
+        return JSON.stringify(value);
+      } catch (e) {
+        return String(value);
+      }
+    },
+
+    parseJson: function (jsonPtr) {
+      var raw = UTF8ToString(jsonPtr);
+      if (!raw) return {};
+      return JSON.parse(raw);
+    },
+
+    toErrorMessage: function (err) {
+      return err && err.message ? err.message : String(err);
+    },
+
+    asPromise: function (value) {
+      if (value && typeof value.then === "function") {
+        return value;
+      }
+      return Promise.resolve(value);
+    },
+
+    callVoidTask: function (taskPtr, successCallback, errorCallback, fn) {
+      try {
+        JestSDKHelper.asPromise(fn())
+          .then(function () {
+            {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
+          })
+          .catch(function (err) {
+            {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(JestSDKHelper.toErrorMessage(err)));
+          });
+      } catch (err) {
+        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(JestSDKHelper.toErrorMessage(err)));
+      }
+    },
+
+    callStringTask: function (taskPtr, successCallback, errorCallback, fn) {
+      try {
+        JestSDKHelper.asPromise(fn())
+          .then(function (result) {
+            {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(result));
+          })
+          .catch(function (err) {
+            {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(JestSDKHelper.toErrorMessage(err)));
+          });
+      } catch (err) {
+        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(JestSDKHelper.toErrorMessage(err)));
+      }
+    },
+
+    callNumberTask: function (taskPtr, successCallback, errorCallback, fn) {
+      try {
+        JestSDKHelper.asPromise(fn())
+          .then(function (result) {
+            {{{ makeDynCall("vif", 'successCallback') }}}(taskPtr, Number(result) || 0);
+          })
+          .catch(function (err) {
+            {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(JestSDKHelper.toErrorMessage(err)));
+          });
+      } catch (err) {
+        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(JestSDKHelper.toErrorMessage(err)));
+      }
     }
   },
 
-  JS_getPlayerId__deps: ['$JestSDKHelper'],
-  JS_getPlayerId: function () {
-    JestSDKHelper.ensureSDK();
-    const val = window.JestSDK.getPlayer().playerId;
-    return JestSDKHelper.marshalString(val);
-  },
+  JS_initSdk__deps: ['$JestSDKHelper'],
+  JS_initSdk: function (taskPtr, autoLoginReminders, sdkVersion, successCallback, errorCallback) {
+    var version = UTF8ToString(sdkVersion);
+    if (version) {
+      JestSDKHelper.sdkVersion = version;
+    }
 
-  JS_getPlayerData__deps: ['$JestSDKHelper'],
-  JS_getPlayerData: function () {
-    JestSDKHelper.ensureSDK();
-    const val = window.JestSDK.getPlayer();
-    return JestSDKHelper.marshalString(JSON.stringify(val));
+    JestSDKHelper.loadSdk()
+      .then(function (sdk) {
+        return sdk.init({
+          autoLoginReminders: !!autoLoginReminders,
+          sdkVersion: JestSDKHelper.sdkVersion
+        });
+      })
+      .then(function () {
+        JestSDKHelper.initialized = true;
+        {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
+      })
+      .catch(function (err) {
+        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(JestSDKHelper.toErrorMessage(err)));
+      });
   },
 
   JS_getEntryPayload__deps: ['$JestSDKHelper'],
   JS_getEntryPayload: function () {
-    JestSDKHelper.ensureSDK();
-    const payload = window.JestSDK.getEntryPayload();
-    return JestSDKHelper.marshalString(JSON.stringify(payload));
+    var payload = JestSDKHelper.getSdk().getEntryPayload();
+    return JestSDKHelper.marshalString(JSON.stringify(payload || {}));
+  },
+
+  JS_getPlayerId__deps: ['$JestSDKHelper'],
+  JS_getPlayerId: function () {
+    var player = JestSDKHelper.getSdk().getPlayer();
+    return JestSDKHelper.marshalString(player && player.playerId);
+  },
+
+  JS_getPlayerData__deps: ['$JestSDKHelper'],
+  JS_getPlayerData: function () {
+    var sdk = JestSDKHelper.getSdk();
+    var data = sdk.getPlayerData ? sdk.getPlayerData() : sdk.data.getAll();
+    var player = sdk.getPlayer();
+    return JestSDKHelper.marshalString(JSON.stringify(Object.assign({}, player || {}, {
+      playerData: data || {},
+      data: data || {}
+    })));
   },
 
   JS_getIsRegistered__deps: ['$JestSDKHelper'],
   JS_getIsRegistered: function () {
-    JestSDKHelper.ensureSDK();
-    const val = window.JestSDK.getPlayer().registered ? "true" : "false";
-    return JestSDKHelper.marshalString(val);
+    var player = JestSDKHelper.getSdk().getPlayer();
+    return JestSDKHelper.marshalString(player && player.registered ? "true" : "false");
   },
 
   JS_getPlayerUsername__deps: ['$JestSDKHelper'],
   JS_getPlayerUsername: function () {
-    JestSDKHelper.ensureSDK();
-    const val = window.JestSDK.getPlayer().username;
-    return JestSDKHelper.marshalString(val || "");
+    var player = JestSDKHelper.getSdk().getPlayer();
+    return JestSDKHelper.marshalString(player && player.username);
   },
 
   JS_getPlayerAvatarUrl__deps: ['$JestSDKHelper'],
   JS_getPlayerAvatarUrl: function () {
-    JestSDKHelper.ensureSDK();
-    const val = window.JestSDK.getPlayer().avatarUrl;
-    return JestSDKHelper.marshalString(val || "");
+    var player = JestSDKHelper.getSdk().getPlayer();
+    return JestSDKHelper.marshalString(player && player.avatarUrl);
+  },
+
+  JS_getBotAvatar__deps: ['$JestSDKHelper'],
+  JS_getBotAvatar: function (username, size) {
+    var result = JestSDKHelper.getSdk().social.getBotAvatar({
+      username: UTF8ToString(username),
+      size: size
+    });
+    return JestSDKHelper.marshalString(result);
+  },
+
+  JS_getPlayerAvatar__deps: ['$JestSDKHelper'],
+  JS_getPlayerAvatar: function (size) {
+    var profile = JestSDKHelper.getSdk().social.getProfile({ avatarSize: size });
+    if (!profile || !profile.avatarUrl) {
+      return 0;
+    }
+    return JestSDKHelper.marshalString(profile.avatarUrl);
   },
 
   JS_getPlayerValue__deps: ['$JestSDKHelper'],
   JS_getPlayerValue: function (key) {
-    JestSDKHelper.ensureSDK();
-    var k = UTF8ToString(key);
-    const val = window.JestSDK.getPlayerDataVal(k);
-    JestSDKHelper.logVerbose("getPlayerValue key='" + k + "' -> '" + (val || '') + "'");
-    return JestSDKHelper.marshalString(val);
+    var value = JestSDKHelper.getSdk().data.get(UTF8ToString(key));
+    return JestSDKHelper.marshalString(JestSDKHelper.stringifyValue(value));
   },
 
   JS_setPlayerValue__deps: ['$JestSDKHelper'],
   JS_setPlayerValue: function (key, value) {
-    JestSDKHelper.ensureSDK();
-    var k = UTF8ToString(key);
-    var v = UTF8ToString(value);
-    JestSDKHelper.instrumentMethod('setPlayerDataVal', { key: k }, function() {
-      window.JestSDK.setPlayerDataVal(k, v);
-    });
+    JestSDKHelper.getSdk().data.set(UTF8ToString(key), UTF8ToString(value));
   },
 
   JS_deletePlayerValue__deps: ['$JestSDKHelper'],
   JS_deletePlayerValue: function (key) {
-    JestSDKHelper.ensureSDK();
-    var k = UTF8ToString(key);
-    JestSDKHelper.logVerbose("deletePlayerValue key='" + k + "'");
-    window.JestSDK.setPlayerDataVal(k, undefined);
+    JestSDKHelper.getSdk().data.delete(UTF8ToString(key));
   },
 
   JS_flush__deps: ['$JestSDKHelper'],
   JS_flush: function (taskPtr, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    window.JestSDK.flush()
-      .then(function () {
-        {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
-      })
-      .catch(function (err) {
-        var msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-      });
+    JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().data.flush();
+    });
   },
 
   JS_scheduleNotificationV2__deps: ['$JestSDKHelper'],
-  JS_scheduleNotificationV2: function (options) {
-    JestSDKHelper.ensureSDK();
-    let opts = JSON.parse(UTF8ToString(options));
-    // scheduledAt and scheduledInDays are mutually exclusive
-    if (opts.scheduledAt) {
-      opts.scheduledAt = new Date(opts.scheduledAt);
-    }
-    if (opts.entryPayload) {
-      opts.entryPayload = JSON.parse(opts.entryPayload);
-    }
-    if (typeof opts.image === "string" && opts.image === "") {
-      delete opts.image;
-    }
-    JestSDKHelper.instrumentMethod('scheduleNotification', opts, function() {
-      window.JestSDK.notifications.scheduleNotification(opts);
+  JS_scheduleNotificationV2: function (taskPtr, options, successCallback, errorCallback) {
+    JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {
+      var opts = JestSDKHelper.parseJson(options);
+      if (opts.scheduledAt) {
+        opts.scheduledAt = new Date(opts.scheduledAt);
+      }
+      if (typeof opts.entryPayload === "string") {
+        opts.entryPayload = JSON.parse(opts.entryPayload);
+      }
+      return JestSDKHelper.getSdk().notifications.scheduleNotification(opts);
     });
   },
 
   JS_unscheduleNotificationV2__deps: ['$JestSDKHelper'],
-  JS_unscheduleNotificationV2: function (identifier) {
-    JestSDKHelper.ensureSDK();
-    var id = UTF8ToString(identifier);
-    JestSDKHelper.logVerbose("unscheduleNotification id='" + id + "'");
-    window.JestSDK.notifications.unscheduleNotification({
-      identifier: id,
+  JS_unscheduleNotificationV2: function (taskPtr, identifier, successCallback, errorCallback) {
+    JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().notifications.unscheduleNotification({
+        identifier: UTF8ToString(identifier)
+      });
+    });
+  },
+
+  JS_callAsyncVoid__deps: ['$JestSDKHelper'],
+  JS_callAsyncVoid: function (taskPtr, callName, successCallback, errorCallback) {
+    JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {
+      var sdk = JestSDKHelper.getSdk();
+      var name = UTF8ToString(callName);
+      if (typeof sdk[name] !== "function") {
+        throw new Error("Method not found: " + name);
+      }
+      return sdk[name]();
+    });
+  },
+
+  JS_callAsyncString__deps: ['$JestSDKHelper'],
+  JS_callAsyncString: function (taskPtr, callName, successCallback, errorCallback) {
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      var sdk = JestSDKHelper.getSdk();
+      var name = UTF8ToString(callName);
+      if (typeof sdk[name] !== "function") {
+        throw new Error("Method not found: " + name);
+      }
+      return sdk[name]();
+    });
+  },
+
+  JS_callAsyncNumber__deps: ['$JestSDKHelper'],
+  JS_callAsyncNumber: function (taskPtr, callName, successCallback, errorCallback) {
+    JestSDKHelper.callNumberTask(taskPtr, successCallback, errorCallback, function () {
+      var sdk = JestSDKHelper.getSdk();
+      var name = UTF8ToString(callName);
+      if (typeof sdk[name] !== "function") {
+        throw new Error("Method not found: " + name);
+      }
+      return sdk[name]();
     });
   },
 
   JS_login__deps: ['$JestSDKHelper'],
   JS_login: function (payload) {
-    JestSDKHelper.ensureSDK();
-    const payloadJson = UTF8ToString(payload);
-    let data = {};
-    try {
-      data = JSON.parse(payloadJson);
-    } catch (e) {
-      console.error("Invalid JSON passed:", payloadJson);
+    var entryPayload = {};
+    var payloadJson = UTF8ToString(payload);
+    if (payloadJson) {
+      entryPayload = JSON.parse(payloadJson);
     }
-    JestSDKHelper.instrumentMethod('login', { entryPayload: data }, function() {
-      window.JestSDK.login({ entryPayload: data });
-    });
-  },
-
-  JS_initSdk__deps: ['$JestSDKHelper'],
-  JS_initSdk: function (taskPtr, autoLoginReminders, successCallback, errorCallback) {
-    JestSDKHelper.autoLoginReminders = !!autoLoginReminders;
-    // Check if we're in an iframe
-    var inIframe = false;
-    try {
-      inIframe = window.self !== window.top;
-    } catch (e) {
-      inIframe = true;
-    }
-
-    function proceedWithInit() {
-      JestSDKHelper.ensureSDK();
-      window.JestSDK.isReady()
-        .then(function () {
-          console.log("[JestSDK] SDK initialized successfully");
-          {{{ makeDynCall('vi', 'successCallback') }}}(taskPtr);
-        })
-        .catch(function (err) {
-          var msg = err && err.message ? err.message : String(err);
-          {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-        });
-    }
-
-    if (inIframe && !window.JestSDK) {
-      console.log("[JestSDK] Running in iframe, checking access mode...");
-
-      // Try to access parent SDK directly first
-      var canAccessParent = false;
-      try {
-        canAccessParent = !!window.parent.JestSDK;
-      } catch (e) {
-        console.log("[JestSDK] Cannot access parent directly (COEP/cross-origin), using TextClub postMessage bridge");
-      }
-
-      if (canAccessParent) {
-        // Direct access works
-        console.log("[JestSDK] Direct parent access available");
-        proceedWithInit();
-      } else {
-        // Use postMessage bridge with TextClub protocol
-        // This sends Initialized message and waits for SetPlayer
-        JestSDKHelper.ensureSDK();
-
-        // Wait for SetPlayer message (cachedPlayer will be set)
-        var maxWaitMs = 5000;
-        var pollIntervalMs = 100;
-        var waited = 0;
-
-        var pollInterval = setInterval(function() {
-          waited += pollIntervalMs;
-          if (JestSDKHelper.cachedPlayer) {
-            clearInterval(pollInterval);
-            console.log("[JestSDK] Received SetPlayer via postMessage after " + waited + "ms");
-            proceedWithInit();
-          } else if (waited >= maxWaitMs) {
-            clearInterval(pollInterval);
-            console.warn("[JestSDK] Timeout waiting for SetPlayer after " + maxWaitMs + "ms, proceeding anyway");
-            proceedWithInit();
-          }
-        }, pollIntervalMs);
-      }
-    } else {
-      // Not in iframe, or SDK already present
-      proceedWithInit();
-    }
-  },
-
-  JS_callAsyncVoid__deps: ['$JestSDKHelper'],
-  JS_callAsyncVoid: function (
-    taskPtr,
-    callName,
-    successCallback,
-    errorCallback
-  ) {
-    JestSDKHelper.ensureSDK();
-    var name = UTF8ToString(callName);
-    JestSDKHelper.logVerbose("callAsyncVoid: " + name);
-
-    if (typeof window.JestSDK[name] !== 'function') {
-      console.error("[JestSDK] Method not found:", name);
-      {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString("Method not found: " + name));
-      return;
-    }
-
-    window.JestSDK[name]()
-      .then(function () {
-        JestSDKHelper.logVerbose("callAsyncVoid success: " + name);
-        {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
-      })
-      .catch(function (err) {
-        console.error("[JestSDK] JS_callAsyncVoid error:", name, err);
-        var msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-      });
-  },
-
-  JS_callAsyncNumber__deps: ['$JestSDKHelper'],
-  JS_callAsyncNumber: function (
-    taskPtr,
-    callName,
-    successCallback,
-    errorCallback
-  ) {
-    JestSDKHelper.ensureSDK();
-    window.JestSDK[UTF8ToString(callName)]()
-      .then(function (result) {
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(result));
-      })
-      .catch(function (err) {
-        var msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-      });
-  },
-
-  JS_callAsyncString__deps: ['$JestSDKHelper'],
-  JS_callAsyncString: function (
-    taskPtr,
-    callName,
-    successCallback,
-    errorCallback
-  ) {
-    JestSDKHelper.ensureSDK();
-    window.JestSDK[UTF8ToString(callName)]()
-      .then(function (result) {
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(result));
-      })
-      .catch(function (err) {
-        var msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-      });
+    JestSDKHelper.getSdk().login({ entryPayload: entryPayload });
   },
 
   JS_getProducts__deps: ['$JestSDKHelper'],
   JS_getProducts: function (taskPtr, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    JestSDKHelper.instrumentMethod('getProducts', {}, function() {
-      return window.JestSDK.payments.getProducts();
-    })
-      .then(function (products) {
-        const json = JSON.stringify(products);
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-      })
-      .catch(function (err) {
-        const msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().payments.getProducts().then(function (products) {
+        return JSON.stringify(products);
       });
+    });
   },
 
   JS_beginPurchase__deps: ['$JestSDKHelper'],
   JS_beginPurchase: function (taskPtr, sku, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    const productSku = UTF8ToString(sku);
-    JestSDKHelper.instrumentMethod('beginPurchase', { productSku: productSku }, function() {
-      return window.JestSDK.payments.beginPurchase({ productSku: productSku });
-    })
-      .then(function (result) {
-        const json = JSON.stringify(result);
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-      })
-      .catch(function (err) {
-        const msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().payments.beginPurchase({
+        productSku: UTF8ToString(sku)
+      }).then(function (result) {
+        return JSON.stringify(result);
       });
+    });
   },
 
   JS_completePurchase__deps: ['$JestSDKHelper'],
   JS_completePurchase: function (taskPtr, purchaseToken, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    const token = UTF8ToString(purchaseToken);
-    JestSDKHelper.instrumentMethod('completePurchase', { purchaseToken: token }, function() {
-      return window.JestSDK.payments.completePurchase({ purchaseToken: token });
-    })
-      .then(function (result) {
-        const json = JSON.stringify(result);
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-      })
-      .catch(function (err) {
-        const msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().payments.completePurchase({
+        purchaseToken: UTF8ToString(purchaseToken)
+      }).then(function (result) {
+        return JSON.stringify(result);
       });
+    });
   },
 
   JS_getIncompletePurchases__deps: ['$JestSDKHelper'],
   JS_getIncompletePurchases: function (taskPtr, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    JestSDKHelper.instrumentMethod('getIncompletePurchases', {}, function() {
-      return window.JestSDK.payments.getIncompletePurchases();
-    })
-      .then(function (result) {
-        const json = JSON.stringify(result);
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-      })
-      .catch(function (err) {
-        const msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().payments.getIncompletePurchases().then(function (result) {
+        return JSON.stringify(result);
       });
+    });
   },
 
   JS_openReferralDialog__deps: ['$JestSDKHelper'],
   JS_openReferralDialog: function (taskPtr, optionsJson, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    try {
-      const options = JSON.parse(UTF8ToString(optionsJson));
-      const result = JestSDKHelper.instrumentMethod('shareReferralLink', options, function() {
-        return window.JestSDK.referrals.shareReferralLink(options);
-      });
-
-      // Handle both promise and non-promise returns
-      if (result && typeof result.then === 'function') {
-        result
-          .then(function () {
-            {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
-          })
-          .catch(function (err) {
-            const msg = err && err.message ? err.message : String(err);
-            {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-          });
-      } else {
-        // Synchronous call - immediately succeed
-        {{{ makeDynCall("vi", 'successCallback') }}}(taskPtr);
-      }
-    } catch (err) {
-      const msg = err && err.message ? err.message : String(err);
-      {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-    }
+    JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().referrals.shareReferralLink(JestSDKHelper.parseJson(optionsJson));
+    });
   },
 
   JS_listReferrals__deps: ['$JestSDKHelper'],
   JS_listReferrals: function (taskPtr, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    // Transform API response format to match C# model
-    // API returns: {referrals: {"ref1": [{playerId, joinedAt}], "ref2": []}, referralsSigned: "..."}
-    // C# expects:  {referrals: [{reference: "ref1", registrations: [{playerId, joinedAt}]}, ...], referralsSigned: "..."}
-    function transformResponse(data) {
-      if (!data) return {referrals: [], referralsSigned: ""};
-
-      const referralsArray = [];
-      if (data.referrals && typeof data.referrals === 'object' && !Array.isArray(data.referrals)) {
-        for (const reference in data.referrals) {
-          referralsArray.push({
-            reference: reference,
-            registrations: data.referrals[reference] || []
-          });
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().referrals.listReferrals().then(function (data) {
+        var referralsArray = [];
+        if (data && data.referrals && !Array.isArray(data.referrals)) {
+          for (var reference in data.referrals) {
+            referralsArray.push({
+              reference: reference,
+              registrations: data.referrals[reference] || []
+            });
+          }
+        } else if (data && Array.isArray(data.referrals)) {
+          referralsArray = data.referrals;
         }
-      } else if (Array.isArray(data.referrals)) {
-        // Already in array format
-        return data;
-      }
-
-      return {
-        referrals: referralsArray,
-        referralsSigned: data.referralsSigned || ""
-      };
-    }
-
-    try {
-      const result = JestSDKHelper.instrumentMethod('listReferrals', {}, function() {
-        return window.JestSDK.referrals.listReferrals();
+        return JSON.stringify({
+          referrals: referralsArray,
+          referralsSigned: data && data.referralsSigned ? data.referralsSigned : ""
+        });
       });
-
-      // Handle both promise and non-promise returns
-      if (result && typeof result.then === 'function') {
-        result
-          .then(function (data) {
-            const transformed = transformResponse(data);
-            const json = JSON.stringify(transformed);
-            {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-          })
-          .catch(function (err) {
-            const msg = err && err.message ? err.message : String(err);
-            {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-          });
-      } else {
-        // Synchronous call - result is the data directly
-        const transformed = transformResponse(result);
-        const json = JSON.stringify(transformed);
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-      }
-    } catch (err) {
-      const msg = err && err.message ? err.message : String(err);
-      {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-    }
+    });
   },
 
   JS_redirectToGame__deps: ['$JestSDKHelper'],
   JS_redirectToGame: function (optionsJson) {
-    JestSDKHelper.ensureSDK();
-    const options = JSON.parse(UTF8ToString(optionsJson));
-    JestSDKHelper.logVerbose("redirectToGame", options);
-    window.JestSDK.internal.redirectToGame(options);
+    var sdk = JestSDKHelper.getSdk();
+    var options = JestSDKHelper.parseJson(optionsJson);
+    if (options.redirectToFlagship) {
+      sdk.internal.redirectToFlagshipGame({
+        entryPayload: options.entryPayload ? JSON.parse(options.entryPayload) : undefined
+      });
+      return;
+    }
+    sdk.internal.redirectToGame({
+      gameSlug: options.gameSlug,
+      entryPayload: options.entryPayload ? JSON.parse(options.entryPayload) : undefined,
+      skipGameExitConfirm: options.skipGameExitConfirm
+    });
   },
 
   JS_openLegalPage__deps: ['$JestSDKHelper'],
   JS_openLegalPage: function (page) {
-    JestSDKHelper.ensureSDK();
-    const pageType = UTF8ToString(page);
-    switch (pageType) {
+    var sdk = JestSDKHelper.getSdk();
+    switch (UTF8ToString(page)) {
       case "privacy":
-        window.JestSDK.internal.openPrivacyPolicy();
+        sdk.internal.openPrivacyPolicy();
         break;
       case "terms":
-        window.JestSDK.internal.openTermsOfService();
+        sdk.internal.openTermsOfService();
         break;
       case "copyright":
-        window.JestSDK.internal.openCopyright();
+        sdk.internal.openCopyright();
         break;
       default:
-        console.warn("[JestSDK] Unknown legal page type:", pageType);
+        console.warn("[JestSDK] Unknown legal page type");
     }
   },
 
   JS_getPlayerSigned__deps: ['$JestSDKHelper'],
   JS_getPlayerSigned: function (taskPtr, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    JestSDKHelper.instrumentMethod('getPlayerSigned', {}, function() {
-      return window.JestSDK.getPlayerSigned();
-    })
-      .then(function (result) {
-        const json = JSON.stringify(result);
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-      })
-      .catch(function (err) {
-        const msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().getPlayerSigned().then(function (result) {
+        return JSON.stringify(result);
       });
+    });
   },
 
   JS_debugRegister: function () {
-    const random = Math.floor(Math.random() * 10000000).toString().padStart(7, "0");
-    const phoneNumber = "+1555" + random;
+    var random = Math.floor(Math.random() * 10000000).toString().padStart(7, "0");
+    var phoneNumber = "+1555" + random;
     window.parent.postMessage({ type: "debug-register", phoneNumber: phoneNumber }, "*");
   },
 
   JS_redirectToExplorePage__deps: ['$JestSDKHelper'],
   JS_redirectToExplorePage: function () {
-    JestSDKHelper.ensureSDK();
-    JestSDKHelper.logVerbose("redirectToExplorePage");
-    window.JestSDK.internal.redirectToExplorePage();
+    JestSDKHelper.getSdk().internal.redirectToExplorePage();
   },
 
   JS_getFeatureFlag__deps: ['$JestSDKHelper'],
   JS_getFeatureFlag: function (taskPtr, key, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    const flagKey = UTF8ToString(key);
-    JestSDKHelper.instrumentMethod('getFeatureFlag', { key: flagKey }, function() {
-      return window.JestSDK.internal.getFeatureFlag(flagKey);
-    })
-      .then(function (result) {
-        const value = result !== undefined ? result : "";
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(value));
-      })
-      .catch(function (err) {
-        const msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().internal.getFeatureFlag(UTF8ToString(key)).then(function (value) {
+        return value === undefined || value === null ? "" : value;
       });
+    });
   },
 
   JS_reserveLoginMessage__deps: ['$JestSDKHelper'],
   JS_reserveLoginMessage: function (taskPtr, optionsJson, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    const options = JSON.parse(UTF8ToString(optionsJson));
-    JestSDKHelper.instrumentMethod('reserveLoginMessage', options, function() {
-      return window.JestSDK.internal.reserveLoginMessageAsync(options);
-    })
-      .then(function (result) {
-        const json = JSON.stringify(result);
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-      })
-      .catch(function (err) {
-        const msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().internal.reserveLoginMessageAsync(JestSDKHelper.parseJson(optionsJson)).then(function (result) {
+        return JSON.stringify(result);
       });
+    });
   },
 
   JS_sendReservedLoginMessage__deps: ['$JestSDKHelper'],
   JS_sendReservedLoginMessage: function (reservationJson) {
-    JestSDKHelper.ensureSDK();
-    const reservation = JSON.parse(UTF8ToString(reservationJson));
-    JestSDKHelper.logVerbose("sendReservedLoginMessage");
-    window.JestSDK.internal.sendReservedLoginMessage(reservation);
+    JestSDKHelper.getSdk().internal.sendReservedLoginMessage(JestSDKHelper.parseJson(reservationJson));
   },
 
   JS_setLoadingProgress__deps: ['$JestSDKHelper'],
   JS_setLoadingProgress: function (progress) {
-    JestSDKHelper.ensureSDK();
-    JestSDKHelper.logVerbose("setLoadingProgress: " + progress);
-    window.JestSDK.setLoadingProgress(progress);
-  },
-
-  JS_setSdkVersion__deps: ['$JestSDKHelper'],
-  JS_setSdkVersion: function (version) {
-    var v = UTF8ToString(version);
-    if (v && v.length > 0) {
-      JestSDKHelper.sdkVersion = v;
-    }
+    JestSDKHelper.getSdk().setLoadingProgress(progress);
   },
 
   JS_beginPlatformRegistrationOverlay__deps: ['$JestSDKHelper'],
   JS_beginPlatformRegistrationOverlay: function (taskPtr, optionsJson, onClose, onError) {
-    JestSDKHelper.ensureSDK();
     try {
-      var opts = JSON.parse(UTF8ToString(optionsJson));
-      JestSDKHelper._overlayHandles = JestSDKHelper._overlayHandles || {};
-      // Wire onClose through to the C# handle. Works for both the real SDK
-      // (which accepts an onClose callback) and our postMessage proxy.
+      var opts = JestSDKHelper.parseJson(optionsJson);
+      var conversationId = opts.conversationId;
       var notified = false;
-      opts.onClose = function () {
-        if (notified) return;
-        notified = true;
-        if (opts.conversationId) delete JestSDKHelper._overlayHandles[opts.conversationId];
-        {{{ makeDynCall("vi", 'onClose') }}}(taskPtr);
-      };
-      var handle = JestSDKHelper.instrumentMethod('showRegistrationOverlay', { theme: opts.theme }, function() {
-        return window.JestSDK.showRegistrationOverlay(opts);
-      });
-      if (handle && opts.conversationId) {
-        JestSDKHelper._overlayHandles[opts.conversationId] = handle;
-      }
-      // The postMessage proxy also exposes closePromise for belt-and-braces.
-      if (handle && handle.closePromise && typeof handle.closePromise.catch === 'function') {
-        handle.closePromise.catch(function (err) {
+      var handle = JestSDKHelper.getSdk().showRegistrationOverlay({
+        theme: opts.theme,
+        entryPayload: opts.entryPayload,
+        onClose: function () {
           if (notified) return;
           notified = true;
-          if (opts.conversationId) delete JestSDKHelper._overlayHandles[opts.conversationId];
-          var msg = err && err.message ? err.message : String(err);
-          {{{ makeDynCall("vii", 'onError') }}}(taskPtr, JestSDKHelper.marshalString(msg));
-        });
+          if (conversationId) delete JestSDKHelper.overlayHandles[conversationId];
+          {{{ makeDynCall("vi", 'onClose') }}}(taskPtr);
+        }
+      });
+      if (conversationId) {
+        JestSDKHelper.overlayHandles[conversationId] = handle;
       }
     } catch (err) {
-      var msg = err && err.message ? err.message : String(err);
-      {{{ makeDynCall("vii", 'onError') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+      {{{ makeDynCall("vii", 'onError') }}}(taskPtr, JestSDKHelper.marshalString(JestSDKHelper.toErrorMessage(err)));
     }
   },
 
   JS_platformRegistrationOverlayLogin__deps: ['$JestSDKHelper'],
   JS_platformRegistrationOverlayLogin: function (conversationId) {
-    JestSDKHelper.ensureSDK();
     var convId = UTF8ToString(conversationId);
-    JestSDKHelper.logVerbose("registrationOverlay.loginButtonAction conversationId=" + convId);
-    var handles = JestSDKHelper._overlayHandles || {};
-    var handle = handles[convId];
-    if (handle && typeof handle.loginButtonAction === 'function') {
+    var handle = JestSDKHelper.overlayHandles[convId];
+    if (handle && typeof handle.loginButtonAction === "function") {
       handle.loginButtonAction();
-    } else {
-      console.warn("[JestSDK] No active registration overlay for conversationId " + convId);
     }
   },
 
   JS_dismissPlatformRegistrationOverlay__deps: ['$JestSDKHelper'],
   JS_dismissPlatformRegistrationOverlay: function (conversationId) {
-    JestSDKHelper.ensureSDK();
     var convId = UTF8ToString(conversationId);
-    JestSDKHelper.logVerbose("registrationOverlay.closeButtonAction conversationId=" + convId);
-    var handles = JestSDKHelper._overlayHandles || {};
-    var handle = handles[convId];
-    if (handle && typeof handle.closeButtonAction === 'function') {
+    var handle = JestSDKHelper.overlayHandles[convId];
+    if (handle && typeof handle.closeButtonAction === "function") {
       handle.closeButtonAction();
-      return;
     }
-    console.warn("[JestSDK] No active registration overlay for conversationId " + convId);
   },
 
   JS_validateName__deps: ['$JestSDKHelper'],
   JS_validateName: function (taskPtr, name, successCallback, errorCallback) {
-    JestSDKHelper.ensureSDK();
-    var nameStr = UTF8ToString(name);
-    JestSDKHelper.instrumentMethod('validateName', { name: nameStr }, function() {
-      return window.JestSDK.internal.validateName(nameStr);
-    })
-      .then(function (result) {
-        var json = JSON.stringify(result);
-        {{{ makeDynCall("vii", 'successCallback') }}}(taskPtr, JestSDKHelper.marshalString(json));
-      })
-      .catch(function (err) {
-        var msg = err && err.message ? err.message : String(err);
-        {{{ makeDynCall("vii", 'errorCallback') }}}(taskPtr, JestSDKHelper.marshalString(msg));
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().internal.validateName(UTF8ToString(name)).then(function (result) {
+        return JSON.stringify(result);
       });
+    });
   },
 
   JS_captureOnboardingEvent__deps: ['$JestSDKHelper'],
   JS_captureOnboardingEvent: function (eventName, propertiesJson) {
-    JestSDKHelper.ensureSDK();
     var name = UTF8ToString(eventName);
     var raw = UTF8ToString(propertiesJson);
-    var props;
-    if (raw && raw.length > 0) {
-      try { props = JSON.parse(raw); } catch (e) { props = undefined; }
+    var props = undefined;
+    if (raw) {
+      props = JSON.parse(raw);
     }
-    JestSDKHelper.logVerbose("captureOnboardingEvent: " + name);
-    if (props !== undefined) {
-      window.JestSDK.internal.captureOnboardingEvent(name, props);
-    } else {
-      window.JestSDK.internal.captureOnboardingEvent(name);
-    }
-  },
-
+    JestSDKHelper.getSdk().internal.captureOnboardingEvent(name, props);
+  }
 });

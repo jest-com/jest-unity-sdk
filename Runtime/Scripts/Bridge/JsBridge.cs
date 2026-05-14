@@ -30,6 +30,12 @@ namespace com.jest.sdk
         private static extern string JS_getPlayerAvatarUrl();
 
         [DllImport("__Internal")]
+        private static extern string JS_getBotAvatar(string username, int size);
+
+        [DllImport("__Internal")]
+        private static extern string JS_getPlayerAvatar(int size);
+
+        [DllImport("__Internal")]
         private static extern string JS_getPlayerValue(string key);
 
         [DllImport("__Internal")]
@@ -42,10 +48,12 @@ namespace com.jest.sdk
         private static extern void JS_flush(IntPtr taskPtr, Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
-        private static extern void JS_scheduleNotificationV2(string optionsJson);
+        private static extern void JS_scheduleNotificationV2(IntPtr taskPtr, string optionsJson,
+                                    Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
-        private static extern void JS_unscheduleNotificationV2(string identifier);
+        private static extern void JS_unscheduleNotificationV2(IntPtr taskPtr, string identifier,
+                                    Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
         private static extern void JS_callAsyncVoid(System.IntPtr ptr, string call, System.Action<System.IntPtr> successCallback,
@@ -60,11 +68,8 @@ namespace com.jest.sdk
                                          System.Action<System.IntPtr, string> errorCallback);
 
         [DllImport("__Internal")]
-        private static extern void JS_initSdk(System.IntPtr ptr, bool autoLoginReminders, System.Action<System.IntPtr> successCallback,
+        private static extern void JS_initSdk(System.IntPtr ptr, bool autoLoginReminders, string sdkVersion, System.Action<System.IntPtr> successCallback,
                                          System.Action<System.IntPtr, string> errorCallback);
-
-        [DllImport("__Internal")]
-        private static extern void JS_setSdkVersion(string version);
 
         [DllImport("__Internal")]
         private static extern void JS_login(string payload);
@@ -151,6 +156,10 @@ namespace com.jest.sdk
 
         private static string JS_getPlayerAvatarUrl() { return _bridgeMock.avatarUrl; }
 
+        private static string JS_getBotAvatar(string username, int size) { return Social.GetBotAvatarFallback(username, size); }
+
+        private static string JS_getPlayerAvatar(int size) { return Social.GetPlayerAvatarFallback(_bridgeMock.avatarUrl, size); }
+
         private static string JS_getPlayerValue(string key) { return _bridgeMock.GetPlayerValue(key); }
 
         private static void JS_setPlayerValue(string key, string value) { _bridgeMock.SetPlayerValue(key, value); }
@@ -160,9 +169,17 @@ namespace com.jest.sdk
         private static void JS_flush(IntPtr taskPtr, Action<IntPtr> onSuccess, Action<IntPtr, string> onError)
         { onSuccess(taskPtr); }
 
-        private static void JS_scheduleNotificationV2(string optionsJson) { _bridgeMock.ScheduleNotificationV2(optionsJson); }
+        private static void JS_scheduleNotificationV2(IntPtr taskPtr, string optionsJson, Action<IntPtr> onSuccess, Action<IntPtr, string> onError)
+        {
+            _bridgeMock.ScheduleNotificationV2(optionsJson);
+            onSuccess(taskPtr);
+        }
 
-        private static void JS_unscheduleNotificationV2(string identifier) { _bridgeMock.UnscheduleNotificationV2(identifier); }
+        private static void JS_unscheduleNotificationV2(IntPtr taskPtr, string identifier, Action<IntPtr> onSuccess, Action<IntPtr, string> onError)
+        {
+            _bridgeMock.UnscheduleNotificationV2(identifier);
+            onSuccess(taskPtr);
+        }
 
         private static void JS_callAsyncNumber(System.IntPtr ptr, string call, System.Action<System.IntPtr, float> successCallback,
                                          System.Action<System.IntPtr, string> errorCallback)
@@ -176,11 +193,9 @@ namespace com.jest.sdk
                                          System.Action<System.IntPtr, string> errorCallback)
         { successCallback(ptr); }
 
-        private static void JS_initSdk(System.IntPtr ptr, bool autoLoginReminders, System.Action<System.IntPtr> successCallback,
+        private static void JS_initSdk(System.IntPtr ptr, bool autoLoginReminders, string sdkVersion, System.Action<System.IntPtr> successCallback,
                                  System.Action<System.IntPtr, string> errorCallback)
         { successCallback(ptr); }
-
-        private static void JS_setSdkVersion(string version) { }
 
         private static void JS_login(string payload)
         { _bridgeMock.Login(payload); }
@@ -364,6 +379,16 @@ namespace com.jest.sdk
             return JS_getPlayerAvatarUrl();
         }
 
+        internal static string GetBotAvatar(string username, int size)
+        {
+            return JS_getBotAvatar(username, size);
+        }
+
+        internal static string GetPlayerAvatar(int size)
+        {
+            return JS_getPlayerAvatar(size);
+        }
+
         internal static string GetPlayerValue(string key)
         {
             return JS_getPlayerValue(key);
@@ -384,14 +409,14 @@ namespace com.jest.sdk
             return new JestSDKTask((System.IntPtr ptr) => { JS_flush(ptr, HandleSuccess, HandleError); });
         }
 
-        internal static void ScheduleNotificationV2(string options)
+        internal static JestSDKTask ScheduleNotificationV2(string options)
         {
-            JS_scheduleNotificationV2(options);
+            return new JestSDKTask((System.IntPtr ptr) => { JS_scheduleNotificationV2(ptr, options, HandleSuccess, HandleError); });
         }
 
-        internal static void UnscheduleNotificationV2(string options)
+        internal static JestSDKTask UnscheduleNotificationV2(string options)
         {
-            JS_unscheduleNotificationV2(options);
+            return new JestSDKTask((System.IntPtr ptr) => { JS_unscheduleNotificationV2(ptr, options, HandleSuccess, HandleError); });
         }
 
         internal static List<string> GetNotificationsV2()
@@ -401,8 +426,7 @@ namespace com.jest.sdk
 
         internal static JestSDKTask Init(bool autoLoginReminders = true)
         {
-            JS_setSdkVersion(SdkVersion.WireName);
-            return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, HandleSuccess, HandleError); });
+            return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, SdkVersion.WireName, HandleSuccess, HandleError); });
         }
 
         internal static void Login(string payload)

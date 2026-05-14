@@ -77,100 +77,83 @@ namespace com.jest.sdk.Tests
         // implementation so all SDKs produce the same avatar for the same username.
 
         [Test]
-        public void RichNotifications_ScheduleNotification_RejectsBodyOverLimit()
+        public void RichNotifications_ScheduleNotification_AllowsPlatformValidatedBodyLength()
         {
             var options = new RichNotifications.Options
             {
-                body = new string('x', RichNotifications.BODY_CHAR_LIMIT + 1),
+                body = new string('x', 2001),
                 ctaText = "Play",
                 identifier = "test",
                 scheduledInDays = 1,
             };
-            var ex = Assert.Throws<ArgumentException>(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
-            Assert.That(ex.Message, Does.Contain($"body must be {RichNotifications.BODY_CHAR_LIMIT}"));
+
+            var task = JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
         }
 
         [Test]
-        public void RichNotifications_ScheduleNotification_AcceptsBodyAtLimit()
-        {
-            var options = new RichNotifications.Options
-            {
-                body = new string('x', RichNotifications.BODY_CHAR_LIMIT),
-                ctaText = "Play",
-                identifier = "test-body-at-limit",
-                scheduledInDays = 1,
-            };
-            Assert.DoesNotThrow(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
-        }
-
-        [Test]
-        public void RichNotifications_ScheduleNotification_RejectsTitleOverLimit()
+        public void RichNotifications_ScheduleNotification_AllowsPlatformValidatedTitleLength()
         {
             var options = new RichNotifications.Options
             {
                 body = "Hello",
-                title = new string('x', RichNotifications.TITLE_CHAR_LIMIT + 1),
+                title = new string('x', 201),
                 ctaText = "Play",
                 identifier = "test",
                 scheduledInDays = 1,
             };
-            var ex = Assert.Throws<ArgumentException>(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
-            Assert.That(ex.Message, Does.Contain($"title must be {RichNotifications.TITLE_CHAR_LIMIT}"));
+
+            var task = JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
         }
 
         [Test]
-        public void RichNotifications_ScheduleNotification_AcceptsCtaAtLimit()
+        public void RichNotifications_ScheduleNotification_AllowsPlatformValidatedCtaLength()
         {
             var options = new RichNotifications.Options
             {
                 body = "Hello",
-                ctaText = new string('x', RichNotifications.CTA_CHAR_LIMIT),
+                ctaText = new string('x', 51),
                 identifier = "test-cta-at-limit",
                 scheduledInDays = 1,
             };
-            Assert.DoesNotThrow(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
-        }
 
-        [Test]
-        public void RichNotifications_ScheduleNotification_RejectsCtaOverLimit()
-        {
-            var options = new RichNotifications.Options
-            {
-                body = "Hello",
-                ctaText = new string('x', RichNotifications.CTA_CHAR_LIMIT + 1),
-                identifier = "test",
-                scheduledInDays = 1,
-            };
-            var ex = Assert.Throws<ArgumentException>(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
-            Assert.That(ex.Message, Does.Contain($"ctaText must be {RichNotifications.CTA_CHAR_LIMIT}"));
+            var task = JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
         }
 
         [Test]
         public void GetBotAvatar_ReturnsKnownVectors()
         {
-            Assert.That(JestSDK.Instance.GetBotAvatar(""), Is.EqualTo("https://cdn.jest.com/avatar/bot/115.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("a"), Is.EqualTo("https://cdn.jest.com/avatar/bot/748.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("test"), Is.EqualTo("https://cdn.jest.com/avatar/bot/736.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("alice"), Is.EqualTo("https://cdn.jest.com/avatar/bot/982.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("Bob"), Is.EqualTo("https://cdn.jest.com/avatar/bot/160.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("bot"), Is.EqualTo("https://cdn.jest.com/avatar/bot/991.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("user_42"), Is.EqualTo("https://cdn.jest.com/avatar/bot/592.webp"));
-            Assert.That(JestSDK.Instance.GetBotAvatar("hello world"), Is.EqualTo("https://cdn.jest.com/avatar/bot/256.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar(""), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F115.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("a"), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F748.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("test"), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F736.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("alice"), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F982.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("Bob"), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F160.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("bot"), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F991.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("user_42"), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F592.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("hello world"), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F256.webp"));
         }
 
         [Test]
         public void GetBotAvatar_WithSize_WrapsInCloudflareProxy()
         {
-            var url = JestSDK.Instance.GetBotAvatar("test", 128);
-            Assert.That(url, Is.EqualTo("https://cdn.jestpub.com/cdn-cgi/image/format=auto%2Cfit=cover%2Cwidth=128%2C/https%3A%2F%2Fcdn.jest.com%2Favatar%2Fbot%2F736.webp"));
+            var url = JestSDK.Instance.Social.GetBotAvatar("test", 128);
+            Assert.That(url, Is.EqualTo("https://cdn.jestpub.com/cdn-cgi/image/format=auto%2Cfit=cover%2Cwidth=128%2C/https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F736.webp"));
         }
 
         [Test]
         public void GetBotAvatar_BucketsDownIntermediateSizes()
         {
-            Assert.That(JestSDK.Instance.GetBotAvatar("bot", 999), Is.EqualTo(JestSDK.Instance.GetBotAvatar("bot", 512)));
-            Assert.That(JestSDK.Instance.GetBotAvatar("bot", 200), Is.EqualTo(JestSDK.Instance.GetBotAvatar("bot", 128)));
-            Assert.That(JestSDK.Instance.GetBotAvatar("bot", 1), Is.EqualTo(JestSDK.Instance.GetBotAvatar("bot", 64)));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("bot", 999), Is.EqualTo(JestSDK.Instance.Social.GetBotAvatar("bot", 512)));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("bot", 200), Is.EqualTo(JestSDK.Instance.Social.GetBotAvatar("bot", 128)));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("bot", 1), Is.EqualTo(JestSDK.Instance.Social.GetBotAvatar("bot", 64)));
         }
 
         [Test]
@@ -178,13 +161,58 @@ namespace com.jest.sdk.Tests
         {
             // Emoji 🎮 (U+1F3AE) — JS encodes as a UTF-16 surrogate pair, and C# strings are
             // UTF-16 natively, so iterating chars matches String.charCodeAt directly.
-            Assert.That(JestSDK.Instance.GetBotAvatar("🎮"), Is.EqualTo("https://cdn.jest.com/avatar/bot/740.webp"));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("🎮"), Does.EndWith("https%3A%2F%2Fcdn.jest.com%2Favatars%2Fbot%2F740.webp"));
         }
 
         [Test]
         public void GetBotAvatar_IsDeterministic()
         {
-            Assert.That(JestSDK.Instance.GetBotAvatar("alice"), Is.EqualTo(JestSDK.Instance.GetBotAvatar("alice")));
+            Assert.That(JestSDK.Instance.Social.GetBotAvatar("alice"), Is.EqualTo(JestSDK.Instance.Social.GetBotAvatar("alice")));
+        }
+
+        [Test]
+        public void GetPlayerAvatar_ReturnsNull_WhenNoAvatarUrl()
+        {
+            _mock.avatarUrl = "";
+            Assert.That(JestSDK.Instance.Social.GetPlayerAvatar(), Is.Null);
+        }
+
+        [Test]
+        public void GetPlayerAvatar_WrapsInCloudflareProxy_WhenAvatarSet()
+        {
+            _mock.avatarUrl = "https://cdn.jest.com/avatars/abc.webp";
+            Assert.That(
+                JestSDK.Instance.Social.GetPlayerAvatar(256),
+                Is.EqualTo("https://cdn.jestpub.com/cdn-cgi/image/format=auto%2Cfit=cover%2Cwidth=256%2C/https%3A%2F%2Fcdn.jest.com%2Favatars%2Fabc.webp")
+            );
+        }
+
+        [Test]
+        public void GetPlayerAvatar_WrapsInCloudflareProxyAtDefaultSize()
+        {
+            // Unlike GetBotAvatar, GetPlayerAvatar always wraps — the underlying file is WebP
+            // and we want a Unity-decodable format even at the largest size.
+            _mock.avatarUrl = "https://cdn.jest.com/avatars/abc.webp";
+            Assert.That(
+                JestSDK.Instance.Social.GetPlayerAvatar(),
+                Is.EqualTo("https://cdn.jestpub.com/cdn-cgi/image/format=auto%2Cfit=cover%2Cwidth=1000%2C/https%3A%2F%2Fcdn.jest.com%2Favatars%2Fabc.webp")
+            );
+        }
+
+        [Test]
+        public void GetPlayerAvatar_BucketsDownIntermediateSizes()
+        {
+            _mock.avatarUrl = "https://cdn.jest.com/avatars/abc.webp";
+            Assert.That(JestSDK.Instance.Social.GetPlayerAvatar(999), Is.EqualTo(JestSDK.Instance.Social.GetPlayerAvatar(512)));
+            Assert.That(JestSDK.Instance.Social.GetPlayerAvatar(200), Is.EqualTo(JestSDK.Instance.Social.GetPlayerAvatar(128)));
+            Assert.That(JestSDK.Instance.Social.GetPlayerAvatar(1), Is.EqualTo(JestSDK.Instance.Social.GetPlayerAvatar(64)));
+        }
+
+        [Test]
+        public void GetPlayerAvatar_PassesThroughLocalhostUrls()
+        {
+            _mock.avatarUrl = "http://localhost:3000/avatars/abc.webp";
+            Assert.That(JestSDK.Instance.Social.GetPlayerAvatar(256), Is.EqualTo("http://localhost:3000/avatars/abc.webp"));
         }
 
         [Test]
@@ -216,7 +244,10 @@ namespace com.jest.sdk.Tests
             options.entryPayloadData["stringValue"] = "test";
             options.entryPayloadData["numberValue"] = 42;
 
-            JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+            var task = JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
+
             var notifications = JestSDK.Instance.RichNotifications.GetNotifications();
             Assert.That(notifications, Has.Count.EqualTo(1));
             var result = notifications[0];
@@ -225,6 +256,25 @@ namespace com.jest.sdk.Tests
             Assert.AreEqual(options.date, result.date);
             Assert.AreEqual(options.identifier, result.identifier);
             Assert.AreEqual(options.notificationPriority, result.notificationPriority);
+        }
+
+        [Test]
+        public void RichNotifications_UnscheduleNotification_CompletesAndRemovesNotification()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = "Test Body",
+                ctaText = "Play Now!",
+                identifier = "remove-me",
+                scheduledInDays = 1,
+            };
+            JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+
+            var task = JestSDK.Instance.RichNotifications.UnscheduleNotification("remove-me");
+
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
+            Assert.That(JestSDK.Instance.RichNotifications.GetNotifications(), Is.Empty);
         }
 
 

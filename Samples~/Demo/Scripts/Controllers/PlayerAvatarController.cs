@@ -7,25 +7,27 @@ using com.jest.sdk;
 
 namespace com.jest.demo
 {
-    public class BotAvatarController : MonoBehaviour
+    public class PlayerAvatarController : MonoBehaviour
     {
-        [Header("Input")]
-        [SerializeField] private TMP_InputField m_usernameInput;
-
         [Header("Output")]
         [SerializeField] private Image m_avatarImage;
         [SerializeField] private TextMeshProUGUI m_urlLabel;
 
-        public void GetBotAvatar()
+        public void GetPlayerAvatar()
         {
-            string username = m_usernameInput != null ? m_usernameInput.text?.Trim() : null;
-            if (string.IsNullOrEmpty(username))
+            if (!JestSDK.Instance.Player.isRegistered)
             {
-                UIManager.Instance.m_toastUI.ShowToast("Username is required");
+                UIManager.Instance.m_toastUI.ShowToast("Player is not registered");
                 return;
             }
 
-            string url = JestSDK.Instance.Social.GetBotAvatar(username, 128);
+            string url = JestSDK.Instance.Social.GetPlayerAvatar(256);
+            if (string.IsNullOrEmpty(url))
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Player has no avatar URL");
+                return;
+            }
+
             if (m_urlLabel != null)
             {
                 m_urlLabel.text = url;

@@ -30,18 +30,6 @@ namespace com.jest.sdk
             Critical
         }
 
-        /// <summary>Maximum number of characters allowed in the CTA text.</summary>
-        public const int CTA_CHAR_LIMIT = 50;
-
-        /// <summary>Maximum number of characters allowed in the body text.</summary>
-        public const int BODY_CHAR_LIMIT = 2000;
-
-        /// <summary>Maximum number of characters allowed in the title text.</summary>
-        public const int TITLE_CHAR_LIMIT = 200;
-
-        /// <summary>Maximum number of days a notification can be scheduled ahead.</summary>
-        public const int MAX_SCHEDULE_DAYS = 7;
-
         /// <summary>
         /// Internal constructor to prevent external instantiation.
         /// </summary>
@@ -51,23 +39,19 @@ namespace com.jest.sdk
         /// Schedules a new rich notification using the specified options.
         /// </summary>
         /// <param name="options">The notification configuration options.</param>
-        /// <exception cref="ArgumentException">Thrown when options fail validation.</exception>
-        public void ScheduleNotification(Options options)
+        /// <returns>A task for JavaScript bridge dispatch.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when options is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when options are missing required shape fields.</exception>
+        public JestSDKTask ScheduleNotification(Options options)
         {
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+
             if (string.IsNullOrEmpty(options.body))
                 throw new ArgumentException("body is required");
 
-            if (options.body.Length > BODY_CHAR_LIMIT)
-                throw new ArgumentException($"body must be {BODY_CHAR_LIMIT} characters or fewer");
-
-            if (!string.IsNullOrEmpty(options.title) && options.title.Length > TITLE_CHAR_LIMIT)
-                throw new ArgumentException($"title must be {TITLE_CHAR_LIMIT} characters or fewer");
-
             if (string.IsNullOrEmpty(options.ctaText))
                 throw new ArgumentException("ctaText is required");
-
-            if (options.ctaText.Length > CTA_CHAR_LIMIT)
-                throw new ArgumentException($"ctaText must be {CTA_CHAR_LIMIT} characters or fewer");
 
             if (string.IsNullOrEmpty(options.identifier))
                 throw new ArgumentException("identifier is required");
@@ -81,27 +65,21 @@ namespace com.jest.sdk
             if (hasDate && hasDays)
                 throw new ArgumentException("date and scheduledInDays are mutually exclusive");
 
-            if (hasDays && (options.scheduledInDays.Value < 1 || options.scheduledInDays.Value > MAX_SCHEDULE_DAYS))
-                throw new ArgumentException($"scheduledInDays must be between 1 and {MAX_SCHEDULE_DAYS}");
-
-            if (hasDate)
-            {
-                var maxDate = DateTime.UtcNow.AddDays(MAX_SCHEDULE_DAYS);
-                if (options.date.ToUniversalTime() > maxDate)
-                    throw new ArgumentException($"date must be within {MAX_SCHEDULE_DAYS} days");
-            }
-
             var payload = options.ToJson();
-            JsBridge.ScheduleNotificationV2(payload);
+            return JsBridge.ScheduleNotificationV2(payload);
         }
 
         /// <summary>
         /// Unschedules a previously scheduled notification by its unique key.
         /// </summary>
         /// <param name="uniqueKey">The unique identifier of the notification to remove.</param>
-        public void UnscheduleNotification(string uniqueKey)
+        /// <returns>A task for JavaScript bridge dispatch.</returns>
+        public JestSDKTask UnscheduleNotification(string uniqueKey)
         {
-            JsBridge.UnscheduleNotificationV2(uniqueKey);
+            if (string.IsNullOrEmpty(uniqueKey))
+                throw new ArgumentException("identifier is required", nameof(uniqueKey));
+
+            return JsBridge.UnscheduleNotificationV2(uniqueKey);
         }
 
         /// <summary>
