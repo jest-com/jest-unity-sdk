@@ -1,6 +1,6 @@
 # Jest SDK for Unity
 
-Full documentation is available at https://docs.jest.com/sdk/index
+Full documentation is available at [https://docs.jest.com/sdk/index](https://docs.jest.com/sdk/unity)
 
 A Unity package that provides seamless integration with the Jest platform for player management, notifications, payments, referrals, and more.
 
