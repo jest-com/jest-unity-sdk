@@ -174,6 +174,16 @@ namespace com.jest.sdk
             JsBridge.SetLoadingProgress(progress);
         }
 
+        /// <summary>
+        /// Temporary diagnostic method used to validate the SDK sync automation.
+        /// Will be removed once the end-to-end flow is verified.
+        /// </summary>
+        /// <returns>A constant identifier string.</returns>
+        public string Foo()
+        {
+            return "foo";
+        }
+
     }
 
     /// <summary>

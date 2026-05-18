@@ -41,6 +41,7 @@ namespace com.jest.demo
         private void InitJestSDK()
         {
             ShowLoading();
+            Debug.Log("[JestSDK] Foo: " + JestSDK.Instance.Foo());
             JestSDK.Instance.Init().ContinueWith(t =>
             {
                 Debug.Log("InitJestSDK Success");
