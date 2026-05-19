@@ -232,25 +232,32 @@ namespace com.jest.sdk
         public class SubscriptionData
         {
             /// <summary>The SKU of the subscription.</summary>
-            public string sku;
+            [JsonProperty("sku")]
+            public string Sku;
 
             /// <summary>The display name of the subscription.</summary>
-            public string name;
+            [JsonProperty("name")]
+            public string Name;
 
             /// <summary>The description of the subscription, or null.</summary>
-            public string description;
+            [JsonProperty("description")]
+            public string Description;
 
             /// <summary>Whether the subscription is currently active.</summary>
-            public bool isActive;
+            [JsonProperty("isActive")]
+            public bool IsActive;
 
             /// <summary>Price in the specified currency, in decimal.</summary>
-            public decimal price;
+            [JsonProperty("price")]
+            public decimal Price;
 
             /// <summary>ISO currency code, e.g. "USD".</summary>
-            public string currency;
+            [JsonProperty("currency")]
+            public string Currency;
 
             /// <summary>Billing period: "monthly", "yearly", or "weekly".</summary>
-            public string billingPeriod;
+            [JsonProperty("billingPeriod")]
+            public string BillingPeriod;
         }
 
         /// <summary>
@@ -260,19 +267,23 @@ namespace com.jest.sdk
         public class SubscriptionResult
         {
             /// <summary>The result status: "success", "cancel", or "error".</summary>
-            public string result;
+            [JsonProperty("result")]
+            public string Result;
 
             /// <summary>
             /// Error code when result is "error":
             /// "internal_error", "invalid_subscription", "already_subscribed", or "guest_not_allowed".
             /// </summary>
-            public string error;
+            [JsonProperty("error")]
+            public string Error;
 
             /// <summary>The subscription data on success.</summary>
-            public SubscriptionData subscription;
+            [JsonProperty("subscription")]
+            public SubscriptionData Subscription;
 
             /// <summary>The serialized and signed subscription data for server-side verification.</summary>
-            public string subscriptionSigned;
+            [JsonProperty("subscriptionSigned")]
+            public string SubscriptionSigned;
         }
 
         /// <summary>

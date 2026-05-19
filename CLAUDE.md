@@ -40,6 +40,19 @@ If a field is built into a `Dictionary<string, object>` by hand inside a `ToJson
 
 If you are touching a file that has legacy camelCase public fields, do not opportunistically rename them. Renames to public API are breaking changes for consumers (Unity scenes serialize fields by name; downstream game code references them by name). Only rename fields the user has explicitly asked you to change, or fields you are introducing yourself.
 
+## No drive-by styling changes
+
+When you add a new feature, **the diff must contain only that feature**. Do not reformat, reindent, rewrap, requote, or otherwise restyle surrounding lines you didn't need to functionally change. This applies to every file type in the repo — `.cs`, `.jslib`, `.unity`, `.asmdef`, JSON, Markdown.
+
+Specific traps to avoid:
+
+- **`Runtime/Plugins/JestSDK.jslib`** is **not plain JavaScript**. It uses Emscripten/Unity templating macros like `{{{ makeDynCall("vi", 'successCallback') }}}` that a normal JS formatter (Prettier, ESLint --fix) will silently destroy. **Never run a JS formatter on this file.** If your editor formats on save, disable it for `*.jslib`. The existing style is: single quotes, no trailing commas in argument lists, compact single-line function signatures — match it.
+- **C# files** — do not switch quote style, brace placement, `using` ordering, tab/space mix, or trailing-newline state of files you're editing. Diff-review your own changes before committing: if `git diff` shows reformatting of lines unrelated to your feature, revert those hunks.
+- **Unity scene/prefab files** (`*.unity`, `*.prefab`) — never hand-edit. Open them in the Unity editor or leave them alone. A formatter or text-level "cleanup" can break GUIDs, references, and serialization order.
+- **`package.json` / `manifest.json`** — preserve key order. Don't alphabetize or reformat just because you touched one entry.
+
+If a sync script or upstream tool produced a diff with mixed feature + restyle changes, **revert the file to the base branch (`git checkout origin/main -- <file>`) and re-apply only the feature additions by hand**. The cleanup is part of the task, not optional.
+
 ## Other Unity-specific notes
 
 - `[SerializeField] private` fields exposed to the Unity inspector use the `m_camelCase` pattern in this repo — see `Samples~/Demo/Scripts/`.

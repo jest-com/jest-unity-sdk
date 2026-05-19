@@ -206,17 +206,17 @@ namespace com.jest.demo
                     {
                         UIManager.Instance.m_toastUI.ShowToast("Subscription Failed: " + t.Exception.Message);
                     }
-                    else if (t.Result.result == "success")
+                    else if (t.Result.Result == "success")
                     {
-                        UIManager.Instance.m_toastUI.ShowToast("Subscribed to: " + t.Result.subscription.name);
+                        UIManager.Instance.m_toastUI.ShowToast("Subscribed to: " + t.Result.Subscription.Name);
                     }
-                    else if (t.Result.result == "cancel")
+                    else if (t.Result.Result == "cancel")
                     {
                         UIManager.Instance.m_toastUI.ShowToast("Subscription cancelled");
                     }
                     else
                     {
-                        UIManager.Instance.m_toastUI.ShowToast("Subscription Failed: " + t.Result.error);
+                        UIManager.Instance.m_toastUI.ShowToast("Subscription Failed: " + t.Result.Error);
                     }
                 }
                 catch (Exception e)
