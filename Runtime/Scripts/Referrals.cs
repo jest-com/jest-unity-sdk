@@ -107,10 +107,11 @@ namespace com.jest.sdk
 
             /// <summary>
             /// Optional templates used to notify the referrer when invited players convert.
-            /// Each template applies above its <c>minConversionCount</c> threshold; the server
+            /// Each template applies above its <c>MinConversionCount</c> threshold; the server
             /// picks the template with the highest matching threshold and a variant from within it.
             /// </summary>
-            public List<ReferralNotificationTemplate> notificationTemplates;
+            [JsonProperty("notificationTemplates")]
+            public List<ReferralNotificationTemplate> NotificationTemplates;
 
             /// <summary>
             /// Serializes the options to JSON for the bridge.
@@ -142,9 +143,9 @@ namespace com.jest.sdk
                     jsonObj["onboardingSlug"] = onboardingSlug;
                 }
 
-                if (notificationTemplates != null && notificationTemplates.Count > 0)
+                if (NotificationTemplates != null && NotificationTemplates.Count > 0)
                 {
-                    jsonObj["notificationTemplates"] = notificationTemplates;
+                    jsonObj["notificationTemplates"] = NotificationTemplates;
                 }
 
                 return JsonConvert.SerializeObject(jsonObj);
@@ -158,21 +159,25 @@ namespace com.jest.sdk
         public class ReferralNotificationVariant
         {
             /// <summary>Optional title displayed above the notification body.</summary>
-            public string title;
+            [JsonProperty("title")]
+            public string Title;
 
             /// <summary>Main body text of the notification.</summary>
-            public string body;
+            [JsonProperty("body")]
+            public string Body;
 
             /// <summary>Call-to-action button label.</summary>
-            public string ctaText;
+            [JsonProperty("ctaText")]
+            public string CtaText;
 
             /// <summary>Optional reference to a pre-approved image asset.</summary>
-            public string imageReference;
+            [JsonProperty("imageReference")]
+            public string ImageReference;
         }
 
         /// <summary>
         /// A notification template that applies when the referrer's conversion count
-        /// reaches <see cref="minConversionCount"/>.
+        /// reaches <see cref="MinConversionCount"/>.
         /// </summary>
         [Serializable]
         public class ReferralNotificationTemplate
@@ -181,10 +186,12 @@ namespace com.jest.sdk
             /// Minimum number of conversions required for this template to be eligible.
             /// The server selects the template with the highest matching threshold.
             /// </summary>
-            public int minConversionCount;
+            [JsonProperty("minConversionCount")]
+            public int MinConversionCount;
 
             /// <summary>The pool of variants the server may choose from.</summary>
-            public List<ReferralNotificationVariant> variants;
+            [JsonProperty("variants")]
+            public List<ReferralNotificationVariant> Variants;
         }
 
         /// <summary>
