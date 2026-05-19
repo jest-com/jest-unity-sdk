@@ -142,5 +142,11 @@ namespace com.jest.sdk
         /// </summary>
         /// <returns>A JSON string containing signed player data.</returns>
         string GetPlayerSignedResponse();
+
+        /// <summary>
+        /// Retrieves the subscription checkout response.
+        /// </summary>
+        /// <returns>A JSON string containing subscription response data.</returns>
+        string GetSubscriptionResponse();
     }
 }

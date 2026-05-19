@@ -234,5 +234,14 @@ namespace com.jest.sdk
         {
             return $"{{\"player\":{{\"playerId\":\"{playerId}\",\"registered\":{isRegistered.ToLower()},\"username\":null,\"avatarUrl\":null}},\"playerSigned\":\"mock_signed_data\"}}";
         }
+
+        /// <summary>
+        /// Retrieves the subscription checkout response.
+        /// </summary>
+        /// <returns>A JSON string representing subscription response data.</returns>
+        public string GetSubscriptionResponse()
+        {
+            return "{\"result\":\"cancel\"}";
+        }
     }
 }

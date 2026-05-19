@@ -340,6 +340,17 @@ mergeInto(LibraryManager.library, {
     });
   },
 
+  JS_beginSubscription__deps: ['$JestSDKHelper'],
+  JS_beginSubscription: function (taskPtr, subscriptionSku, successCallback, errorCallback) {
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().payments.beginSubscription({
+        subscriptionSku: UTF8ToString(subscriptionSku)
+      }).then(function (result) {
+        return JSON.stringify(result);
+      });
+    });
+  },
+
   JS_openReferralDialog__deps: ['$JestSDKHelper'],
   JS_openReferralDialog: function (taskPtr, optionsJson, successCallback, errorCallback) {
     JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {

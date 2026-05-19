@@ -150,6 +150,44 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Starts the platform checkout flow for a subscription.
+        /// </summary>
+        /// <param name="subscriptionSku">The SKU of the subscription to subscribe to.</param>
+        /// <returns>
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="SubscriptionResult"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when subscriptionSku is null or empty.</exception>
+        public JestSDKTask<SubscriptionResult> BeginSubscription(string subscriptionSku)
+        {
+            if (string.IsNullOrWhiteSpace(subscriptionSku))
+            {
+                throw new ArgumentException("Subscription SKU cannot be null or empty", nameof(subscriptionSku));
+            }
+
+            var task = new JestSDKTask<SubscriptionResult>();
+            JsBridge.BeginSubscription(subscriptionSku).ContinueWith(t =>
+            {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        task.SetException(t.Exception);
+                        return;
+                    }
+                    string json = t.GetResult();
+                    var result = JsonConvert.DeserializeObject<SubscriptionResult>(json);
+                    task.SetResult(result);
+                }
+                catch (Exception e)
+                {
+                    task.SetException(e);
+                }
+            });
+
+            return task;
+        }
+
+        /// <summary>
         /// Retrieves a list of incomplete purchases that have not yet been completed.
         /// </summary>
         /// <returns>
@@ -186,6 +224,67 @@ namespace com.jest.sdk
         #endregion
 
         #region Nested Classes
+
+        /// <summary>
+        /// Represents the data for an active subscription.
+        /// </summary>
+        [Serializable]
+        public class SubscriptionData
+        {
+            /// <summary>The SKU of the subscription.</summary>
+            [JsonProperty("sku")]
+            public string Sku;
+
+            /// <summary>The display name of the subscription.</summary>
+            [JsonProperty("name")]
+            public string Name;
+
+            /// <summary>The description of the subscription, or null.</summary>
+            [JsonProperty("description")]
+            public string Description;
+
+            /// <summary>Whether the subscription is currently active.</summary>
+            [JsonProperty("isActive")]
+            public bool IsActive;
+
+            /// <summary>Price in the specified currency, in decimal.</summary>
+            [JsonProperty("price")]
+            public decimal Price;
+
+            /// <summary>ISO currency code, e.g. "USD".</summary>
+            [JsonProperty("currency")]
+            public string Currency;
+
+            /// <summary>Billing period: "monthly", "yearly", or "weekly".</summary>
+            [JsonProperty("billingPeriod")]
+            public string BillingPeriod;
+        }
+
+        /// <summary>
+        /// Represents the result of initiating a subscription checkout flow.
+        /// </summary>
+        [Serializable]
+        public class SubscriptionResult
+        {
+            /// <summary>The result status: "success", "cancel", or "error".</summary>
+            [JsonProperty("result")]
+            public string Result;
+
+            /// <summary>
+            /// Error code when result is "error":
+            /// "internal_error", "invalid_subscription", "already_subscribed", or "guest_not_allowed".
+            /// </summary>
+            [JsonProperty("error")]
+            public string Error;
+
+            /// <summary>The subscription data on success.</summary>
+            [JsonProperty("subscription")]
+            public SubscriptionData Subscription;
+
+            /// <summary>The serialized and signed subscription data for server-side verification.</summary>
+            [JsonProperty("subscriptionSigned")]
+            public string SubscriptionSigned;
+        }
 
         /// <summary>
         /// Represents the response returned when retrieving incomplete purchases.
