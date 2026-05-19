@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System;
 using System.Linq;
+using TMPro;
 
 
 
@@ -26,6 +27,9 @@ namespace com.jest.demo
 
         [SerializeField] private Transform m_completePurchaseCellPrefab;
         [SerializeField] private Transform m_completePurchaseCellsContainer;
+
+        [Header("Subscriptions")]
+        [SerializeField] private TMP_InputField m_subscriptionSkuInput;
 
         private List<Product> m_productsList;
         private IncompletePurchasesResponse m_incompletePurchases;
@@ -194,6 +198,17 @@ namespace com.jest.demo
                 UIManager.Instance.HideLoadingSpinner();
             });
 
+        }
+
+        public void BeginSubscription()
+        {
+            string sku = m_subscriptionSkuInput != null ? m_subscriptionSkuInput.text : null;
+            if (string.IsNullOrWhiteSpace(sku))
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Subscription SKU is required");
+                return;
+            }
+            BeginSubscription(sku);
         }
 
         public void BeginSubscription(string subscriptionSku)

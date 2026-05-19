@@ -237,6 +237,14 @@ namespace com.jest.sdk
             return $"{{\"player\":{{\"playerId\":\"{_playerId}\",\"registered\":{_isRegistered.ToString().ToLower()},\"username\":null,\"avatarUrl\":null}},\"playerSigned\":\"mock_signed_data\"}}";
         }
 
+        /// <summary>
+        /// Returns a mock subscription checkout response indicating cancel.
+        /// </summary>
+        public string GetSubscriptionResponse()
+        {
+            return "{\"result\":\"cancel\"}";
+        }
+
 #if UNITY_EDITOR
         private void OnEnable()
         {
