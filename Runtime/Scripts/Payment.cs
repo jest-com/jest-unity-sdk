@@ -10,6 +10,11 @@ namespace com.jest.sdk
     /// Includes methods for retrieving products, initiating purchases,
     /// completing transactions, and fetching incomplete purchases.
     /// </summary>
+    /// <remarks>
+    /// <b>Sandbox testing:</b> sandbox users see real product prices in the
+    /// game UI, but the platform checkout modal makes clear that no charge
+    /// will be made and the resulting purchase records 0 credits.
+    /// </remarks>
     public class Payment
     {
         /// <summary>
