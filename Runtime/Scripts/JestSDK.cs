@@ -174,6 +174,19 @@ namespace com.jest.sdk
             JsBridge.SetLoadingProgress(progress);
         }
 
+        /// <summary>
+        /// Captures a custom analytics event.
+        /// </summary>
+        /// <param name="eventName">The name of the event to capture.</param>
+        /// <param name="properties">Optional dictionary of event properties.</param>
+        public void CaptureEvent(string eventName, Dictionary<string, object> properties = null)
+        {
+            if (string.IsNullOrWhiteSpace(eventName))
+                throw new System.ArgumentException("eventName cannot be null or empty", nameof(eventName));
+            string propertiesJson = properties != null ? Convert.ToString(properties) : null;
+            JsBridge.CaptureEvent(eventName, propertiesJson);
+        }
+
     }
 
     /// <summary>

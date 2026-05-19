@@ -53,9 +53,6 @@ namespace com.jest.sdk
             if (string.IsNullOrEmpty(options.ctaText))
                 throw new ArgumentException("ctaText is required");
 
-            if (string.IsNullOrEmpty(options.identifier))
-                throw new ArgumentException("identifier is required");
-
             bool hasDate = options.date != default;
             bool hasDays = options.scheduledInDays.HasValue;
 
