@@ -208,6 +208,15 @@ mergeInto(LibraryManager.library, {
     return JestSDKHelper.marshalString(profile.avatarUrl);
   },
 
+  JS_getProfile__deps: ['$JestSDKHelper'],
+  JS_getProfile: function (size) {
+    var profile = JestSDKHelper.getSdk().social.getProfile({ avatarSize: size });
+    if (!profile) {
+      return 0;
+    }
+    return JestSDKHelper.marshalString(JSON.stringify(profile));
+  },
+
   JS_getPlayerValue__deps: ['$JestSDKHelper'],
   JS_getPlayerValue: function (key) {
     var value = JestSDKHelper.getSdk().data.get(UTF8ToString(key));

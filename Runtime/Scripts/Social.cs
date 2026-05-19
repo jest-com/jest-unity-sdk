@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 
 namespace com.jest.sdk
 {
@@ -26,10 +27,27 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Returns the current player's profile (username and sized avatar URL), or <c>null</c>
+        /// when the SDK is not initialized or the player has no profile.
+        /// </summary>
+        /// <param name="avatarSize">Supported sizes are 64, 128, 256, 512, and 1000 (default). Other values are bucketed down to the next supported size.</param>
+        /// <returns>A <see cref="PlayerProfile"/> with <see cref="PlayerProfile.AvatarUrl"/> resized via the Cloudflare image proxy, or <c>null</c>.</returns>
+        public PlayerProfile GetProfile(int avatarSize = 1000)
+        {
+            string json = JsBridge.GetProfile(avatarSize);
+            if (string.IsNullOrEmpty(json))
+            {
+                return null;
+            }
+            return JsonConvert.DeserializeObject<PlayerProfile>(json);
+        }
+
+        /// <summary>
         /// Returns the current player's avatar URL, sized for Unity texture loading when possible.
         /// </summary>
         /// <param name="size">Supported sizes are 64, 128, 256, 512, and 1000 (default). Other values are bucketed down to the next supported size.</param>
         /// <returns>A CDN URL for the player avatar image, or null when no avatar is available.</returns>
+        [Obsolete("Use GetProfile(avatarSize).AvatarUrl instead.")]
         public string GetPlayerAvatar(int size = 1000)
         {
             return JsBridge.GetPlayerAvatar(size);
@@ -58,6 +76,17 @@ namespace com.jest.sdk
             }
 
             return BuildCloudflareImageUrl(avatarUrl, BucketAvatarSize(size));
+        }
+
+        internal static string GetProfileFallback(string username, string avatarUrl, int size)
+        {
+            string sizedAvatar = GetPlayerAvatarFallback(avatarUrl, size);
+            var profile = new PlayerProfile
+            {
+                Username = username ?? "",
+                AvatarUrl = sizedAvatar,
+            };
+            return JsonConvert.SerializeObject(profile);
         }
 
         private static int BucketAvatarSize(int size)
@@ -97,6 +126,25 @@ namespace com.jest.sdk
         private static string BuildCloudflareImageUrl(string imageUrl, int width)
         {
             return $"{CloudflareImageProxy}format=auto%2Cfit=cover%2Cwidth={width}%2C/{Uri.EscapeDataString(imageUrl)}";
+        }
+
+        /// <summary>
+        /// The current player's profile (username and avatar URL).
+        /// </summary>
+        [Serializable]
+        public class PlayerProfile
+        {
+            /// <summary>
+            /// The player's display username.
+            /// </summary>
+            [JsonProperty("username")]
+            public string Username;
+
+            /// <summary>
+            /// The player's avatar URL, or null when no avatar is available.
+            /// </summary>
+            [JsonProperty("avatarUrl")]
+            public string AvatarUrl;
         }
     }
 }

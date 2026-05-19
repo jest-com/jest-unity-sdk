@@ -36,6 +36,9 @@ namespace com.jest.sdk
         private static extern string JS_getPlayerAvatar(int size);
 
         [DllImport("__Internal")]
+        private static extern string JS_getProfile(int size);
+
+        [DllImport("__Internal")]
         private static extern string JS_getPlayerValue(string key);
 
         [DllImport("__Internal")]
@@ -163,6 +166,8 @@ namespace com.jest.sdk
         private static string JS_getBotAvatar(string username, int size) { return Social.GetBotAvatarFallback(username, size); }
 
         private static string JS_getPlayerAvatar(int size) { return Social.GetPlayerAvatarFallback(_bridgeMock.avatarUrl, size); }
+
+        private static string JS_getProfile(int size) { return Social.GetProfileFallback(_bridgeMock.username, _bridgeMock.avatarUrl, size); }
 
         private static string JS_getPlayerValue(string key) { return _bridgeMock.GetPlayerValue(key); }
 
@@ -397,6 +402,11 @@ namespace com.jest.sdk
         internal static string GetPlayerAvatar(int size)
         {
             return JS_getPlayerAvatar(size);
+        }
+
+        internal static string GetProfile(int size)
+        {
+            return JS_getProfile(size);
         }
 
         internal static string GetPlayerValue(string key)
