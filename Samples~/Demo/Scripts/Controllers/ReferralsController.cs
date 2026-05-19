@@ -28,7 +28,23 @@ namespace com.jest.demo
             var options = new Referrals.OpenDialogOptions
             {
                 reference = reference,
-                onboardingSlug = string.IsNullOrEmpty(m_onboardingSlugInput?.text) ? null : m_onboardingSlugInput.text
+                onboardingSlug = string.IsNullOrEmpty(m_onboardingSlugInput?.text) ? null : m_onboardingSlugInput.text,
+                // Example: notify the referrer once their first invited friend joins.
+                // NotificationTemplates = new List<Referrals.ReferralNotificationTemplate>
+                // {
+                //     new Referrals.ReferralNotificationTemplate
+                //     {
+                //         MinConversionCount = 1,
+                //         Variants = new List<Referrals.ReferralNotificationVariant>
+                //         {
+                //             new Referrals.ReferralNotificationVariant
+                //             {
+                //                 Body = "Your friend just joined!",
+                //                 CtaText = "Play",
+                //             }
+                //         }
+                //     }
+                // }
             };
 
             // Parse entry payload if provided
