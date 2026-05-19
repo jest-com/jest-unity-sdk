@@ -218,5 +218,15 @@ namespace com.jest.sdk
             Debug.Log("[JestSDK] GetPlayerSignedResponse");
             return $"{{\"player\":{{\"playerId\":\"{playerId}\",\"registered\":{isRegistered.ToLower()},\"username\":null,\"avatarUrl\":null}},\"playerSigned\":\"mock_signed_data\"}}";
         }
+
+        /// <summary>
+        /// Returns a mock subscription checkout response indicating cancel.
+        /// </summary>
+        /// <returns>A JSON string containing mock subscription response data.</returns>
+        public string GetSubscriptionResponse()
+        {
+            Debug.Log("[JestSDK] GetSubscriptionResponse");
+            return "{\"result\":\"cancel\"}";
+        }
     }
 }

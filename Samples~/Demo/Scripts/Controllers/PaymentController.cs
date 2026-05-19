@@ -195,5 +195,36 @@ namespace com.jest.demo
             });
 
         }
+
+        public void BeginSubscription(string subscriptionSku)
+        {
+            UIManager.Instance.ShowLoadingSpinner();
+            JestSDK.Instance.Payment.BeginSubscription(subscriptionSku).ContinueWith(t => {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Subscription Failed: " + t.Exception.Message);
+                    }
+                    else if (t.Result.result == "success")
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Subscribed to: " + t.Result.subscription.name);
+                    }
+                    else if (t.Result.result == "cancel")
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Subscription cancelled");
+                    }
+                    else
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Subscription Failed: " + t.Result.error);
+                    }
+                }
+                catch (Exception e)
+                {
+                    UIManager.Instance.m_toastUI.ShowToast("Subscription failed: " + e.Message);
+                }
+                UIManager.Instance.HideLoadingSpinner();
+            });
+        }
     }
 }
