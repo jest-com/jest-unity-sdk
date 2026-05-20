@@ -2,9 +2,6 @@
 
 ## [2.1.0] - 2026-05-19
 
-### Added
-- `JestSDK.Instance.CaptureEvent(eventName, properties?)` — captures a custom analytics event, mirroring `captureEvent` on the TS SDK root.
-
 ### Changed
 - `RichNotifications.Options.identifier` is now optional (removed the Unity-side required check); the JS SDK enforces any platform policy on this field.
 - `SdkVersion.Value` corrected from `1.7.0` to `2.1.0` to stay in sync with `package.json`.
