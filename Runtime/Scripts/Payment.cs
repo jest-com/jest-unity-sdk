@@ -221,12 +221,45 @@ namespace com.jest.sdk
             return task;
         }
 
+        /// <summary>
+        /// Lists subscription offers for this game along with the player's current entitlement on each.
+        /// For guest players, the returned subscriptions list is empty.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="GetSubscriptionsResponse"/>.
+        /// </returns>
+        public JestSDKTask<GetSubscriptionsResponse> GetSubscriptions()
+        {
+            var task = new JestSDKTask<GetSubscriptionsResponse>();
+            JsBridge.GetSubscriptions().ContinueWith(t =>
+            {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        task.SetException(t.Exception);
+                        return;
+                    }
+
+                    string json = t.GetResult();
+                    var response = JsonConvert.DeserializeObject<GetSubscriptionsResponse>(json);
+                    task.SetResult(response);
+                }
+                catch (Exception e)
+                {
+                    task.SetException(e);
+                }
+            });
+
+            return task;
+        }
+
         #endregion
 
         #region Nested Classes
 
         /// <summary>
-        /// Represents the data for an active subscription.
+        /// Represents a subscription offer and the player's current entitlement on it.
         /// </summary>
         [Serializable]
         public class SubscriptionData
@@ -236,16 +269,12 @@ namespace com.jest.sdk
             public string Sku;
 
             /// <summary>The display name of the subscription.</summary>
-            [JsonProperty("name")]
-            public string Name;
+            [JsonProperty("displayName")]
+            public string DisplayName;
 
-            /// <summary>The description of the subscription, or null.</summary>
-            [JsonProperty("description")]
-            public string Description;
-
-            /// <summary>Whether the subscription is currently active.</summary>
-            [JsonProperty("isActive")]
-            public bool IsActive;
+            /// <summary>The display description of the subscription, or null.</summary>
+            [JsonProperty("displayDescription")]
+            public string DisplayDescription;
 
             /// <summary>Price in the specified currency, in decimal.</summary>
             [JsonProperty("price")]
@@ -258,6 +287,25 @@ namespace com.jest.sdk
             /// <summary>Billing period: "monthly", "yearly", or "weekly".</summary>
             [JsonProperty("billingPeriod")]
             public string BillingPeriod;
+
+            /// <summary>Entitlement status: "active" if the player holds this subscription, "inactive" otherwise.</summary>
+            [JsonProperty("status")]
+            public string Status;
+        }
+
+        /// <summary>
+        /// Represents the response returned by <see cref="Payment.GetSubscriptions"/>.
+        /// </summary>
+        [Serializable]
+        public class GetSubscriptionsResponse
+        {
+            /// <summary>The list of subscription offers with the player's current entitlement on each.</summary>
+            [JsonProperty("subscriptions")]
+            public List<SubscriptionData> Subscriptions;
+
+            /// <summary>HS256 JWS of the subscriptions payload for server-side verification.</summary>
+            [JsonProperty("signed")]
+            public string Signed;
         }
 
         /// <summary>
