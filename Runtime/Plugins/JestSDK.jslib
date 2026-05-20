@@ -360,6 +360,15 @@ mergeInto(LibraryManager.library, {
     });
   },
 
+  JS_getSubscriptions__deps: ['$JestSDKHelper'],
+  JS_getSubscriptions: function (taskPtr, successCallback, errorCallback) {
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().payments.getSubscriptions().then(function (result) {
+        return JSON.stringify(result);
+      });
+    });
+  },
+
   JS_openReferralDialog__deps: ['$JestSDKHelper'],
   JS_openReferralDialog: function (taskPtr, optionsJson, successCallback, errorCallback) {
     JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {

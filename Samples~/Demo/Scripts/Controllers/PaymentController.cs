@@ -211,6 +211,30 @@ namespace com.jest.demo
             BeginSubscription(sku);
         }
 
+        public void GetSubscriptions()
+        {
+            UIManager.Instance.ShowLoadingSpinner();
+            JestSDK.Instance.Payment.GetSubscriptions().ContinueWith(t => {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Get Subscriptions Failed: " + t.Exception.Message);
+                    }
+                    else
+                    {
+                        var count = t.Result?.Subscriptions?.Count ?? 0;
+                        UIManager.Instance.m_toastUI.ShowToast($"Subscriptions loaded: {count}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    UIManager.Instance.m_toastUI.ShowToast("Get Subscriptions Failed: " + e.Message);
+                }
+                UIManager.Instance.HideLoadingSpinner();
+            });
+        }
+
         public void BeginSubscription(string subscriptionSku)
         {
             UIManager.Instance.ShowLoadingSpinner();
@@ -223,7 +247,7 @@ namespace com.jest.demo
                     }
                     else if (t.Result.Result == "success")
                     {
-                        UIManager.Instance.m_toastUI.ShowToast("Subscribed to: " + t.Result.Subscription.Name);
+                        UIManager.Instance.m_toastUI.ShowToast("Subscribed to: " + t.Result.Subscription.DisplayName);
                     }
                     else if (t.Result.Result == "cancel")
                     {

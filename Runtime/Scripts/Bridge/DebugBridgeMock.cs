@@ -228,5 +228,15 @@ namespace com.jest.sdk
             Debug.Log("[JestSDK] GetSubscriptionResponse");
             return "{\"result\":\"cancel\"}";
         }
+
+        /// <summary>
+        /// Returns a mock subscriptions list response.
+        /// </summary>
+        /// <returns>A JSON string containing mock subscriptions and signed payload.</returns>
+        public string GetSubscriptionsResponse()
+        {
+            Debug.Log("[JestSDK] GetSubscriptionsResponse");
+            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\"}],\"signed\":\"\"}";
+        }
     }
 }
