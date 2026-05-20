@@ -1,9 +1,10 @@
 {
   "name": "com.jest.sdk",
-  "displayName": "Jest SDK",
   "version": "2.1.0",
+  "displayName": "Jest SDK",
   "description": "Jest SDK for Unity",
   "author": "Jest",
+  "unity": "2022.3",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1"
   },
@@ -13,6 +14,5 @@
       "description": "Complete demo showcasing all Jest SDK features: login, player state, payments, notifications, events, referrals, and navigation.",
       "path": "Samples~/Demo"
     }
-  ],
-  "unity": "2022.3"
+  ]
 }
