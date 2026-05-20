@@ -533,5 +533,16 @@ mergeInto(LibraryManager.library, {
       props = JSON.parse(raw);
     }
     JestSDKHelper.getSdk().internal.captureOnboardingEvent(name, props);
+  },
+
+  JS_captureEvent__deps: ['$JestSDKHelper'],
+  JS_captureEvent: function (eventName, propertiesJson) {
+    var name = UTF8ToString(eventName);
+    var raw = UTF8ToString(propertiesJson);
+    var props = undefined;
+    if (raw) {
+      props = JSON.parse(raw);
+    }
+    JestSDKHelper.getSdk().captureEvent(name, props);
   }
 });

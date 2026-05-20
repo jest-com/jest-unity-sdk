@@ -150,6 +150,9 @@ namespace com.jest.sdk
         [DllImport("__Internal")]
         private static extern void JS_captureOnboardingEvent(string eventName, string propertiesJson);
 
+        [DllImport("__Internal")]
+        private static extern void JS_captureEvent(string eventName, string propertiesJson);
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -345,6 +348,11 @@ namespace com.jest.sdk
         private static void JS_captureOnboardingEvent(string eventName, string propertiesJson)
         {
             UnityEngine.Debug.Log($"[JestSDK] CaptureOnboardingEvent (mock): {eventName} / {propertiesJson}");
+        }
+
+        private static void JS_captureEvent(string eventName, string propertiesJson)
+        {
+            UnityEngine.Debug.Log($"[JestSDK] CaptureEvent (mock): {eventName} / {propertiesJson}");
         }
 
 #endif
@@ -574,6 +582,11 @@ namespace com.jest.sdk
         internal static void CaptureOnboardingEvent(string eventName, string propertiesJson)
         {
             JS_captureOnboardingEvent(eventName, propertiesJson ?? "");
+        }
+
+        internal static void CaptureEvent(string eventName, string propertiesJson)
+        {
+            JS_captureEvent(eventName, propertiesJson ?? "");
         }
 
         [Preserve]

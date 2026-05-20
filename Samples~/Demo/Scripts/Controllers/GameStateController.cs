@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using com.jest.sdk;
 using TMPro;
 using UnityEngine;
@@ -64,6 +65,17 @@ namespace com.jest.demo
                 UIManager.Instance.m_toastUI.ShowToast("Flush failed: " + e.Message);
             }
             UIManager.Instance.HideLoadingSpinner();
+        }
+
+        public void CaptureGameEvent()
+        {
+            var properties = new Dictionary<string, object>
+            {
+                { "source", "demo" },
+                { "level", 1 }
+            };
+            JestSDK.Instance.CaptureEvent("demo_event", properties);
+            UIManager.Instance.m_toastUI.ShowToast("Event captured");
         }
 
         public async void GetSignedPlayerData()
