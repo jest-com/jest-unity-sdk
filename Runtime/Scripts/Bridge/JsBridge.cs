@@ -102,6 +102,10 @@ namespace com.jest.sdk
                                     Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
+        private static extern void JS_cancelSubscription(IntPtr taskPtr, string subscriptionSku, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
         private static extern void JS_openReferralDialog(IntPtr taskPtr, string optionsJson,
                                     Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
 
@@ -265,6 +269,12 @@ namespace com.jest.sdk
                                     Action<IntPtr, string> onError)
         {
             onSuccess(taskPtr, _bridgeMock.GetSubscriptionsResponse());
+        }
+
+        private static void JS_cancelSubscription(IntPtr taskPtr, string subscriptionSku, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            onSuccess(taskPtr, _bridgeMock.GetCancelSubscriptionResponse());
         }
 
         private static void JS_openReferralDialog(IntPtr taskPtr, string optionsJson,
@@ -499,6 +509,11 @@ namespace com.jest.sdk
         internal static JestSDKTask<string> GetSubscriptions()
         {
             return new JestSDKTask<string>((System.IntPtr ptr) => { JS_getSubscriptions(ptr, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static JestSDKTask<string> CancelSubscription(string subscriptionSku)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_cancelSubscription(ptr, subscriptionSku, HandleSuccessString, HandleErrorString); });
         }
 
         internal static JestSDKTask OpenReferralDialog(string optionsJson)

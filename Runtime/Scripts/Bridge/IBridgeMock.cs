@@ -154,5 +154,11 @@ namespace com.jest.sdk
         /// </summary>
         /// <returns>A JSON string containing subscriptions and signed payload.</returns>
         string GetSubscriptionsResponse();
+
+        /// <summary>
+        /// Retrieves the cancel subscription response.
+        /// </summary>
+        /// <returns>A JSON string containing cancel subscription response data.</returns>
+        string GetCancelSubscriptionResponse();
     }
 }

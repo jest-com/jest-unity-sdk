@@ -252,5 +252,14 @@ namespace com.jest.sdk
         {
             return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\"}],\"signed\":\"\"}";
         }
+
+        /// <summary>
+        /// Retrieves the cancel subscription response.
+        /// </summary>
+        /// <returns>A JSON string representing cancel subscription response data.</returns>
+        public string GetCancelSubscriptionResponse()
+        {
+            return "{\"result\":\"cancel\"}";
+        }
     }
 }

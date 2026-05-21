@@ -265,5 +265,47 @@ namespace com.jest.demo
                 UIManager.Instance.HideLoadingSpinner();
             });
         }
+
+        public void CancelSubscription()
+        {
+            string sku = m_subscriptionSkuInput != null ? m_subscriptionSkuInput.text : null;
+            if (string.IsNullOrWhiteSpace(sku))
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Subscription SKU is required");
+                return;
+            }
+            CancelSubscription(sku);
+        }
+
+        public void CancelSubscription(string subscriptionSku)
+        {
+            UIManager.Instance.ShowLoadingSpinner();
+            JestSDK.Instance.Payment.CancelSubscription(subscriptionSku).ContinueWith(t => {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Cancel Subscription Failed: " + t.Exception.Message);
+                    }
+                    else if (t.Result.Result == "success")
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Subscription cancelled");
+                    }
+                    else if (t.Result.Result == "cancel")
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Cancellation dismissed");
+                    }
+                    else
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Cancel Subscription Failed: " + t.Result.Error);
+                    }
+                }
+                catch (Exception e)
+                {
+                    UIManager.Instance.m_toastUI.ShowToast("Cancel Subscription failed: " + e.Message);
+                }
+                UIManager.Instance.HideLoadingSpinner();
+            });
+        }
     }
 }

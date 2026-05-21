@@ -254,6 +254,45 @@ namespace com.jest.sdk
             return task;
         }
 
+        /// <summary>
+        /// Opens a cancellation confirmation dialog for the specified subscription.
+        /// If the user confirms, the subscription is cancelled at the end of the current billing period.
+        /// </summary>
+        /// <param name="subscriptionSku">The SKU of the subscription to cancel.</param>
+        /// <returns>
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="CancelSubscriptionResult"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when subscriptionSku is null or empty.</exception>
+        public JestSDKTask<CancelSubscriptionResult> CancelSubscription(string subscriptionSku)
+        {
+            if (string.IsNullOrWhiteSpace(subscriptionSku))
+            {
+                throw new ArgumentException("Subscription SKU cannot be null or empty", nameof(subscriptionSku));
+            }
+
+            var task = new JestSDKTask<CancelSubscriptionResult>();
+            JsBridge.CancelSubscription(subscriptionSku).ContinueWith(t =>
+            {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        task.SetException(t.Exception);
+                        return;
+                    }
+                    string json = t.GetResult();
+                    var result = JsonConvert.DeserializeObject<CancelSubscriptionResult>(json);
+                    task.SetResult(result);
+                }
+                catch (Exception e)
+                {
+                    task.SetException(e);
+                }
+            });
+
+            return task;
+        }
+
         #endregion
 
         #region Nested Classes
@@ -306,6 +345,24 @@ namespace com.jest.sdk
             /// <summary>HS256 JWS of the subscriptions payload for server-side verification.</summary>
             [JsonProperty("signed")]
             public string Signed;
+        }
+
+        /// <summary>
+        /// Represents the result of a subscription cancellation flow.
+        /// </summary>
+        [Serializable]
+        public class CancelSubscriptionResult
+        {
+            /// <summary>The result status: "success", "cancel", or "error".</summary>
+            [JsonProperty("result")]
+            public string Result;
+
+            /// <summary>
+            /// Error code when result is "error":
+            /// "internal_error", "not_found", "not_active", or "guest_not_allowed".
+            /// </summary>
+            [JsonProperty("error")]
+            public string Error;
         }
 
         /// <summary>
