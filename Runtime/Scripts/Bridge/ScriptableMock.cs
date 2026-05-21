@@ -253,6 +253,14 @@ namespace com.jest.sdk
             return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\"}],\"signed\":\"\"}";
         }
 
+        /// <summary>
+        /// Returns a mock cancel subscription response.
+        /// </summary>
+        public string GetCancelSubscriptionResponse()
+        {
+            return "{\"result\":\"cancel\"}";
+        }
+
 #if UNITY_EDITOR
         private void OnEnable()
         {

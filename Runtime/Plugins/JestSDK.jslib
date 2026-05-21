@@ -369,6 +369,17 @@ mergeInto(LibraryManager.library, {
     });
   },
 
+  JS_cancelSubscription__deps: ['$JestSDKHelper'],
+  JS_cancelSubscription: function (taskPtr, subscriptionSku, successCallback, errorCallback) {
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().payments.cancelSubscription({
+        subscriptionSku: UTF8ToString(subscriptionSku)
+      }).then(function (result) {
+        return JSON.stringify(result);
+      });
+    });
+  },
+
   JS_openReferralDialog__deps: ['$JestSDKHelper'],
   JS_openReferralDialog: function (taskPtr, optionsJson, successCallback, errorCallback) {
     JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {
