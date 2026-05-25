@@ -330,6 +330,10 @@ namespace com.jest.sdk
             /// <summary>Entitlement status: "active" if the player holds this subscription, "inactive" otherwise.</summary>
             [JsonProperty("status")]
             public string Status;
+
+            /// <summary>Approximate revenue in USD for the game publisher per billing period.</summary>
+            [JsonProperty("estimatedRevenue")]
+            public decimal EstimatedRevenue;
         }
 
         /// <summary>
