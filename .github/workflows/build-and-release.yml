@@ -70,10 +70,15 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: WebGL
           buildMethod: com.jest.sdk.regression.Editor.JestSdkRegressionBuild.BuildWebGL
-          customParameters: -outputPath ${{ github.workspace }}/${{ env.REGRESSION_BUILD_DIR }}
+          customParameters: -outputPath /github/workspace/${{ env.REGRESSION_BUILD_DIR }}
 
       - name: Package Unity SDK regression WebGL fixture
         run: |
+          if [ ! -d "${REGRESSION_BUILD_DIR}" ]; then
+            echo "Expected WebGL build output not found at ${REGRESSION_BUILD_DIR}"
+            find . -maxdepth 4 -type f \( -name index.html -o -name "*.loader.js" \) -print
+            exit 1
+          fi
           cd "${REGRESSION_BUILD_DIR}"
           zip -r "${GITHUB_WORKSPACE}/${REGRESSION_ZIP}" .
 
