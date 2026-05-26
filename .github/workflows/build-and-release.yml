@@ -16,6 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      UNITY_VERSION: 2022.3.62f3
+      REGRESSION_BUILD_DIR: build/jest-unity-sdk-regression-webgl
+      REGRESSION_ZIP: jest-unity-sdk-regression-webgl.zip
     steps:
       - uses: actions/checkout@v4
 
@@ -42,12 +46,40 @@ jobs:
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          docker-images: true
+          large-packages: false
+
+      - name: Build Unity SDK regression WebGL fixture
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: RegressionWebGL~
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: WebGL
+          buildMethod: com.jest.sdk.regression.Editor.JestSdkRegressionBuild.BuildWebGL
+          customParameters: -outputPath ${{ github.workspace }}/${{ env.REGRESSION_BUILD_DIR }}
+
+      - name: Package Unity SDK regression WebGL fixture
+        run: |
+          cd "${REGRESSION_BUILD_DIR}"
+          zip -r "${GITHUB_WORKSPACE}/${REGRESSION_ZIP}" .
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag_name }}
           name: ${{ inputs.tag_name }}
           draft: false
+          files: ${{ env.REGRESSION_ZIP }}
           body: |
             ## Installation
 
