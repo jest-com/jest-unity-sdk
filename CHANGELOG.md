@@ -1,6 +1,10 @@
 # Changelog
 
-## [2.3.4] - 2026-05-27
+## [2.4.0] - 2026-05-27
+
+### Added
+
+- `Payment.SubscriptionData.EstimatedRevenue` (`decimal`) — approximate revenue in USD for the game publisher per billing period.
 
 ## [2.2.0] - 2026-05-21
 
