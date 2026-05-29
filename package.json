@@ -1,7 +1,7 @@
 {
   "name": "com.jest.sdk",
   "displayName": "Jest SDK",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Jest SDK for Unity",
   "author": "Jest",
   "dependencies": {
