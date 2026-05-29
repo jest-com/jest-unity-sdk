@@ -1,0 +1,13 @@
+{
+  "name": "jest-unity-sdk-webgl-smoke",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Headless browser smoke test: builds load and JestSDK init runs without a makeDynCall crash.",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

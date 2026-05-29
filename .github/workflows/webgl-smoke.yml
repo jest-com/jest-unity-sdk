@@ -1,0 +1,87 @@
+name: WebGL Load Smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "Runtime/**"
+      - "RegressionWebGL~/**"
+      - "WebGLSmoke~/**"
+      - ".github/workflows/webgl-smoke.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: webgl-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      UNITY_VERSION: 2022.3.62f3
+      BUILD_DIR: build/webgl-smoke
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          docker-images: true
+          large-packages: false
+
+      - name: Build RegressionWebGL fixture (uncompressed)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: RegressionWebGL~
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: WebGL
+          buildMethod: com.jest.sdk.regression.Editor.JestSdkRegressionBuild.BuildWebGL
+          customParameters: -outputPath /github/workspace/${{ env.BUILD_DIR }} -disableWebGLCompression
+
+      - name: Assert macros were expanded (no literal makeDynCall in output)
+        run: |
+          if [ ! -f "${BUILD_DIR}/index.html" ]; then
+            echo "::error::WebGL build output not found at ${BUILD_DIR}"
+            find . -maxdepth 4 -name index.html -print
+            exit 1
+          fi
+          if grep -rIl 'makeDynCall' "${BUILD_DIR}"; then
+            echo "::error::Found literal 'makeDynCall' in the build output — an Emscripten macro was not expanded (jslib likely reformatted)."
+            exit 1
+          fi
+          echo "✅ No un-expanded makeDynCall in build output."
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install smoke harness
+        working-directory: WebGLSmoke~
+        run: npm install --no-audit --no-fund
+
+      - name: Install Playwright Chromium
+        working-directory: WebGLSmoke~
+        run: npx playwright install --with-deps chromium
+
+      - name: Run WebGL load smoke test
+        working-directory: WebGLSmoke~
+        env:
+          CI: "true"
+          SMOKE_BUILD_DIR: ${{ github.workspace }}/${{ env.BUILD_DIR }}
+        run: npm test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webgl-smoke-playwright-report
+          path: WebGLSmoke~/playwright-report/
+          retention-days: 7
