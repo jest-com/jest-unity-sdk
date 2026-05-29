@@ -331,7 +331,8 @@ namespace com.jest.sdk
             [JsonProperty("status")]
             public string Status;
 
-            /// <summary>Approximate revenue in USD for the game publisher per billing period.</summary>
+            /// <summary>Always 0. Kept for SDK backwards compatibility.</summary>
+            [Obsolete("Always 0. Kept for SDK backwards compatibility.")]
             [JsonProperty("estimatedRevenue")]
             public decimal EstimatedRevenue;
         }
@@ -492,9 +493,8 @@ namespace com.jest.sdk
             /// </summary>
             public long? completedAt;
 
-            /// <summary>
-            /// The estimated USD share of revenue from this purchase that the publisher will receive.
-            /// </summary>
+            /// <summary>Always 0. Kept for SDK backwards compatibility.</summary>
+            [Obsolete("Always 0. Kept for SDK backwards compatibility.")]
             public decimal estimatedRevenue;
 
             /// <summary>
