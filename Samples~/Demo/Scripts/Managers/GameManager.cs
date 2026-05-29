@@ -44,6 +44,7 @@ namespace com.jest.demo
             JestSDK.Instance.Init().ContinueWith(t =>
             {
                 Debug.Log("InitJestSDK Success");
+                JestSDK.Instance.MarkGameLoaded();
                 TriggerGameStateChangeEvent();
                 HideLoading();
             });
