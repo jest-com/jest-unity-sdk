@@ -114,6 +114,14 @@ namespace com.jest.sdk
             public List<ReferralNotificationTemplate> NotificationTemplates;
 
             /// <summary>
+            /// Optional base64 data URL of an image (e.g. from a Canvas render) to use as the
+            /// OG image on the referral landing page. Accepted MIME: image/png, image/jpeg,
+            /// image/webp. The data URL must be at most 2 MB.
+            /// </summary>
+            [JsonProperty("shareImage")]
+            public string ShareImage;
+
+            /// <summary>
             /// Serializes the options to JSON for the bridge.
             /// </summary>
             internal string ToJson()
@@ -146,6 +154,11 @@ namespace com.jest.sdk
                 if (NotificationTemplates != null && NotificationTemplates.Count > 0)
                 {
                     jsonObj["notificationTemplates"] = NotificationTemplates;
+                }
+
+                if (!string.IsNullOrEmpty(ShareImage))
+                {
+                    jsonObj["shareImage"] = ShareImage;
                 }
 
                 return JsonConvert.SerializeObject(jsonObj);
