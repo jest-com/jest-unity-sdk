@@ -17,17 +17,38 @@ namespace com.jest.sdk.regression.Editor
             var scenePath = NormalizeAssetPath(GetCommandLineValue("-scenePath") ?? DefaultScenePath);
             EnsureRegressionScene(scenePath);
 
-            var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            // The PR smoke job serves the output with a plain static file server, which
+            // cannot satisfy the Content-Encoding headers a compressed build expects.
+            // `-disableWebGLCompression` produces uncompressed files for that job only;
+            // the released fixture keeps the project's default compression.
+            var disableCompression = HasCommandLineFlag("-disableWebGLCompression");
+            var previousCompression = PlayerSettings.WebGL.compressionFormat;
+            if (disableCompression)
             {
-                scenes = new[] { scenePath },
-                locationPathName = outputPath,
-                target = BuildTarget.WebGL,
-                options = BuildOptions.None
-            });
+                PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
+            }
 
-            if (report.summary.result != BuildResult.Succeeded)
+            try
             {
-                throw new InvalidOperationException("WebGL build failed: " + report.summary.result);
+                var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+                {
+                    scenes = new[] { scenePath },
+                    locationPathName = outputPath,
+                    target = BuildTarget.WebGL,
+                    options = BuildOptions.None
+                });
+
+                if (report.summary.result != BuildResult.Succeeded)
+                {
+                    throw new InvalidOperationException("WebGL build failed: " + report.summary.result);
+                }
+            }
+            finally
+            {
+                if (disableCompression)
+                {
+                    PlayerSettings.WebGL.compressionFormat = previousCompression;
+                }
             }
         }
 
@@ -69,6 +90,11 @@ namespace com.jest.sdk.regression.Editor
             }
 
             return bootstrapType;
+        }
+
+        private static bool HasCommandLineFlag(string key)
+        {
+            return Array.IndexOf(Environment.GetCommandLineArgs(), key) >= 0;
         }
 
         private static string GetCommandLineValue(string key)
