@@ -144,6 +144,9 @@ namespace com.jest.sdk
         private static extern void JS_setLoadingProgress(int progress);
 
         [DllImport("__Internal")]
+        private static extern void JS_markGameLoaded();
+
+        [DllImport("__Internal")]
         private static extern void JS_beginPlatformRegistrationOverlay(IntPtr taskPtr, string optionsJson, Action<IntPtr> onClose, Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
@@ -342,6 +345,11 @@ namespace com.jest.sdk
         private static void JS_setLoadingProgress(int progress)
         {
             UnityEngine.Debug.Log($"[JestSDK] SetLoadingProgress: {progress}% (mock)");
+        }
+
+        private static void JS_markGameLoaded()
+        {
+            UnityEngine.Debug.Log("[JestSDK] MarkGameLoaded (mock)");
         }
 
         private static void JS_beginPlatformRegistrationOverlay(IntPtr taskPtr, string optionsJson, Action<IntPtr> onClose, Action<IntPtr, string> onError)
@@ -583,10 +591,28 @@ namespace com.jest.sdk
             JS_sendReservedLoginMessage(reservationJson);
         }
 
+        private static bool _loadingComplete = false;
+        private static bool _gameLoadedSent = false;
+
         internal static void SetLoadingProgress(float progress)
         {
             int clamped = UnityEngine.Mathf.RoundToInt(UnityEngine.Mathf.Clamp(progress, 0f, 100f));
+            if (clamped == 100)
+                _loadingComplete = true;
             JS_setLoadingProgress(clamped);
+        }
+
+        internal static void MarkGameLoaded()
+        {
+            if (_gameLoadedSent)
+                return;
+            _gameLoadedSent = true;
+            if (!_loadingComplete)
+            {
+                _loadingComplete = true;
+                JS_setLoadingProgress(100);
+            }
+            JS_markGameLoaded();
         }
 
         internal static JestSDKTask BeginPlatformRegistrationOverlay(string optionsJson)

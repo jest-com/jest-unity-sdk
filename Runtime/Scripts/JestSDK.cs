@@ -175,6 +175,16 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Signals to the Jest platform that the game is fully loaded and ready to play.
+        /// Also dismisses the manual loading overlay unless progress was already driven to 100.
+        /// Safe to call multiple times — calls after the first are no-ops.
+        /// </summary>
+        public void MarkGameLoaded()
+        {
+            JsBridge.MarkGameLoaded();
+        }
+
+        /// <summary>
         /// Captures a custom analytics event.
         /// </summary>
         /// <param name="eventName">The name of the event to capture.</param>

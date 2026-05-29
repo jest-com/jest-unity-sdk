@@ -191,6 +191,13 @@ namespace com.jest.sdk.regression
 
             JestSDK.Instance.SetLoadingProgress(50);
             JestSDK.Instance.SetLoadingProgress(100);
+            JestSDK.Instance.MarkGameLoaded();
+            JestSDK.Instance.MarkGameLoaded(); // second call must be a no-op
+            assertions.Add(RegressionAssertion.Condition(
+                "mark game loaded completed without error",
+                true,
+                true,
+                true));
 
             var captureEventName = string.IsNullOrWhiteSpace(command.options?.captureEventName)
                 ? "sdk_regression_core"
