@@ -29,6 +29,8 @@ namespace com.jest.demo
             {
                 reference = reference,
                 onboardingSlug = string.IsNullOrEmpty(m_onboardingSlugInput?.text) ? null : m_onboardingSlugInput.text,
+                // Example: pass a base64 data URL to use as the OG image on the referral landing page.
+                // ShareImage = canvas.ToDataURL("image/png"),
                 // Example: notify the referrer once their first invited friend joins.
                 // NotificationTemplates = new List<Referrals.ReferralNotificationTemplate>
                 // {

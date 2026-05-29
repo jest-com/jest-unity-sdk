@@ -539,6 +539,7 @@ namespace com.jest.sdk.regression
                 },
                 shareTitle = "SDK regression",
                 shareText = "Testing referral bridge",
+                ShareImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
                 NotificationTemplates = new List<Referrals.ReferralNotificationTemplate>
                 {
                     new Referrals.ReferralNotificationTemplate
