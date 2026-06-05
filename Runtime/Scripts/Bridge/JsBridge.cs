@@ -75,7 +75,7 @@ namespace com.jest.sdk
                                          System.Action<System.IntPtr, string> errorCallback);
 
         [DllImport("__Internal")]
-        private static extern void JS_login(string payload);
+        private static extern void JS_login(IntPtr taskPtr, string payload, Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
         private static extern void JS_getProducts(IntPtr taskPtr, Action<IntPtr, string> onSuccess, Action<IntPtr, 
@@ -220,8 +220,11 @@ namespace com.jest.sdk
                                  System.Action<System.IntPtr, string> errorCallback)
         { successCallback(ptr); }
 
-        private static void JS_login(string payload)
-        { _bridgeMock.Login(payload); }
+        private static void JS_login(IntPtr taskPtr, string payload, Action<IntPtr> onSuccess, Action<IntPtr, string> onError)
+        {
+            _bridgeMock.Login(payload);
+            onSuccess(taskPtr);
+        }
 
 
         private static void JS_getProducts(IntPtr taskPtr, Action<IntPtr, string> onSuccess, Action<IntPtr,
@@ -485,9 +488,9 @@ namespace com.jest.sdk
             return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, SdkVersion.WireName, HandleSuccess, HandleError); });
         }
 
-        internal static void Login(string payload)
+        internal static JestSDKTask Login(string payload)
         {
-            JS_login(payload);
+            return new JestSDKTask((System.IntPtr ptr) => { JS_login(ptr, payload, HandleSuccess, HandleError); });
         }
 
         internal static JestSDKTask<string> GetProducts()

@@ -106,6 +106,14 @@ namespace com.jest.sdk
             public string onboardingSlug;
 
             /// <summary>
+            /// Optional base64 data URL image (e.g. from a Texture2D encoded to PNG) to use as
+            /// the OG image on the referral landing page. Accepted MIME: image/png, image/jpeg,
+            /// image/webp. The data URL must be at most 2 MB. When omitted, the game's static
+            /// share image is used.
+            /// </summary>
+            public string shareImage;
+
+            /// <summary>
             /// Optional templates used to notify the referrer when invited players convert.
             /// Each template applies above its <c>MinConversionCount</c> threshold; the server
             /// picks the template with the highest matching threshold and a variant from within it.
@@ -146,6 +154,11 @@ namespace com.jest.sdk
                 if (NotificationTemplates != null && NotificationTemplates.Count > 0)
                 {
                     jsonObj["notificationTemplates"] = NotificationTemplates;
+                }
+
+                if (!string.IsNullOrEmpty(shareImage))
+                {
+                    jsonObj["shareImage"] = shareImage;
                 }
 
                 return JsonConvert.SerializeObject(jsonObj);

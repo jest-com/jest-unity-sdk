@@ -1,11 +1,12 @@
 {
   "name": "com.jest.sdk",
   "displayName": "Jest SDK",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "description": "Jest SDK for Unity",
   "author": "Jest",
   "dependencies": {
-    "com.unity.nuget.newtonsoft-json": "3.2.1"
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.modules.imageconversion": "1.0.0"
   },
   "samples": [
     {

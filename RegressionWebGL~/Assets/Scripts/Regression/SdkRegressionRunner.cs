@@ -642,7 +642,12 @@ namespace com.jest.sdk.regression
             assertions.Add(ExpectThrows<ArgumentException>("player delete rejects null key", () => JestSDK.Instance.Player.Delete(null)));
             assertions.Add(ExpectThrows<ArgumentException>("capture event rejects null event name", () => JestSDK.Instance.CaptureEvent(null)));
             assertions.Add(ExpectThrows<ArgumentException>("capture event rejects empty event name", () => JestSDK.Instance.CaptureEvent("")));
-            assertions.Add(ExpectThrows<InvalidOperationException>("login rejects already registered player", () => JestSDK.Instance.Login()));
+            var registeredLogin = JestSDK.Instance.Login();
+            assertions.Add(RegressionAssertion.Condition(
+                "login resolves immediately for already registered player",
+                registeredLogin != null && registeredLogin.IsCompleted && !registeredLogin.IsFaulted,
+                registeredLogin == null ? "null" : "completed",
+                "completed"));
             assertions.Add(ExpectThrows<InvalidOperationException>("registration overlay rejects already registered player", () => JestSDK.Instance.ShowRegistrationOverlay()));
             assertions.Add(ExpectThrows<ArgumentNullException>("navigation redirect rejects null options", () => JestSDK.Instance.Navigation.RedirectToGame(null)));
             assertions.Add(ExpectThrows<ArgumentException>("navigation redirect rejects empty slug", () => JestSDK.Instance.Navigation.RedirectToGame(new Navigation.RedirectToGameOptions())));
