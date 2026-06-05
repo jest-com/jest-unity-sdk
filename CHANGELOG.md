@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.6.0] - 2026-06-05
+
+### Changed
+
+- `JestSDK.Instance.Login()` now returns a `JestSDKTask` that completes when the player dismisses the login popup, or immediately when the player is already registered. It no longer throws `InvalidOperationException` for already-registered players. Fire-and-forget callers are unaffected.
+
+### Added
+
+- `Referrals.OpenDialogOptions.shareImage` (`string`) — optional base64 data URL used as the OG preview image on the referral landing page. Accepted MIME: `image/png`, `image/jpeg`, `image/webp`; the data URL must be at most 2 MB. When omitted, the game's static share image is used.
+- `JestUtils.SpriteToDataUrl(Sprite)` / `JestUtils.TextureToDataUrl(Texture)` — encode a sprite or texture to a PNG base64 data URL (for image fields such as `shareImage`). Handles GPU-compressed and non-readable textures by rendering into an uncompressed copy first.
+
 ## [2.4.0] - 2026-05-27
 
 ### Added

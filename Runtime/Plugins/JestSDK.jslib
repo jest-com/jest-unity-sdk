@@ -300,13 +300,15 @@ mergeInto(LibraryManager.library, {
   },
 
   JS_login__deps: ['$JestSDKHelper'],
-  JS_login: function (payload) {
-    var entryPayload = {};
-    var payloadJson = UTF8ToString(payload);
-    if (payloadJson) {
-      entryPayload = JSON.parse(payloadJson);
-    }
-    JestSDKHelper.getSdk().login({ entryPayload: entryPayload });
+  JS_login: function (taskPtr, payload, successCallback, errorCallback) {
+    JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {
+      var entryPayload = {};
+      var payloadJson = UTF8ToString(payload);
+      if (payloadJson) {
+        entryPayload = JSON.parse(payloadJson);
+      }
+      return JestSDKHelper.getSdk().login({ entryPayload: entryPayload });
+    });
   },
 
   JS_getProducts__deps: ['$JestSDKHelper'],

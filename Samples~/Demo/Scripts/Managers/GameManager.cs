@@ -64,9 +64,12 @@ namespace com.jest.demo
 
 
 
-        internal void OnLoginAction(Dictionary<string, object> payload)
+        internal async void OnLoginAction(Dictionary<string, object> payload)
         {
-            JestSDK.Instance.Login(payload);
+            // Login resolves when the player dismisses the login popup, or immediately
+            // if they are already registered. Await it so the UI refreshes once the
+            // flow actually finishes rather than the moment the popup opens.
+            await JestSDK.Instance.Login(payload);
             TriggerGameStateChangeEvent();
         }
 

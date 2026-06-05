@@ -43,6 +43,17 @@ namespace com.jest.sdk
         public PurchaseReult purchaseResult { get; set; }
         public PurchaseReult purchaseCompleteResult { get; set; }
 
+        /// <summary>
+        /// Raw BeginSubscription response JSON. When null, defaults to a "cancel" result.
+        /// Set to a "success" or "error" payload to exercise those paths in tests.
+        /// </summary>
+        public string subscriptionResponse { get; set; }
+
+        /// <summary>
+        /// Raw CancelSubscription response JSON. When null, defaults to a "cancel" result.
+        /// </summary>
+        public string cancelSubscriptionResponse { get; set; }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestBridgeMock"/> class.
@@ -191,12 +202,18 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Logs an open referral dialog request.
+        /// The most recent referral options JSON passed to <see cref="OpenReferralDialog"/>.
+        /// Exposed so tests can assert what the bridge layer forwarded.
+        /// </summary>
+        public string lastReferralOptionsJson { get; private set; }
+
+        /// <summary>
+        /// Records an open referral dialog request.
         /// </summary>
         /// <param name="optionsJson">The referral options in JSON format.</param>
         public void OpenReferralDialog(string optionsJson)
         {
-            // Mock implementation - no-op
+            lastReferralOptionsJson = optionsJson;
         }
 
         /// <summary>
@@ -241,7 +258,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing subscription response data.</returns>
         public string GetSubscriptionResponse()
         {
-            return "{\"result\":\"cancel\"}";
+            return subscriptionResponse ?? "{\"result\":\"cancel\"}";
         }
 
         /// <summary>
@@ -259,7 +276,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing cancel subscription response data.</returns>
         public string GetCancelSubscriptionResponse()
         {
-            return "{\"result\":\"cancel\"}";
+            return cancelSubscriptionResponse ?? "{\"result\":\"cancel\"}";
         }
     }
 }

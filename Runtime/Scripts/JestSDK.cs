@@ -92,19 +92,23 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Logs in the user with the optional payload data.
+        /// Starts the platform login flow and completes when the player dismisses the
+        /// login popup. Resolves immediately if the player is already registered.
         /// </summary>
         /// <param name="payload">Optional entry payload data to pass during login.</param>
-        /// <exception cref="System.InvalidOperationException">Thrown when the player is already logged in.</exception>
-        public void Login(Dictionary<string, object> payload = null)
+        /// <returns>A task that completes when the login popup is dismissed.</returns>
+        public JestSDKTask Login(Dictionary<string, object> payload = null)
         {
             if (Player.isRegistered)
             {
-                throw new System.InvalidOperationException("Player is already logged in");
+                // Already registered — nothing to log into; resolve immediately.
+                var completed = new JestSDKTask();
+                completed.SetResult();
+                return completed;
             }
 
             string entryPayloadString = payload != null ? Convert.ToString(payload) : null;
-            JsBridge.Login(entryPayloadString);
+            return JsBridge.Login(entryPayloadString);
         }
 
         /// <summary>

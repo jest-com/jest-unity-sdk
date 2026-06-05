@@ -358,6 +358,102 @@ namespace com.jest.sdk.Tests
             public int numberValue;
         }
 
+        #region Subscription Tests
+
+        [Test]
+        public void BeginSubscription_Success_ReturnsSubscription()
+        {
+            _mock.subscriptionResponse =
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"premium_monthly\",\"displayName\":\"Premium\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\"},\"subscriptionSigned\":\"JWS\"}";
+            var result = JestSDK.Instance.Payment.BeginSubscription("premium_monthly").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("success", result.Result);
+            Assert.That(result.Subscription, Is.Not.Null);
+            Assert.AreEqual("premium_monthly", result.Subscription.Sku);
+            Assert.AreEqual("JWS", result.SubscriptionSigned);
+        }
+
+        [Test]
+        public void BeginSubscription_Cancel_ReturnsCancel()
+        {
+            // Default mock response is a cancel.
+            var result = JestSDK.Instance.Payment.BeginSubscription("premium_monthly").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("cancel", result.Result);
+        }
+
+        [TestCase("internal_error")]
+        [TestCase("invalid_subscription")]
+        [TestCase("already_subscribed")]
+        [TestCase("guest_not_allowed")]
+        public void BeginSubscription_Error_ForwardsErrorCode(string code)
+        {
+            _mock.subscriptionResponse = "{\"result\":\"error\",\"error\":\"" + code + "\"}";
+            var result = JestSDK.Instance.Payment.BeginSubscription("premium_monthly").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("error", result.Result);
+            Assert.AreEqual(code, result.Error);
+        }
+
+        [Test]
+        public void BeginSubscription_ThrowsOnNullSku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.BeginSubscription(null));
+        }
+
+        [Test]
+        public void BeginSubscription_ThrowsOnEmptySku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.BeginSubscription(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.BeginSubscription("   "));
+        }
+
+        [Test]
+        public void CancelSubscription_Success_ReturnsSuccess()
+        {
+            _mock.cancelSubscriptionResponse = "{\"result\":\"success\"}";
+            var result = JestSDK.Instance.Payment.CancelSubscription("premium_monthly").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("success", result.Result);
+        }
+
+        [Test]
+        public void CancelSubscription_Cancel_ReturnsCancel()
+        {
+            // Default mock response is a cancel (player dismissed the dialog).
+            var result = JestSDK.Instance.Payment.CancelSubscription("premium_monthly").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("cancel", result.Result);
+        }
+
+        [TestCase("internal_error")]
+        [TestCase("not_found")]
+        [TestCase("not_active")]
+        [TestCase("guest_not_allowed")]
+        public void CancelSubscription_Error_ForwardsErrorCode(string code)
+        {
+            _mock.cancelSubscriptionResponse = "{\"result\":\"error\",\"error\":\"" + code + "\"}";
+            var result = JestSDK.Instance.Payment.CancelSubscription("premium_monthly").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("error", result.Result);
+            Assert.AreEqual(code, result.Error);
+        }
+
+        [Test]
+        public void CancelSubscription_ThrowsOnNullSku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CancelSubscription(null));
+        }
+
+        [Test]
+        public void CancelSubscription_ThrowsOnEmptySku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CancelSubscription(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CancelSubscription("   "));
+        }
+
+        #endregion
+
         #region Error Scenario Tests
 
         [Test]
@@ -526,20 +622,26 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
-        public void Login_ThrowsWhenAlreadyLoggedIn()
+        public void Login_ResolvesImmediately_WhenAlreadyRegistered()
         {
-            // Mock is set up with isRegistered = true
-            Assert.Throws<InvalidOperationException>(() => JestSDK.Instance.Login());
+            // Mock is set up with isRegistered = true — login resolves without error
+            // rather than throwing.
+            var task = JestSDK.Instance.Login();
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
         }
 
         [Test]
-        public void Login_WorksWithNullPayload()
+        public void Login_ResolvesAfterPopupDismissed_ForUnregisteredPlayer()
         {
-            // Create a new mock with isRegistered = false
+            // Create a new mock with isRegistered = false. The mock bridge completes the
+            // login task immediately (as if the popup were dismissed), so it never hangs.
             var unregisteredMock = new TestBridgeMock(testId, false);
             JsBridge.SetMock(unregisteredMock);
 
-            Assert.DoesNotThrow(() => JestSDK.Instance.Login());
+            var task = JestSDK.Instance.Login();
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
 
             // Restore original mock
             JsBridge.SetMock(_mock);
@@ -552,7 +654,9 @@ namespace com.jest.sdk.Tests
             JsBridge.SetMock(unregisteredMock);
 
             var payload = new Dictionary<string, object> { { "key", "value" } };
-            Assert.DoesNotThrow(() => JestSDK.Instance.Login(payload));
+            var task = JestSDK.Instance.Login(payload);
+            Assert.That(task.IsCompleted, Is.True);
+            Assert.That(task.IsFaulted, Is.False);
 
             // Restore original mock
             JsBridge.SetMock(_mock);
@@ -707,6 +811,35 @@ namespace com.jest.sdk.Tests
             var task = JestSDK.Instance.Referrals.OpenReferralDialog(options);
             Assert.That(task.IsCompleted, Is.True);
             Assert.That(task.IsFaulted, Is.False);
+        }
+
+        [Test]
+        public void Referrals_OpenReferralDialog_ForwardsShareImage()
+        {
+            const string dataUrl = "data:image/png;base64,iVBORw0KGgo=";
+            var options = new Referrals.OpenDialogOptions
+            {
+                reference = "test-ref-789",
+                shareImage = dataUrl
+            };
+
+            JestSDK.Instance.Referrals.OpenReferralDialog(options);
+
+            Assert.That(_mock.lastReferralOptionsJson, Does.Contain("\"shareImage\""));
+            Assert.That(_mock.lastReferralOptionsJson, Does.Contain(dataUrl));
+        }
+
+        [Test]
+        public void Referrals_OpenReferralDialog_OmitsShareImage_WhenNotSet()
+        {
+            var options = new Referrals.OpenDialogOptions
+            {
+                reference = "test-ref-789"
+            };
+
+            JestSDK.Instance.Referrals.OpenReferralDialog(options);
+
+            Assert.That(_mock.lastReferralOptionsJson, Does.Not.Contain("shareImage"));
         }
 
         [Test]
