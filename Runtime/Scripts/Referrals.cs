@@ -108,7 +108,8 @@ namespace com.jest.sdk
             /// <summary>
             /// Optional base64 data URL image (e.g. from a Texture2D encoded to PNG) to use as
             /// the OG image on the referral landing page. Accepted MIME: image/png, image/jpeg,
-            /// image/webp. The data URL must be at most 2 MB. When omitted, the game's static
+            /// image/webp, image/gif. The data URL must be at most 2 MB. Animated GIFs are hosted
+            /// unmodified, so they stay animated in link previews. When omitted, the game's static
             /// share image is used.
             /// </summary>
             public string shareImage;

@@ -93,7 +93,7 @@ namespace com.jest.demo
         }
 
         // Encodes the assigned Image's sprite into a base64 data URL accepted by the SDK.
-        // Accepted MIME: image/png, image/jpeg, image/webp; the data URL must be <= 2 MB.
+        // Accepted MIME: image/png, image/jpeg, image/webp, image/gif; the data URL must be <= 2 MB.
         // The sprite's source texture must have Read/Write enabled to be encodable. For a
         // sprite packed into an atlas, sprite.texture is the whole atlas — this sample
         // assumes a standalone sprite.
