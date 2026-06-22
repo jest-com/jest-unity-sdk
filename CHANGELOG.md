@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.7.0] - 2026-06-11
+
+### Changed
+
+- `Referrals.OpenDialogOptions.shareImage` now also accepts `image/gif`. Animated GIFs are hosted unmodified, so they stay animated in link previews.
+
 ## [2.6.0] - 2026-06-05
 
 ### Changed
