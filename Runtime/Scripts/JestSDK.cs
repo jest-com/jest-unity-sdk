@@ -209,7 +209,7 @@ namespace com.jest.sdk
     public class InitOptions
     {
         /// <summary>
-        /// Whether to show automatic login reminder popups for unregistered users.
+        /// Whether to show automatic login reminder popups for guest users.
         /// When set to false, disables the platform's automatic login reminders.
         /// Manual login via <see cref="JestSDK.Login"/> is unaffected.
         /// Defaults to true.

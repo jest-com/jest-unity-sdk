@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.7.1] - 2026-07-07
+
+### Changed
+
+- Clarified that `InitOptions.AutoLoginReminders` governs reminders for guest users (doc comment only, no behavior change).
+
 ## [2.7.0] - 2026-06-11
 
 ### Changed
