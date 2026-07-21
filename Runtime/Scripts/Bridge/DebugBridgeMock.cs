@@ -236,7 +236,7 @@ namespace com.jest.sdk
         public string GetSubscriptionsResponse()
         {
             Debug.Log("[JestSDK] GetSubscriptionsResponse");
-            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\"}],\"signed\":\"\"}";
+            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"trialEligible\":true}],\"signed\":\"\"}";
         }
 
         /// <summary>

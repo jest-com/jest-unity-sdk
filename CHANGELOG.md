@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.8.0] - 2026-07-21
+
+### Added
+
+- `Payment.SubscriptionData.TrialEligible` (`bool`) — true only when the offer has a free trial and the wallet has never subscribed to it before, so games can show a "Start free trial" call to action only when it applies.
+
 ## [2.7.0] - 2026-06-11
 
 ### Changed

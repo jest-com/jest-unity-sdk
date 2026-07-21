@@ -364,12 +364,13 @@ namespace com.jest.sdk.Tests
         public void BeginSubscription_Success_ReturnsSubscription()
         {
             _mock.subscriptionResponse =
-                "{\"result\":\"success\",\"subscription\":{\"sku\":\"premium_monthly\",\"displayName\":\"Premium\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\"},\"subscriptionSigned\":\"JWS\"}";
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"premium_monthly\",\"displayName\":\"Premium\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"trialEligible\":false},\"subscriptionSigned\":\"JWS\"}";
             var result = JestSDK.Instance.Payment.BeginSubscription("premium_monthly").GetResult();
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual("success", result.Result);
             Assert.That(result.Subscription, Is.Not.Null);
             Assert.AreEqual("premium_monthly", result.Subscription.Sku);
+            Assert.AreEqual(false, result.Subscription.TrialEligible);
             Assert.AreEqual("JWS", result.SubscriptionSigned);
         }
 

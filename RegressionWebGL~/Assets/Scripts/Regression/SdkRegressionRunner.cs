@@ -348,6 +348,15 @@ namespace com.jest.sdk.regression
                     true,
                     subscriptions.Signed,
                     "signed payload or empty"));
+                if (subscriptions.Subscriptions != null && subscriptions.Subscriptions.Count > 0)
+                {
+                    var firstSubscription = subscriptions.Subscriptions[0];
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription trial eligibility is readable",
+                        true,
+                        firstSubscription.TrialEligible.ToString(),
+                        "boolean trialEligible"));
+                }
             }
 
             return assertions;

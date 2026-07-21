@@ -331,6 +331,12 @@ namespace com.jest.sdk
             [JsonProperty("status")]
             public string Status;
 
+            /// <summary>
+            /// True only when this offer has a free trial and the wallet has never subscribed to it before.
+            /// </summary>
+            [JsonProperty("trialEligible")]
+            public bool TrialEligible;
+
             /// <summary>Always 0. Kept for SDK backwards compatibility.</summary>
             [Obsolete("Always 0. Kept for SDK backwards compatibility.")]
             [JsonProperty("estimatedRevenue")]

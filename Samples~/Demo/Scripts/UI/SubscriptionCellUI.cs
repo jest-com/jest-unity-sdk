@@ -49,6 +49,11 @@ namespace com.jest.demo
             if (m_subscribeButton != null)
             {
                 m_subscribeButton.interactable = !isActive;
+                var subscribeButtonLabel = m_subscribeButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (subscribeButtonLabel != null)
+                {
+                    subscribeButtonLabel.text = m_subscription.TrialEligible ? "Start Free Trial" : "Subscribe";
+                }
             }
             if (m_cancelButton != null)
             {
