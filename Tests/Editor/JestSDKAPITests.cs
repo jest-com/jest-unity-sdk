@@ -374,6 +374,32 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
+        public void BeginSubscription_Success_ReturnsIntroOffer()
+        {
+            _mock.subscriptionResponse =
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"intro\",\"displayName\":\"Intro\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"introOffer\":{\"price\":4.99,\"durationPeriods\":3}},\"subscriptionSigned\":\"JWS\"}";
+            var result = JestSDK.Instance.Payment.BeginSubscription("intro").GetResult();
+            Assert.That(result.Subscription.IntroOffer, Is.Not.Null);
+            Assert.AreEqual(4.99m, result.Subscription.IntroOffer.Price);
+            Assert.AreEqual(3, result.Subscription.IntroOffer.DurationPeriods);
+        }
+
+        [Test]
+        public void GetSubscriptions_ReturnsIntroOfferForEligibleWallet()
+        {
+            var response = JestSDK.Instance.Payment.GetSubscriptions().GetResult();
+            var intro = response.Subscriptions.Find(s => s.Sku == "intro");
+            Assert.That(intro, Is.Not.Null);
+            Assert.That(intro.IntroOffer, Is.Not.Null);
+            Assert.AreEqual(4.99m, intro.IntroOffer.Price);
+            Assert.AreEqual(3, intro.IntroOffer.DurationPeriods);
+
+            var premium = response.Subscriptions.Find(s => s.Sku == "premium");
+            Assert.That(premium, Is.Not.Null);
+            Assert.That(premium.IntroOffer, Is.Null);
+        }
+
+        [Test]
         public void BeginSubscription_Cancel_ReturnsCancel()
         {
             // Default mock response is a cancel.

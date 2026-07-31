@@ -331,10 +331,32 @@ namespace com.jest.sdk
             [JsonProperty("status")]
             public string Status;
 
+            /// <summary>
+            /// The introductory offer for this wallet, or null if none is configured or the wallet
+            /// has already subscribed to this product before.
+            /// </summary>
+            [JsonProperty("introOffer")]
+            public IntroOfferData IntroOffer;
+
             /// <summary>Always 0. Kept for SDK backwards compatibility.</summary>
             [Obsolete("Always 0. Kept for SDK backwards compatibility.")]
             [JsonProperty("estimatedRevenue")]
             public decimal EstimatedRevenue;
+        }
+
+        /// <summary>
+        /// Represents a discounted introductory price applied for the first billing periods of a subscription.
+        /// </summary>
+        [Serializable]
+        public class IntroOfferData
+        {
+            /// <summary>Discounted price in the currency specified in <see cref="SubscriptionData.Currency"/>, in decimal.</summary>
+            [JsonProperty("price")]
+            public decimal Price;
+
+            /// <summary>Number of billing periods the discounted price applies, measured from signup.</summary>
+            [JsonProperty("durationPeriods")]
+            public int DurationPeriods;
         }
 
         /// <summary>

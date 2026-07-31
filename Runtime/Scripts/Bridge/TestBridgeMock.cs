@@ -267,7 +267,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string containing subscriptions and signed payload.</returns>
         public string GetSubscriptionsResponse()
         {
-            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\"}],\"signed\":\"\"}";
+            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"introOffer\":null},{\"sku\":\"intro\",\"displayName\":\"Intro Subscription\",\"displayDescription\":\"Half price for the first three months.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"introOffer\":{\"price\":4.99,\"durationPeriods\":3}}],\"signed\":\"\"}";
         }
 
         /// <summary>

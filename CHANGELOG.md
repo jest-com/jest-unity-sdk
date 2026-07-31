@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.8.0] - 2026-07-31
+
+### Added
+
+- `Payment.SubscriptionData.IntroOffer` (`Payment.IntroOfferData`, nullable) — discounted `Price` for the first `DurationPeriods` billing periods of a subscription. Non-null only when an intro offer is configured and the wallet has never subscribed to that product before; the standard `Price` applies automatically afterward.
+
 ## [2.7.0] - 2026-06-11
 
 ### Changed

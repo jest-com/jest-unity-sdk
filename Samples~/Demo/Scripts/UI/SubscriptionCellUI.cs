@@ -38,7 +38,14 @@ namespace com.jest.demo
             }
             if (m_priceText != null)
             {
-                m_priceText.text = $"{m_subscription.Price:F2} {m_subscription.Currency} / {m_subscription.BillingPeriod}";
+                if (m_subscription.IntroOffer != null)
+                {
+                    m_priceText.text = $"{m_subscription.IntroOffer.Price:F2} {m_subscription.Currency} / {m_subscription.BillingPeriod} for {m_subscription.IntroOffer.DurationPeriods}, then {m_subscription.Price:F2} {m_subscription.Currency} / {m_subscription.BillingPeriod}";
+                }
+                else
+                {
+                    m_priceText.text = $"{m_subscription.Price:F2} {m_subscription.Currency} / {m_subscription.BillingPeriod}";
+                }
             }
             if (m_statusText != null)
             {
