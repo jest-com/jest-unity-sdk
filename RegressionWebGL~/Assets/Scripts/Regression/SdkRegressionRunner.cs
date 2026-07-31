@@ -348,6 +348,20 @@ namespace com.jest.sdk.regression
                     true,
                     subscriptions.Signed,
                     "signed payload or empty"));
+
+                if (subscriptions.Subscriptions != null && subscriptions.Subscriptions.Count > 0)
+                {
+                    var subscription = subscriptions.Subscriptions[0];
+                    var introOfferDescription = subscription.IntroOffer == null
+                        ? "null"
+                        : $"price={subscription.IntroOffer.Price}, durationPeriods={subscription.IntroOffer.DurationPeriods}";
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription intro offer is null or has non-negative price and duration",
+                        subscription.IntroOffer == null ||
+                            (subscription.IntroOffer.Price >= 0 && subscription.IntroOffer.DurationPeriods > 0),
+                        introOfferDescription,
+                        "null or non-negative price with positive durationPeriods"));
+                }
             }
 
             return assertions;
