@@ -717,6 +717,24 @@ namespace com.jest.sdk.Tests
             JsBridge.SetMock(_mock);
         }
 
+        [Test]
+        public void ShowRegistrationOverlay_AcceptsMessageOption()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            RegistrationOverlay.Handle handle = null;
+            Assert.DoesNotThrow(() =>
+                handle = JestSDK.Instance.ShowRegistrationOverlay(new RegistrationOverlay.Options
+                {
+                    Message = "Let me in! {{registrationCode}} is my code."
+                }));
+
+            Assert.That(handle, Is.Not.Null);
+
+            JsBridge.SetMock(_mock);
+        }
+
 
         [Test]
         public void RichNotifications_ScheduleNotification_WithImageReference()

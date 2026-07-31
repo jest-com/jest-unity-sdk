@@ -509,6 +509,7 @@ mergeInto(LibraryManager.library, {
       var handle = JestSDKHelper.getSdk().showRegistrationOverlay({
         theme: opts.theme,
         entryPayload: opts.entryPayload,
+        message: opts.message,
         onClose: function () {
           if (notified) return;
           notified = true;

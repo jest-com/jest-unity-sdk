@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.8.0] - 2026-07-31
+
+### Added
+
+- `RegistrationOverlay.Options.Message` (`string`) — optional text the player's messaging app is pre-filled with, in place of the platform's default wording. Must contain `{{registrationCode}}` exactly once, with a space or punctuation around it. Kept under 140 characters once the code is filled in; past 60 characters, emoji and accented characters are dropped rather than splitting the message in two.
+
 ## [2.7.0] - 2026-06-11
 
 ### Changed
