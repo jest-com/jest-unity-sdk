@@ -38,6 +38,11 @@ namespace com.jest.sdk
                 payload["entryPayload"] = options.EntryPayload;
             }
 
+            if (!string.IsNullOrEmpty(options?.Message))
+            {
+                payload["message"] = options.Message;
+            }
+
             var handle = new Handle(conversationId);
             if (options?.OnClose != null)
             {
@@ -82,6 +87,17 @@ namespace com.jest.sdk
             /// Optional payload accessible via <see cref="JestSDK.GetEntryPayload"/> after registration.
             /// </summary>
             public Dictionary<string, object> EntryPayload;
+
+            /// <summary>
+            /// Optional text the player's messaging app is pre-filled with, in place of the
+            /// platform's default wording. Must contain <c>{{registrationCode}}</c> exactly once,
+            /// with a space or punctuation around it - the platform swaps in a one-time code
+            /// there, and that code is how the reply is matched back to this player. Keep the
+            /// message under 140 characters so it stays a single text. Emoji and accented
+            /// characters cost far more room, so past 60 characters they are dropped from the
+            /// pre-filled text rather than splitting it in two.
+            /// </summary>
+            public string Message;
 
             /// <summary>
             /// Optional callback invoked when the platform reports the overlay has closed.
