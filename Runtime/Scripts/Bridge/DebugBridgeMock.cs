@@ -248,5 +248,15 @@ namespace com.jest.sdk
             Debug.Log("[JestSDK] GetCancelSubscriptionResponse");
             return "{\"result\":\"cancel\"}";
         }
+
+        /// <summary>
+        /// Returns a mock claim retention offer response indicating not eligible.
+        /// </summary>
+        /// <returns>A JSON string containing mock claim retention offer response data.</returns>
+        public string GetClaimRetentionOfferResponse()
+        {
+            Debug.Log("[JestSDK] GetClaimRetentionOfferResponse");
+            return "{\"result\":\"error\",\"error\":\"not_eligible\"}";
+        }
     }
 }

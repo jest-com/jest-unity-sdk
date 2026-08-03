@@ -160,5 +160,11 @@ namespace com.jest.sdk
         /// </summary>
         /// <returns>A JSON string containing cancel subscription response data.</returns>
         string GetCancelSubscriptionResponse();
+
+        /// <summary>
+        /// Retrieves the claim retention offer response.
+        /// </summary>
+        /// <returns>A JSON string containing claim retention offer response data.</returns>
+        string GetClaimRetentionOfferResponse();
     }
 }

@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.8.0] - 2026-08-03
+
+### Added
+
+- `Payment.ClaimRetentionOffer(subscriptionSku)` — applies the subscription's configured retention discount to the player's existing subscription instantly, with no checkout. Returns a `ClaimRetentionOfferResult` with `Result` ("success" or "error") and `Error` ("internal_error", "not_eligible", or "guest_not_allowed").
+- `Payment.ClaimRetentionOfferResult` DTO.
+- `Payment.SubscriptionData.RetentionOffer` (`RetentionOfferData`) — the retention discount the wallet can claim once via `ClaimRetentionOffer`, or null.
+- `Payment.RetentionOfferData` DTO.
+- `JS_claimRetentionOffer` in the JS bridge layer.
+- `SubscriptionController.ClaimRetentionOffer(string)` sample method.
+
+### Fixed
+
+- `SdkVersion.Value` corrected from `2.6.0` to `2.8.0` to stay in sync with `package.json`.
+
 ## [2.7.0] - 2026-06-11
 
 ### Changed

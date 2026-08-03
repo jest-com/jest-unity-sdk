@@ -394,6 +394,14 @@ namespace com.jest.sdk.regression
                 assertions.Add(RegressionAssertion.Equal("cancel subscription error code is not_found", cancelSubscription.Error, "not_found"));
             }
 
+            var claimRetentionOffer = await JestSDK.Instance.Payment.ClaimRetentionOffer(MissingSubscriptionSku);
+            assertions.Add(RegressionAssertion.Condition("claim retention offer error response is not null", claimRetentionOffer != null, claimRetentionOffer == null ? null : "response", "response"));
+            if (claimRetentionOffer != null)
+            {
+                assertions.Add(RegressionAssertion.Equal("claim retention offer reports error", claimRetentionOffer.Result, "error"));
+                assertions.Add(RegressionAssertion.Equal("claim retention offer error code is not_eligible", claimRetentionOffer.Error, "not_eligible"));
+            }
+
             return assertions;
         }
 
@@ -663,6 +671,8 @@ namespace com.jest.sdk.regression
             assertions.Add(ExpectThrows<ArgumentException>("subscription begin rejects empty sku", () => JestSDK.Instance.Payment.BeginSubscription("")));
             assertions.Add(ExpectThrows<ArgumentException>("subscription cancel rejects null sku", () => JestSDK.Instance.Payment.CancelSubscription(null)));
             assertions.Add(ExpectThrows<ArgumentException>("subscription cancel rejects empty sku", () => JestSDK.Instance.Payment.CancelSubscription("")));
+            assertions.Add(ExpectThrows<ArgumentException>("subscription claim retention offer rejects null sku", () => JestSDK.Instance.Payment.ClaimRetentionOffer(null)));
+            assertions.Add(ExpectThrows<ArgumentException>("subscription claim retention offer rejects empty sku", () => JestSDK.Instance.Payment.ClaimRetentionOffer("")));
             assertions.Add(ExpectThrows<ArgumentException>("notification unschedule rejects null identifier", () => JestSDK.Instance.RichNotifications.UnscheduleNotification(null)));
             assertions.Add(ExpectThrows<ArgumentNullException>("referral dialog rejects null options", () => JestSDK.Instance.Referrals.OpenReferralDialog(null)));
             assertions.Add(ExpectThrows<ArgumentException>("referral dialog rejects empty reference", () => JestSDK.Instance.Referrals.OpenReferralDialog(new Referrals.OpenDialogOptions())));
