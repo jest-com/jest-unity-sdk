@@ -156,6 +156,13 @@ namespace com.jest.sdk
             /// Optional entry payload data.
             /// </summary>
             public Dictionary<string, object> entryPayload;
+
+            /// <summary>
+            /// Optional slug of a public game the login link should log the user into,
+            /// instead of the onboarding's flagship game.
+            /// </summary>
+            [JsonProperty("targetGameSlug")]
+            public string TargetGameSlug;
         }
 
         /// <summary>
