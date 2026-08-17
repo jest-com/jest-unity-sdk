@@ -1,9 +1,10 @@
 # Changelog
 
-## [2.8.0] - 2026-08-03
+## [2.8.0] - 2026-07-21
 
 ### Added
 
+- `Payment.SubscriptionData.TrialEligible` (`bool`) — true only when the offer has a free trial and the wallet has never subscribed to it before, so games can show a "Start free trial" call to action only when it applies.
 - `Payment.ClaimRetentionOffer(subscriptionSku)` — applies the subscription's configured retention discount to the player's existing subscription instantly, with no checkout. Returns a `ClaimRetentionOfferResult` with `Result` ("success" or "error") and `Error` ("internal_error", "not_eligible", or "guest_not_allowed").
 - `Payment.ClaimRetentionOfferResult` DTO.
 - `Payment.SubscriptionData.RetentionOffer` (`RetentionOfferData`) — the retention discount the wallet can claim once via `ClaimRetentionOffer`, or null.

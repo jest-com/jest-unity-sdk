@@ -373,6 +373,12 @@ namespace com.jest.sdk
             public string Status;
 
             /// <summary>
+            /// True only when this offer has a free trial and the wallet has never subscribed to it before.
+            /// </summary>
+            [JsonProperty("trialEligible")]
+            public bool TrialEligible;
+
+            /// <summary>
             /// The retention discount this wallet can claim once via <see cref="Payment.ClaimRetentionOffer"/>,
             /// or null. Non-null only while the wallet is entitled, the offer is configured, it was never
             /// claimed before, and no introductory offer window is still running.
