@@ -8,7 +8,6 @@
 - `Lifecycle.OnHide` — fires when the game document changes from visible to hidden.
 - `Lifecycle.OnShow` — fires when the game document changes from hidden to visible.
 - `Lifecycle.OnExitRequested` — fires when the platform begins an exit flow for the game.
-- `JS_registerLifecycleCallbacks` in the JS bridge layer.
 
 ## [2.8.0] - 2026-07-21
 
