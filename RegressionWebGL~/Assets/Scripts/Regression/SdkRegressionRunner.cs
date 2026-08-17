@@ -29,6 +29,7 @@ namespace com.jest.sdk.regression
             "referrals-share",
             "internal",
             "legal",
+            "lifecycle",
             "guardrails"
         };
         private static SdkRegressionRunner s_instance;
@@ -142,6 +143,8 @@ namespace com.jest.sdk.regression
                     return RunInternalScenario(command);
                 case "legal":
                     return RunLegalScenario();
+                case "lifecycle":
+                    return RunLifecycleScenario();
                 case "guardrails":
                     return RunGuardrailsScenario();
                 default:
@@ -640,6 +643,35 @@ namespace com.jest.sdk.regression
 
             JestSDK.Instance.OpenCopyright();
             assertions.Add(RegressionAssertion.Condition("copyright bridge call completed", true, "copyright", "opened"));
+
+            return Task.FromResult(assertions);
+        }
+
+        private static Task<List<RegressionAssertion>> RunLifecycleScenario()
+        {
+            var assertions = new List<RegressionAssertion>();
+
+            Action onHide = () => { };
+            Action onShow = () => { };
+            Action onExitRequested = () => { };
+
+            JestSDK.Instance.Lifecycle.OnHide += onHide;
+            JestSDK.Instance.Lifecycle.OnShow += onShow;
+            JestSDK.Instance.Lifecycle.OnExitRequested += onExitRequested;
+            assertions.Add(RegressionAssertion.Condition(
+                "lifecycle listeners subscribe without throwing",
+                true,
+                true,
+                true));
+
+            JestSDK.Instance.Lifecycle.OnHide -= onHide;
+            JestSDK.Instance.Lifecycle.OnShow -= onShow;
+            JestSDK.Instance.Lifecycle.OnExitRequested -= onExitRequested;
+            assertions.Add(RegressionAssertion.Condition(
+                "lifecycle listeners unsubscribe without throwing",
+                true,
+                true,
+                true));
 
             return Task.FromResult(assertions);
         }
