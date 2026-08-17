@@ -453,6 +453,55 @@ namespace com.jest.sdk.Tests
             Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CancelSubscription("   "));
         }
 
+        [Test]
+        public void ClaimRetentionOffer_Success_ReturnsSubscription()
+        {
+            _mock.claimRetentionOfferResponse =
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"gold\",\"displayName\":\"Gold\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"retentionOffer\":null},\"subscriptionSigned\":\"JWS\"}";
+            var result = JestSDK.Instance.Payment.ClaimRetentionOffer("gold").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("success", result.Result);
+            Assert.That(result.Subscription, Is.Not.Null);
+            Assert.AreEqual("gold", result.Subscription.Sku);
+            Assert.That(result.Subscription.RetentionOffer, Is.Null);
+            Assert.AreEqual("JWS", result.SubscriptionSigned);
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_NotEligible_ReturnsError()
+        {
+            // Default mock response reports the offer is not eligible.
+            var result = JestSDK.Instance.Payment.ClaimRetentionOffer("gold").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("error", result.Result);
+            Assert.AreEqual("not_eligible", result.Error);
+        }
+
+        [TestCase("internal_error")]
+        [TestCase("not_eligible")]
+        [TestCase("guest_not_allowed")]
+        public void ClaimRetentionOffer_Error_ForwardsErrorCode(string code)
+        {
+            _mock.claimRetentionOfferResponse = "{\"result\":\"error\",\"error\":\"" + code + "\"}";
+            var result = JestSDK.Instance.Payment.ClaimRetentionOffer("gold").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("error", result.Result);
+            Assert.AreEqual(code, result.Error);
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_ThrowsOnNullSku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.ClaimRetentionOffer(null));
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_ThrowsOnEmptySku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.ClaimRetentionOffer(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.ClaimRetentionOffer("   "));
+        }
+
         #endregion
 
         #region Error Scenario Tests

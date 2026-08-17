@@ -54,6 +54,12 @@ namespace com.jest.sdk
         /// </summary>
         public string cancelSubscriptionResponse { get; set; }
 
+        /// <summary>
+        /// Raw ClaimRetentionOffer response JSON. When null, defaults to a "not_eligible" error.
+        /// Set to a "success" or other "error" payload to exercise those paths in tests.
+        /// </summary>
+        public string claimRetentionOfferResponse { get; set; }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestBridgeMock"/> class.
@@ -277,6 +283,15 @@ namespace com.jest.sdk
         public string GetCancelSubscriptionResponse()
         {
             return cancelSubscriptionResponse ?? "{\"result\":\"cancel\"}";
+        }
+
+        /// <summary>
+        /// Retrieves the claim retention offer response.
+        /// </summary>
+        /// <returns>A JSON string representing claim retention offer response data.</returns>
+        public string GetClaimRetentionOfferResponse()
+        {
+            return claimRetentionOfferResponse ?? "{\"result\":\"error\",\"error\":\"not_eligible\"}";
         }
     }
 }
