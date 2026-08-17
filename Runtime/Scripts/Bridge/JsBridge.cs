@@ -168,6 +168,9 @@ namespace com.jest.sdk
         [DllImport("__Internal")]
         private static extern void JS_captureEvent(string eventName, string propertiesJson);
 
+        [DllImport("__Internal")]
+        private static extern void JS_registerLifecycleCallbacks(Action onHide, Action onShow, Action onExitRequested);
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -396,6 +399,11 @@ namespace com.jest.sdk
             UnityEngine.Debug.Log($"[JestSDK] CaptureEvent (mock): {eventName} / {propertiesJson}");
         }
 
+        private static void JS_registerLifecycleCallbacks(Action onHide, Action onShow, Action onExitRequested)
+        {
+            UnityEngine.Debug.Log("[JestSDK] RegisterLifecycleCallbacks (mock)");
+        }
+
 #endif
 
         private static IBridgeMock _bridgeMock = new DebugBridgeMock("playerId", true);
@@ -495,7 +503,15 @@ namespace com.jest.sdk
 
         internal static JestSDKTask Init(bool autoLoginReminders = true)
         {
-            return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, SdkVersion.WireName, HandleSuccess, HandleError); });
+            var task = new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, SdkVersion.WireName, HandleSuccess, HandleError); });
+            task.ContinueWith(t =>
+            {
+                if (!t.IsFaulted)
+                {
+                    RegisterLifecycleCallbacks();
+                }
+            });
+            return task;
         }
 
         internal static JestSDKTask Login(string payload)
@@ -662,6 +678,35 @@ namespace com.jest.sdk
         {
             JS_captureEvent(eventName, propertiesJson ?? "");
         }
+
+        private static bool _lifecycleCallbacksRegistered;
+
+        internal static event Action LifecycleHide;
+        internal static event Action LifecycleShow;
+        internal static event Action LifecycleExitRequested;
+
+        internal static void RegisterLifecycleCallbacks()
+        {
+            if (_lifecycleCallbacksRegistered)
+            {
+                return;
+            }
+
+            _lifecycleCallbacksRegistered = true;
+            JS_registerLifecycleCallbacks(HandleLifecycleHide, HandleLifecycleShow, HandleLifecycleExitRequested);
+        }
+
+        [Preserve]
+        [MonoPInvokeCallback(typeof(Action))]
+        public static void HandleLifecycleHide() => LifecycleHide?.Invoke();
+
+        [Preserve]
+        [MonoPInvokeCallback(typeof(Action))]
+        public static void HandleLifecycleShow() => LifecycleShow?.Invoke();
+
+        [Preserve]
+        [MonoPInvokeCallback(typeof(Action))]
+        public static void HandleLifecycleExitRequested() => LifecycleExitRequested?.Invoke();
 
         [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, float>))]

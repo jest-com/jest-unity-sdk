@@ -582,5 +582,19 @@ mergeInto(LibraryManager.library, {
       props = JSON.parse(raw);
     }
     JestSDKHelper.getSdk().captureEvent(name, props);
+  },
+
+  JS_registerLifecycleCallbacks__deps: ['$JestSDKHelper'],
+  JS_registerLifecycleCallbacks: function (onHide, onShow, onExitRequested) {
+    var sdk = JestSDKHelper.getSdk();
+    sdk.lifecycle.onHide(function () {
+      {{{ makeDynCall('v', 'onHide') }}}();
+    });
+    sdk.lifecycle.onShow(function () {
+      {{{ makeDynCall('v', 'onShow') }}}();
+    });
+    sdk.lifecycle.onExitRequested(function () {
+      {{{ makeDynCall('v', 'onExitRequested') }}}();
+    });
   }
 });

@@ -58,6 +58,11 @@ namespace com.jest.sdk
         public readonly RegistrationOverlay RegistrationOverlay = new();
 
         /// <summary>
+        /// Provides access to app visibility and platform exit events.
+        /// </summary>
+        public readonly Lifecycle Lifecycle = new();
+
+        /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.
         /// </summary>
         /// <returns>A task that completes when the SDK is ready</returns>

@@ -29,6 +29,7 @@ namespace com.jest.sdk.regression
             "referrals-share",
             "internal",
             "legal",
+            "lifecycle",
             "guardrails"
         };
         private static SdkRegressionRunner s_instance;
@@ -39,6 +40,9 @@ namespace com.jest.sdk.regression
 
         [DllImport("__Internal")]
         private static extern void JS_SdkRegressionPostMessage(string json);
+
+        [DllImport("__Internal")]
+        private static extern int JS_SdkRegressionTriggerLifecycleCallbacks();
 #else
         private static void JS_SdkRegressionListen(string gameObjectName) { }
 
@@ -46,6 +50,8 @@ namespace com.jest.sdk.regression
         {
             Debug.Log("[SdkRegressionRunner] " + json);
         }
+
+        private static int JS_SdkRegressionTriggerLifecycleCallbacks() => 0;
 #endif
 
         public static void EnsureStarted()
@@ -142,6 +148,8 @@ namespace com.jest.sdk.regression
                     return RunInternalScenario(command);
                 case "legal":
                     return RunLegalScenario();
+                case "lifecycle":
+                    return RunLifecycleScenario();
                 case "guardrails":
                     return RunGuardrailsScenario();
                 default:
@@ -640,6 +648,72 @@ namespace com.jest.sdk.regression
 
             JestSDK.Instance.OpenCopyright();
             assertions.Add(RegressionAssertion.Condition("copyright bridge call completed", true, "copyright", "opened"));
+
+            return Task.FromResult(assertions);
+        }
+
+        private static Task<List<RegressionAssertion>> RunLifecycleScenario()
+        {
+            var assertions = new List<RegressionAssertion>();
+            var hideCallCount = 0;
+            var showCallCount = 0;
+            var exitRequestedCallCount = 0;
+
+            Action onHide = () => hideCallCount++;
+            Action onShow = () => showCallCount++;
+            Action onExitRequested = () => exitRequestedCallCount++;
+
+            JestSDK.Instance.Lifecycle.OnHide += onHide;
+            JestSDK.Instance.Lifecycle.OnShow += onShow;
+            JestSDK.Instance.Lifecycle.OnExitRequested += onExitRequested;
+            assertions.Add(RegressionAssertion.Condition(
+                "lifecycle listeners subscribe without throwing",
+                true,
+                true,
+                true));
+
+            var callbacksTriggered = JS_SdkRegressionTriggerLifecycleCallbacks() == 1;
+            if (callbacksTriggered)
+            {
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle hide callback crosses JS bridge",
+                    hideCallCount,
+                    1));
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle show callback crosses JS bridge",
+                    showCallCount,
+                    1));
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle exit-requested callback crosses JS bridge",
+                    exitRequestedCallCount,
+                    1));
+            }
+
+            JestSDK.Instance.Lifecycle.OnHide -= onHide;
+            JestSDK.Instance.Lifecycle.OnShow -= onShow;
+            JestSDK.Instance.Lifecycle.OnExitRequested -= onExitRequested;
+            assertions.Add(RegressionAssertion.Condition(
+                "lifecycle listeners unsubscribe without throwing",
+                true,
+                true,
+                true));
+
+            if (callbacksTriggered)
+            {
+                JS_SdkRegressionTriggerLifecycleCallbacks();
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle hide listener remains unsubscribed",
+                    hideCallCount,
+                    1));
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle show listener remains unsubscribed",
+                    showCallCount,
+                    1));
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle exit-requested listener remains unsubscribed",
+                    exitRequestedCallCount,
+                    1));
+            }
 
             return Task.FromResult(assertions);
         }

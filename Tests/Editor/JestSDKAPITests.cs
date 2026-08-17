@@ -1041,6 +1041,62 @@ namespace com.jest.sdk.Tests
 
         #endregion
 
+        #region Lifecycle Tests
+
+        [Test]
+        public void Lifecycle_OnHide_FiresWhenBridgeRelaysHideEvent()
+        {
+            var hidden = false;
+            Action handler = () => hidden = true;
+            JestSDK.Instance.Lifecycle.OnHide += handler;
+
+            JsBridge.HandleLifecycleHide();
+
+            Assert.That(hidden, Is.True);
+            JestSDK.Instance.Lifecycle.OnHide -= handler;
+        }
+
+        [Test]
+        public void Lifecycle_OnShow_FiresWhenBridgeRelaysShowEvent()
+        {
+            var shown = false;
+            Action handler = () => shown = true;
+            JestSDK.Instance.Lifecycle.OnShow += handler;
+
+            JsBridge.HandleLifecycleShow();
+
+            Assert.That(shown, Is.True);
+            JestSDK.Instance.Lifecycle.OnShow -= handler;
+        }
+
+        [Test]
+        public void Lifecycle_OnExitRequested_FiresWhenBridgeRelaysExitEvent()
+        {
+            var exitRequested = false;
+            Action handler = () => exitRequested = true;
+            JestSDK.Instance.Lifecycle.OnExitRequested += handler;
+
+            JsBridge.HandleLifecycleExitRequested();
+
+            Assert.That(exitRequested, Is.True);
+            JestSDK.Instance.Lifecycle.OnExitRequested -= handler;
+        }
+
+        [Test]
+        public void Lifecycle_Unsubscribe_StopsReceivingEvents()
+        {
+            var callCount = 0;
+            Action handler = () => callCount++;
+            JestSDK.Instance.Lifecycle.OnHide += handler;
+            JestSDK.Instance.Lifecycle.OnHide -= handler;
+
+            JsBridge.HandleLifecycleHide();
+
+            Assert.That(callCount, Is.EqualTo(0));
+        }
+
+        #endregion
+
         #region Player GetSigned Tests
 
         [Test]
