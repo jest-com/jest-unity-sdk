@@ -39,6 +39,10 @@ namespace com.jest.demo
             if (m_priceText != null)
             {
                 m_priceText.text = $"{m_subscription.Price:F2} {m_subscription.Currency} / {m_subscription.BillingPeriod}";
+                if (m_subscription.Sandbox == true)
+                {
+                    m_priceText.text += " (Sandbox)";
+                }
             }
             if (m_statusText != null)
             {

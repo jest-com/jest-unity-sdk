@@ -31,6 +31,10 @@ namespace com.jest.demo
             if (m_productPriceText != null)
             {
                 m_productPriceText.text = $"{m_purchase.price:F2} {m_purchase.currency}";
+                if (m_purchase.Sandbox == true)
+                {
+                    m_productPriceText.text += " (Sandbox)";
+                }
             }
         }
 

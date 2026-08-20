@@ -336,6 +336,15 @@ namespace com.jest.sdk.regression
                     true,
                     incompletePurchases.purchasesSigned,
                     "signed payload or empty"));
+                if (incompletePurchases.purchases != null && incompletePurchases.purchases.Count > 0)
+                {
+                    var firstPurchase = incompletePurchases.purchases[0];
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first incomplete purchase sandbox flag is readable",
+                        true,
+                        firstPurchase.Sandbox?.ToString() ?? "null",
+                        "boolean sandbox or null"));
+                }
             }
 
             var subscriptions = await JestSDK.Instance.Payment.GetSubscriptions();
@@ -364,6 +373,11 @@ namespace com.jest.sdk.regression
                         true,
                         firstSubscription.TrialEligible.ToString(),
                         "boolean trialEligible"));
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription sandbox flag is readable",
+                        true,
+                        firstSubscription.Sandbox?.ToString() ?? "null",
+                        "boolean sandbox or null"));
                 }
             }
 
