@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0] - 2026-08-20
+
+### Added
+
+- `Payment.PurchaseData.sandbox` (`bool?`) — true when no money changed hands: a sandbox user made the purchase (priced at 0), or it came from the Developer Console simulator (which keeps the configured price). Null on real purchases.
+- `Payment.SubscriptionData.Sandbox` (`bool?`) — true when no money can change hands: the player is a sandbox user, or the entry came from the Developer Console simulator. Null for real players.
+
 ## [2.9.0] - 2026-08-17
 
 ### Added

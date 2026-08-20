@@ -304,6 +304,7 @@ namespace com.jest.sdk.Tests
 #pragma warning disable CS0618
             Assert.That(result.purchase.estimatedRevenue, Is.EqualTo(0m));
 #pragma warning restore CS0618
+            Assert.That(result.purchase.sandbox, Is.Null);
         }
 
         [Test]
@@ -465,6 +466,17 @@ namespace com.jest.sdk.Tests
             Assert.AreEqual("gold", result.Subscription.Sku);
             Assert.That(result.Subscription.RetentionOffer, Is.Null);
             Assert.AreEqual("JWS", result.SubscriptionSigned);
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_Success_ReturnsSandboxSubscription()
+        {
+            _mock.claimRetentionOfferResponse =
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"gold\",\"displayName\":\"Gold\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"retentionOffer\":null,\"sandbox\":true},\"subscriptionSigned\":\"JWS\"}";
+            var result = JestSDK.Instance.Payment.ClaimRetentionOffer("gold").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Subscription, Is.Not.Null);
+            Assert.That(result.Subscription.Sandbox, Is.True);
         }
 
         [Test]
