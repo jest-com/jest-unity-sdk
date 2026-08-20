@@ -627,7 +627,8 @@ namespace com.jest.sdk
             /// configured price). Null on real purchases. Grant the item as usual when testing,
             /// but keep these out of anything counting real money.
             /// </summary>
-            public bool? sandbox;
+            [JsonProperty("sandbox")]
+            public bool? Sandbox;
         }
 
         /// <summary>

@@ -342,7 +342,7 @@ namespace com.jest.sdk.regression
                     assertions.Add(RegressionAssertion.Condition(
                         "first incomplete purchase sandbox flag is readable",
                         true,
-                        firstPurchase.sandbox?.ToString() ?? "null",
+                        firstPurchase.Sandbox?.ToString() ?? "null",
                         "boolean sandbox or null"));
                 }
             }

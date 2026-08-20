@@ -304,7 +304,7 @@ namespace com.jest.sdk.Tests
 #pragma warning disable CS0618
             Assert.That(result.purchase.estimatedRevenue, Is.EqualTo(0m));
 #pragma warning restore CS0618
-            Assert.That(result.purchase.sandbox, Is.Null);
+            Assert.That(result.purchase.Sandbox, Is.Null);
         }
 
         [Test]
