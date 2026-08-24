@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.10.1] - 2026-08-24
+
+### Fixed
+
+- `Runtime/Scripts/Lifecycle.cs` shipped without its `.meta` file in 2.9.0 and 2.10.0. Unity cannot generate `.meta` files for immutable packages (git URL and tarball installs), so the script was never imported and any project using it failed to compile with `error CS0246: The type or namespace name 'Lifecycle' could not be found`. Upgrade from either version to pick up `JestSDK.Instance.Lifecycle`.
+
 ## [2.10.0] - 2026-08-20
 
 ### Added
