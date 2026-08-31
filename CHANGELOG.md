@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.11.0] - 2026-08-31
+
+### Changed
+
+- `Payment.PurchaseData.estimatedRevenue` and `Payment.SubscriptionData.EstimatedRevenue` are no longer deprecated and no longer always `0`. They now report the approximate revenue in USD for the publisher (per purchase, or per billing period for subscriptions).
+
 ## [2.10.1] - 2026-08-24
 
 ### Fixed

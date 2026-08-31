@@ -404,8 +404,7 @@ namespace com.jest.sdk
             [JsonProperty("sandbox")]
             public bool? Sandbox;
 
-            /// <summary>Always 0. Kept for SDK backwards compatibility.</summary>
-            [Obsolete("Always 0. Kept for SDK backwards compatibility.")]
+            /// <summary>Approximate revenue in USD for the publisher for the current billing period.</summary>
             [JsonProperty("estimatedRevenue")]
             public decimal EstimatedRevenue;
         }
@@ -607,8 +606,7 @@ namespace com.jest.sdk
             /// </summary>
             public long? completedAt;
 
-            /// <summary>Always 0. Kept for SDK backwards compatibility.</summary>
-            [Obsolete("Always 0. Kept for SDK backwards compatibility.")]
+            /// <summary>Approximate revenue in USD for the game publisher.</summary>
             public decimal estimatedRevenue;
 
             /// <summary>
