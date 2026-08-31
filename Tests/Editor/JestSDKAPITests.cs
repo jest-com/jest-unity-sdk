@@ -301,9 +301,7 @@ namespace com.jest.sdk.Tests
             Assert.That(result.purchase, Is.Not.Null);
             Assert.AreEqual(products[0].sku, result.purchase.productSku);
             Assert.AreEqual((decimal)products[0].price, result.purchase.credits);
-#pragma warning disable CS0618
-            Assert.That(result.purchase.estimatedRevenue, Is.EqualTo(0m));
-#pragma warning restore CS0618
+            Assert.That(result.purchase.estimatedRevenue, Is.EqualTo(85.8m));
             Assert.That(result.purchase.Sandbox, Is.Null);
         }
 
