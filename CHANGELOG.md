@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.10.2] - 2026-09-04
+
+### Fixed
+
+- `RichNotifications.Options.ctaText` doc comment incorrectly said 1-25 characters; the platform limit is 1-50 characters. No behavior change — the SDK never enforced this client-side.
+
 ## [2.10.1] - 2026-08-24
 
 ### Fixed

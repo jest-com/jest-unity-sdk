@@ -114,7 +114,7 @@ namespace com.jest.sdk
 
             /// <summary>
             /// The text displayed on the call-to-action (CTA) button.
-            /// Must be 1-25 characters.
+            /// Must be 1-50 characters.
             /// </summary>
             public string ctaText;
 
