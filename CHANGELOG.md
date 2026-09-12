@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.11.0] - 2026-09-12
+
+### Fixed
+
+- `IBridgeMock.GetPurchaseResponse()` now takes the requested `sku` and echoes it back as `productSku` on the mocked purchase, instead of always returning a hardcoded SKU regardless of what was purchased. Affects `ScriptableMock`, `TestBridgeMock`, and `DebugBridgeMock`. Custom `IBridgeMock` implementations must update their `GetPurchaseResponse` signature to accept the SKU.
+
 ## [2.10.1] - 2026-08-24
 
 ### Fixed
