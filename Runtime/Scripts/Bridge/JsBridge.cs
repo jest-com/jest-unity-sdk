@@ -245,7 +245,7 @@ namespace com.jest.sdk
         {
             if (bool.TryParse(_bridgeMock.isRegistered, out bool isRegistered) && isRegistered)
             {
-                onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse());
+                onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse(sku));
             }
             else
             {

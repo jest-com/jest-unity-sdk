@@ -308,6 +308,15 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
+        public void Purchase_Success_EchoesRequestedSku()
+        {
+            _mock.purchaseResult = PurchaseReult.success;
+            var purchaseTask = JestSDK.Instance.Payment.BeginPurchase("gems_500");
+            var result = purchaseTask.GetResult();
+            Assert.AreEqual("gems_500", result.purchase.productSku);
+        }
+
+        [Test]
         public void Purchase_Error_ReturnsErrorResult()
         {
             _mock.purchaseResult = PurchaseReult.error;
