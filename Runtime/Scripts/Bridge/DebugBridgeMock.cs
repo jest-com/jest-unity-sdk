@@ -146,10 +146,10 @@ namespace com.jest.sdk
         /// Logs a purchase response retrieval request to the Unity console.
         /// </summary>
         /// <returns>Mock purchase response indicating success.</returns>
-        public string GetPurchaseResponse()
+        public string GetPurchaseResponse(string sku)
         {
-            Debug.Log($"[JestSDK] GetPurchaseResponse");
-            return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_debug\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":0,\"price\":99.0,\"currency\":\"USD\"},\"purchaseSigned\":\"JWS\"}";
+            Debug.Log($"[JestSDK] GetPurchaseResponse {sku}");
+            return $"{{\"result\":\"success\",\"purchase\":{{\"purchaseToken\":\"mock_token_debug\",\"productSku\":\"{sku}\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":0,\"price\":99.0,\"currency\":\"USD\"}},\"purchaseSigned\":\"JWS\"}}";
         }
 
         /// <summary>
