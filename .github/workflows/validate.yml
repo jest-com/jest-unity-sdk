@@ -115,7 +115,10 @@ jobs:
 
       - name: Run Unity Tests
         id: tests
-        uses: game-ci/unity-test-runner@v4
+        # Pinned: the floating v4 tag moved to v4.4.0 (2026-09-09), a rewrite that
+        # delegates activation to game-ci/cli and rejects our personal ULF license
+        # with "TimeStamp validation failed". v4.3.2 keeps the old activation path.
+        uses: game-ci/unity-test-runner@v4.3.2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
