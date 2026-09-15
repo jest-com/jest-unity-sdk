@@ -207,6 +207,14 @@ namespace com.jest.sdk.regression
                 true,
                 true));
 
+            JestSDK.Instance.MarkFirstMilestone();
+            JestSDK.Instance.MarkFirstMilestone(); // second call must be a no-op
+            assertions.Add(RegressionAssertion.Condition(
+                "mark first milestone completed without error",
+                true,
+                true,
+                true));
+
             var captureEventName = string.IsNullOrWhiteSpace(command.options?.captureEventName)
                 ? "sdk_regression_core"
                 : command.options.captureEventName;

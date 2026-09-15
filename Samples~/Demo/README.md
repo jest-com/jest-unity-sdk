@@ -23,6 +23,7 @@ This sample demonstrates all features of the Jest SDK.
 - **Referrals**: Referral system integration
 - **Navigation**: In-app navigation controls
 - **Legal Pages**: Open terms of service and privacy policy
+- **Analytics**: Capture a custom event and mark the first milestone
 
 ## Mock Testing
 

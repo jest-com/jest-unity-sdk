@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.12.0] - 2026-09-15
+
+### Added
+
+- `JestSDK.Instance.MarkFirstMilestone()` — reports that the player reached the game's first meaningful milestone (for example completing the tutorial or Level 1), which the platform records as the standardized `first_milestone` analytics event. Required for launch — see https://docs.jest.com/launch-checklist. Safe to call every time the milestone is reached; calls after the first in a session are no-ops.
+
 ## [2.11.0] - 2026-09-12
 
 ### Fixed
