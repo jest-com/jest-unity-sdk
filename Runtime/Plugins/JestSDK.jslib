@@ -511,6 +511,11 @@ mergeInto(LibraryManager.library, {
     JestSDKHelper.getSdk().markGameLoaded();
   },
 
+  JS_markFirstMilestone__deps: ['$JestSDKHelper'],
+  JS_markFirstMilestone: function () {
+    JestSDKHelper.getSdk().markFirstMilestone();
+  },
+
   JS_beginPlatformRegistrationOverlay__deps: ['$JestSDKHelper'],
   JS_beginPlatformRegistrationOverlay: function (taskPtr, optionsJson, onClose, onError) {
     try {

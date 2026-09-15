@@ -151,6 +151,9 @@ namespace com.jest.sdk
         private static extern void JS_markGameLoaded();
 
         [DllImport("__Internal")]
+        private static extern void JS_markFirstMilestone();
+
+        [DllImport("__Internal")]
         private static extern void JS_beginPlatformRegistrationOverlay(IntPtr taskPtr, string optionsJson, Action<IntPtr> onClose, Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
@@ -366,6 +369,11 @@ namespace com.jest.sdk
         private static void JS_markGameLoaded()
         {
             UnityEngine.Debug.Log("[JestSDK] MarkGameLoaded (mock)");
+        }
+
+        private static void JS_markFirstMilestone()
+        {
+            UnityEngine.Debug.Log("[JestSDK] MarkFirstMilestone (mock)");
         }
 
         private static void JS_beginPlatformRegistrationOverlay(IntPtr taskPtr, string optionsJson, Action<IntPtr> onClose, Action<IntPtr, string> onError)
@@ -647,6 +655,16 @@ namespace com.jest.sdk
                 JS_setLoadingProgress(100);
             }
             JS_markGameLoaded();
+        }
+
+        private static bool _firstMilestoneSent = false;
+
+        internal static void MarkFirstMilestone()
+        {
+            if (_firstMilestoneSent)
+                return;
+            _firstMilestoneSent = true;
+            JS_markFirstMilestone();
         }
 
         internal static JestSDKTask BeginPlatformRegistrationOverlay(string optionsJson)
