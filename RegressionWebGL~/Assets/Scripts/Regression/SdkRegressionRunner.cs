@@ -352,6 +352,11 @@ namespace com.jest.sdk.regression
                         true,
                         firstPurchase.Sandbox?.ToString() ?? "null",
                         "boolean sandbox or null"));
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first incomplete purchase has non-negative estimated revenue",
+                        firstPurchase.estimatedRevenue >= 0,
+                        firstPurchase.estimatedRevenue,
+                        "non-negative estimatedRevenue"));
                 }
             }
 
@@ -386,6 +391,11 @@ namespace com.jest.sdk.regression
                         true,
                         firstSubscription.Sandbox?.ToString() ?? "null",
                         "boolean sandbox or null"));
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription has non-negative estimated revenue",
+                        firstSubscription.EstimatedRevenue >= 0,
+                        firstSubscription.EstimatedRevenue,
+                        "non-negative estimatedRevenue"));
                 }
             }
 

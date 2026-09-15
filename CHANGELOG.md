@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.13.0] - 2026-09-15
+
+### Changed
+
+- `Payment.PurchaseData.estimatedRevenue` and `Payment.SubscriptionData.EstimatedRevenue` are no longer deprecated and no longer always `0`. They now report the approximate revenue in USD for the publisher (per purchase, or per billing period for subscriptions).
+
+### Fixed
+
+- `RichNotifications.Options.ctaText` doc comment incorrectly said 1-25 characters; the platform limit is 1-50 characters. No behavior change — the SDK never enforced this client-side.
+
 ## [2.12.0] - 2026-09-15
 
 ### Added

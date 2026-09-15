@@ -149,7 +149,7 @@ namespace com.jest.sdk
         public string GetPurchaseResponse(string sku)
         {
             Debug.Log($"[JestSDK] GetPurchaseResponse {sku}");
-            return $"{{\"result\":\"success\",\"purchase\":{{\"purchaseToken\":\"mock_token_debug\",\"productSku\":\"{sku}\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":0,\"price\":99.0,\"currency\":\"USD\"}},\"purchaseSigned\":\"JWS\"}}";
+            return $"{{\"result\":\"success\",\"purchase\":{{\"purchaseToken\":\"mock_token_debug\",\"productSku\":\"{sku}\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":85.8,\"price\":99.0,\"currency\":\"USD\"}},\"purchaseSigned\":\"JWS\"}}";
         }
 
         /// <summary>
