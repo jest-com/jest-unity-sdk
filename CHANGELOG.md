@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.1] - 2026-09-18
+
+### Fixed
+
+- `JestUtils.SpriteToDataUrl` / `TextureToDataUrl` / `EncodeTextureToPng` produced a vertically flipped PNG in WebGL builds, so referral share images set via `shareImage` appeared upside down in link previews. The encoder flipped the blit on graphics APIs whose UVs start at the bottom (OpenGL/WebGL); the blit-and-read-back path already preserves orientation on every API, so the compensation inverted the image. Editor playback on Metal/D3D was unaffected, which is why it only showed up in shipped builds.
+- `JestUtils.EncodeTextureToPng` logged `Destroy may not be called from edit mode!` and leaked its temporary texture when called outside play mode (editor tooling, tests); it now uses `DestroyImmediate` there.
+
 ## [2.13.0] - 2026-09-15
 
 ### Changed
