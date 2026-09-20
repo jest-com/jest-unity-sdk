@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using com.jest.sdk;
 using TMPro;
 using UnityEngine;
@@ -67,18 +66,12 @@ namespace com.jest.demo
             UIManager.Instance.HideLoadingSpinner();
         }
 
-        public void CaptureGameEvent()
+        public void MarkDemoMilestone()
         {
-            var properties = new Dictionary<string, object>
-            {
-                { "source", "demo" },
-                { "level", 1 }
-            };
-            JestSDK.Instance.CaptureEvent("demo_event", properties);
             // The demo treats its first gameplay event (level 1) as the first meaningful
             // milestone. Repeat calls are no-ops, so it is safe to call on every press.
             JestSDK.Instance.MarkFirstMilestone();
-            UIManager.Instance.m_toastUI.ShowToast("Event captured");
+            UIManager.Instance.m_toastUI.ShowToast("Milestone marked");
         }
 
         public async void GetSignedPlayerData()
