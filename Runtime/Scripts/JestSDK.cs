@@ -215,6 +215,9 @@ namespace com.jest.sdk
         /// <summary>
         /// Captures a custom analytics event.
         /// </summary>
+        /// <remarks>
+        /// Retired from the docs; still delivered for games that call it.
+        /// </remarks>
         /// <param name="eventName">The name of the event to capture.</param>
         /// <param name="properties">Optional dictionary of event properties.</param>
         public void CaptureEvent(string eventName, Dictionary<string, object> properties = null)

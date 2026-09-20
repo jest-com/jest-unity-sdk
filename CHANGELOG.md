@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.13.2] - 2026-09-20
+
+### Changed
+
+- `JestSDK.Instance.CaptureEvent()` doc comment now notes it's retired from the docs; the method is unchanged and still delivers events for games that call it.
+
 ## [2.13.1] - 2026-09-18
 
 ### Fixed
