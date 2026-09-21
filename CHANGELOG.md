@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.13.2] - 2026-09-21
+
+### Fixed
+
+- `RichNotifications.Options.scheduledInDays` doc comment incorrectly said 1-7; the platform now permits 0 to deliver later the same day (lands 10 minutes from now at the earliest). No behavior change — the SDK never enforced this range client-side.
+
 ## [2.13.1] - 2026-09-18
 
 ### Fixed
