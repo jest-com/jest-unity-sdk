@@ -53,6 +53,9 @@ namespace com.jest.sdk
             if (string.IsNullOrEmpty(options.ctaText))
                 throw new ArgumentException("ctaText is required");
 
+            if (string.IsNullOrEmpty(options.identifier))
+                throw new ArgumentException("identifier is required");
+
             bool hasDate = options.date != default;
             bool hasDays = options.scheduledInDays.HasValue;
 
@@ -130,10 +133,10 @@ namespace com.jest.sdk
             public string imageReference;
 
             /// <summary>
-            /// The severity or importance level of this notification.
+            /// The severity or importance level of this notification. Defaults to <see cref="Severity.Medium"/>.
             /// </summary>
             [NonSerialized]
-            public Severity notificationPriority = Severity.Low;
+            public Severity notificationPriority = Severity.Medium;
 
             /// <summary>
             /// The unique identifier of the notification. Required.
