@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.14.0] - 2026-09-22
+
+### Deprecated
+
+- `JestSDK.Instance.MarkFirstMilestone()` now does nothing. The platform no longer collects a first-milestone signal; the call is safe to remove.
+
 ## [2.13.1] - 2026-09-18
 
 ### Fixed
