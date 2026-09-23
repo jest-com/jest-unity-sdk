@@ -161,7 +161,7 @@ namespace com.jest.sdk
             /// Optional slug of a public game the login link should log the user into,
             /// instead of the onboarding's flagship game.
             /// </summary>
-            [JsonProperty("targetGameSlug")]
+            [JsonProperty("targetGameSlug", NullValueHandling = NullValueHandling.Ignore)]
             public string TargetGameSlug;
         }
 
