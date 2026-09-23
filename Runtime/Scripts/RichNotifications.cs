@@ -53,6 +53,9 @@ namespace com.jest.sdk
             if (string.IsNullOrEmpty(options.ctaText))
                 throw new ArgumentException("ctaText is required");
 
+            if (string.IsNullOrEmpty(options.identifier))
+                throw new ArgumentException("identifier is required");
+
             bool hasDate = options.date != default;
             bool hasDays = options.scheduledInDays.HasValue;
 
@@ -130,10 +133,10 @@ namespace com.jest.sdk
             public string imageReference;
 
             /// <summary>
-            /// The severity or importance level of this notification.
+            /// The severity or importance level of this notification. Defaults to <see cref="Severity.Medium"/>.
             /// </summary>
             [NonSerialized]
-            public Severity notificationPriority = Severity.Low;
+            public Severity notificationPriority = Severity.Medium;
 
             /// <summary>
             /// The unique identifier of the notification. Required.
@@ -163,8 +166,9 @@ namespace com.jest.sdk
             public DateTime date;
 
             /// <summary>
-            /// Schedule the notification in a specified number of days (1-7).
-            /// Uses fuzzy timing without an exact time.
+            /// Schedule the notification in a specified number of days (0-7).
+            /// Uses fuzzy timing without an exact time. Use 0 to deliver later
+            /// the same day; it lands 10 minutes from now at the earliest.
             /// Mutually exclusive with <see cref="date"/>.
             /// </summary>
             public int? scheduledInDays;
