@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using com.jest.sdk;
 using TMPro;
 using UnityEngine;
@@ -67,15 +66,12 @@ namespace com.jest.demo
             UIManager.Instance.HideLoadingSpinner();
         }
 
-        public void CaptureGameEvent()
+        public void MarkDemoMilestone()
         {
-            var properties = new Dictionary<string, object>
-            {
-                { "source", "demo" },
-                { "level", 1 }
-            };
-            JestSDK.Instance.CaptureEvent("demo_event", properties);
-            UIManager.Instance.m_toastUI.ShowToast("Event captured");
+            // MarkFirstMilestone is deprecated and now a no-op; kept here only so the demo
+            // button wiring still resolves.
+            JestSDK.Instance.MarkFirstMilestone();
+            UIManager.Instance.m_toastUI.ShowToast("Milestone marked");
         }
 
         public async void GetSignedPlayerData()

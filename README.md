@@ -12,6 +12,7 @@ A Unity package that provides seamless integration with the Jest platform for pl
 - **Referrals**: Player referral system with tracking
 - **Navigation**: Redirect players between games
 - **Legal Pages**: Display privacy policy, terms of service, and copyright pages
+- **Analytics**: Report the standardized first-milestone event
 - **Mock System**: Built-in mocking capabilities for testing
 
 ## Installation

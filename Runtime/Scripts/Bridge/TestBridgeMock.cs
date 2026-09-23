@@ -54,6 +54,12 @@ namespace com.jest.sdk
         /// </summary>
         public string cancelSubscriptionResponse { get; set; }
 
+        /// <summary>
+        /// Raw ClaimRetentionOffer response JSON. When null, defaults to a "not_eligible" error.
+        /// Set to a "success" or other "error" payload to exercise those paths in tests.
+        /// </summary>
+        public string claimRetentionOfferResponse { get; set; }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestBridgeMock"/> class.
@@ -165,13 +171,14 @@ namespace com.jest.sdk
         /// <summary>
         /// Retrieves the in-app purchase response.
         /// </summary>
+        /// <param name="sku">The product SKU that was requested for purchase.</param>
         /// <returns>A JSON string representing purchase response data.</returns>
-        public string GetPurchaseResponse()
+        public string GetPurchaseResponse(string sku)
         {
             switch (purchaseResult)
             {
                 case PurchaseReult.success:
-                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":0,\"price\":99.0,\"currency\":\"USD\"},\"purchaseSigned\":\"JWS\"}";
+                    return $"{{\"result\":\"success\",\"purchase\":{{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"{sku}\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":85.8,\"price\":99.0,\"currency\":\"USD\"}},\"purchaseSigned\":\"JWS\"}}";
                 default:
                     return "{\"result\":\"error\",\"error\":\"internal_error\"}";
             }
@@ -183,7 +190,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string representing incomplete purchase response data.</returns>
         public string GetIncompletePurchaseResponse()
         {
-            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":0,\"price\":99.0,\"currency\":\"USD\"}]}";
+            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":85.8,\"price\":99.0,\"currency\":\"USD\"}]}";
         }
 
         /// <summary>
@@ -267,7 +274,7 @@ namespace com.jest.sdk
         /// <returns>A JSON string containing subscriptions and signed payload.</returns>
         public string GetSubscriptionsResponse()
         {
-            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"introOffer\":null},{\"sku\":\"intro\",\"displayName\":\"Intro Subscription\",\"displayDescription\":\"Half price for the first three months.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"introOffer\":{\"price\":4.99,\"durationPeriods\":3}}],\"signed\":\"\"}";
+            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"trialEligible\":true,\"introOffer\":null},{\"sku\":\"intro\",\"displayName\":\"Intro Subscription\",\"displayDescription\":\"Half price for the first three months.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"trialEligible\":false,\"introOffer\":{\"price\":4.99,\"durationPeriods\":3}}],\"signed\":\"\"}";
         }
 
         /// <summary>
@@ -277,6 +284,15 @@ namespace com.jest.sdk
         public string GetCancelSubscriptionResponse()
         {
             return cancelSubscriptionResponse ?? "{\"result\":\"cancel\"}";
+        }
+
+        /// <summary>
+        /// Retrieves the claim retention offer response.
+        /// </summary>
+        /// <returns>A JSON string representing claim retention offer response data.</returns>
+        public string GetClaimRetentionOfferResponse()
+        {
+            return claimRetentionOfferResponse ?? "{\"result\":\"error\",\"error\":\"not_eligible\"}";
         }
     }
 }

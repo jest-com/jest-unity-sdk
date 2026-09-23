@@ -98,8 +98,9 @@ namespace com.jest.sdk
         /// <summary>
         /// Retrieves the in-app purchase response.
         /// </summary>
+        /// <param name="sku">The product SKU that was requested for purchase.</param>
         /// <returns>A JSON string containing purchase response data.</returns>
-        string GetPurchaseResponse();
+        string GetPurchaseResponse(string sku);
 
         /// <summary>
         /// Retrieves the incomplete purchase response.
@@ -160,5 +161,11 @@ namespace com.jest.sdk
         /// </summary>
         /// <returns>A JSON string containing cancel subscription response data.</returns>
         string GetCancelSubscriptionResponse();
+
+        /// <summary>
+        /// Retrieves the claim retention offer response.
+        /// </summary>
+        /// <returns>A JSON string containing claim retention offer response data.</returns>
+        string GetClaimRetentionOfferResponse();
     }
 }

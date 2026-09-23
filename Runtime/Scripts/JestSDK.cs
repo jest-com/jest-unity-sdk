@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -56,6 +57,11 @@ namespace com.jest.sdk
         /// Provides access to the platform registration overlay flow.
         /// </summary>
         public readonly RegistrationOverlay RegistrationOverlay = new();
+
+        /// <summary>
+        /// Provides access to app visibility and platform exit events.
+        /// </summary>
+        public readonly Lifecycle Lifecycle = new();
 
         /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.
@@ -186,6 +192,15 @@ namespace com.jest.sdk
         public void MarkGameLoaded()
         {
             JsBridge.MarkGameLoaded();
+        }
+
+        /// <summary>
+        /// Does nothing. The platform no longer collects a first-milestone signal, and the call
+        /// is safe to remove.
+        /// </summary>
+        [Obsolete("Does nothing. The platform no longer collects a first-milestone signal, and the call is safe to remove.")]
+        public void MarkFirstMilestone()
+        {
         }
 
         /// <summary>

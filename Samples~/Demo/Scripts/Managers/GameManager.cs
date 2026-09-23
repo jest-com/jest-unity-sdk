@@ -45,6 +45,9 @@ namespace com.jest.demo
             {
                 Debug.Log("InitJestSDK Success");
                 JestSDK.Instance.MarkGameLoaded();
+                JestSDK.Instance.Lifecycle.OnHide += () => Debug.Log("Game hidden");
+                JestSDK.Instance.Lifecycle.OnShow += () => Debug.Log("Game shown");
+                JestSDK.Instance.Lifecycle.OnExitRequested += () => Debug.Log("Platform exit requested");
                 TriggerGameStateChangeEvent();
                 HideLoading();
             });

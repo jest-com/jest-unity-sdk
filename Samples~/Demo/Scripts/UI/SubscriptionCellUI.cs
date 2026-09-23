@@ -46,6 +46,10 @@ namespace com.jest.demo
                 {
                     m_priceText.text = $"{m_subscription.Price:F2} {m_subscription.Currency} / {m_subscription.BillingPeriod}";
                 }
+                if (m_subscription.Sandbox == true)
+                {
+                    m_priceText.text += " (Sandbox)";
+                }
             }
             if (m_statusText != null)
             {
@@ -56,6 +60,11 @@ namespace com.jest.demo
             if (m_subscribeButton != null)
             {
                 m_subscribeButton.interactable = !isActive;
+                var subscribeButtonLabel = m_subscribeButton.GetComponentInChildren<TextMeshProUGUI>();
+                if (subscribeButtonLabel != null)
+                {
+                    subscribeButtonLabel.text = m_subscription.TrialEligible ? "Start Free Trial" : "Subscribe";
+                }
             }
             if (m_cancelButton != null)
             {
