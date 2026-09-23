@@ -387,6 +387,13 @@ namespace com.jest.sdk
             public bool TrialEligible;
 
             /// <summary>
+            /// The introductory offer for this wallet, or null if none is configured or the wallet
+            /// has already subscribed to this product before.
+            /// </summary>
+            [JsonProperty("introOffer")]
+            public IntroOfferData IntroOffer;
+
+            /// <summary>
             /// The retention discount this wallet can claim once via <see cref="Payment.ClaimRetentionOffer"/>,
             /// or null. Non-null only while the wallet is entitled, the offer is configured, it was never
             /// claimed before, and no introductory offer window is still running.
@@ -407,6 +414,21 @@ namespace com.jest.sdk
             /// <summary>Approximate revenue in USD for the publisher for the current billing period.</summary>
             [JsonProperty("estimatedRevenue")]
             public decimal EstimatedRevenue;
+        }
+
+        /// <summary>
+        /// Represents a discounted introductory price applied for the first billing periods of a subscription.
+        /// </summary>
+        [Serializable]
+        public class IntroOfferData
+        {
+            /// <summary>Discounted price in the currency specified in <see cref="SubscriptionData.Currency"/>, in decimal.</summary>
+            [JsonProperty("price")]
+            public decimal Price;
+
+            /// <summary>Number of billing periods the discounted price applies, measured from signup.</summary>
+            [JsonProperty("durationPeriods")]
+            public int DurationPeriods;
         }
 
         /// <summary>
