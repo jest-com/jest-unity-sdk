@@ -117,7 +117,7 @@ namespace com.jest.demo
                 string daysString = m_scheduledInDaysInput.text;
                 if (string.IsNullOrEmpty(daysString) || !int.TryParse(daysString, out int days))
                 {
-                    UIManager.Instance.m_toastUI.ShowToast("Days field must be a number (1-7)");
+                    UIManager.Instance.m_toastUI.ShowToast("Days field must be a number (0-7)");
                     return;
                 }
                 options.scheduledInDays = days;

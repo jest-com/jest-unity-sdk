@@ -383,6 +383,32 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
+        public void BeginSubscription_Success_ReturnsIntroOffer()
+        {
+            _mock.subscriptionResponse =
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"intro\",\"displayName\":\"Intro\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"introOffer\":{\"price\":4.99,\"durationPeriods\":3}},\"subscriptionSigned\":\"JWS\"}";
+            var result = JestSDK.Instance.Payment.BeginSubscription("intro").GetResult();
+            Assert.That(result.Subscription.IntroOffer, Is.Not.Null);
+            Assert.AreEqual(4.99m, result.Subscription.IntroOffer.Price);
+            Assert.AreEqual(3, result.Subscription.IntroOffer.DurationPeriods);
+        }
+
+        [Test]
+        public void GetSubscriptions_ReturnsIntroOfferForEligibleWallet()
+        {
+            var response = JestSDK.Instance.Payment.GetSubscriptions().GetResult();
+            var intro = response.Subscriptions.Find(s => s.Sku == "intro");
+            Assert.That(intro, Is.Not.Null);
+            Assert.That(intro.IntroOffer, Is.Not.Null);
+            Assert.AreEqual(4.99m, intro.IntroOffer.Price);
+            Assert.AreEqual(3, intro.IntroOffer.DurationPeriods);
+
+            var premium = response.Subscriptions.Find(s => s.Sku == "premium");
+            Assert.That(premium, Is.Not.Null);
+            Assert.That(premium.IntroOffer, Is.Null);
+        }
+
+        [Test]
         public void BeginSubscription_Cancel_ReturnsCancel()
         {
             // Default mock response is a cancel.
@@ -786,6 +812,24 @@ namespace com.jest.sdk.Tests
             JsBridge.SetMock(_mock);
         }
 
+        [Test]
+        public void ShowRegistrationOverlay_AcceptsMessageOption()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            RegistrationOverlay.Handle handle = null;
+            Assert.DoesNotThrow(() =>
+                handle = JestSDK.Instance.ShowRegistrationOverlay(new RegistrationOverlay.Options
+                {
+                    Message = "Let me in! {{registrationCode}} is my code."
+                }));
+
+            Assert.That(handle, Is.Not.Null);
+
+            JsBridge.SetMock(_mock);
+        }
+
 
         [Test]
         public void RichNotifications_ScheduleNotification_WithImageReference()
@@ -838,6 +882,22 @@ namespace com.jest.sdk.Tests
             };
 
             // This should not throw - scheduledInDays is used instead of date
+            Assert.DoesNotThrow(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_WithScheduledInDaysZero()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = "Test Body",
+                ctaText = "Play Now!",
+                identifier = "test-key",
+                scheduledInDays = 0,
+                notificationPriority = RichNotifications.Severity.Low
+            };
+
+            // 0 means "later today" and must not throw
             Assert.DoesNotThrow(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
         }
 

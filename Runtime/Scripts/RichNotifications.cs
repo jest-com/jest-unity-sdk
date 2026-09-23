@@ -166,8 +166,9 @@ namespace com.jest.sdk
             public DateTime date;
 
             /// <summary>
-            /// Schedule the notification in a specified number of days (1-7).
-            /// Uses fuzzy timing without an exact time.
+            /// Schedule the notification in a specified number of days (0-7).
+            /// Uses fuzzy timing without an exact time. Use 0 to deliver later
+            /// the same day; it lands 10 minutes from now at the earliest.
             /// Mutually exclusive with <see cref="date"/>.
             /// </summary>
             public int? scheduledInDays;

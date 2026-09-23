@@ -396,6 +396,15 @@ namespace com.jest.sdk.regression
                         firstSubscription.EstimatedRevenue >= 0,
                         firstSubscription.EstimatedRevenue,
                         "non-negative estimatedRevenue"));
+                    var introOfferDescription = firstSubscription.IntroOffer == null
+                        ? "null"
+                        : $"price={firstSubscription.IntroOffer.Price}, durationPeriods={firstSubscription.IntroOffer.DurationPeriods}";
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription intro offer is null or has non-negative price and duration",
+                        firstSubscription.IntroOffer == null ||
+                            (firstSubscription.IntroOffer.Price >= 0 && firstSubscription.IntroOffer.DurationPeriods > 0),
+                        introOfferDescription,
+                        "null or non-negative price with positive durationPeriods"));
                 }
             }
 
@@ -478,6 +487,19 @@ namespace com.jest.sdk.regression
 
             await JestSDK.Instance.RichNotifications.UnscheduleNotification(identifier);
             assertions.Add(RegressionAssertion.Condition("notification unschedule completed", true, identifier, "unscheduled"));
+
+            var d0Identifier = identifier + ":d0";
+            await JestSDK.Instance.RichNotifications.ScheduleNotification(new RichNotifications.Options
+            {
+                body = "SDK regression notification",
+                ctaText = "Open",
+                identifier = d0Identifier,
+                scheduledInDays = 0,
+                notificationPriority = RichNotifications.Severity.Medium
+            });
+            assertions.Add(RegressionAssertion.Condition("notification schedule accepts scheduledInDays 0", true, d0Identifier, "scheduled"));
+
+            await JestSDK.Instance.RichNotifications.UnscheduleNotification(d0Identifier);
 
             assertions.Add(ExpectThrows<ArgumentNullException>(
                 "notification schedule rejects null options",
