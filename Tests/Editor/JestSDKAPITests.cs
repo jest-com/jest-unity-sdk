@@ -383,6 +383,32 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
+        public void BeginSubscription_Success_ReturnsIntroOffer()
+        {
+            _mock.subscriptionResponse =
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"intro\",\"displayName\":\"Intro\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"introOffer\":{\"price\":4.99,\"durationPeriods\":3}},\"subscriptionSigned\":\"JWS\"}";
+            var result = JestSDK.Instance.Payment.BeginSubscription("intro").GetResult();
+            Assert.That(result.Subscription.IntroOffer, Is.Not.Null);
+            Assert.AreEqual(4.99m, result.Subscription.IntroOffer.Price);
+            Assert.AreEqual(3, result.Subscription.IntroOffer.DurationPeriods);
+        }
+
+        [Test]
+        public void GetSubscriptions_ReturnsIntroOfferForEligibleWallet()
+        {
+            var response = JestSDK.Instance.Payment.GetSubscriptions().GetResult();
+            var intro = response.Subscriptions.Find(s => s.Sku == "intro");
+            Assert.That(intro, Is.Not.Null);
+            Assert.That(intro.IntroOffer, Is.Not.Null);
+            Assert.AreEqual(4.99m, intro.IntroOffer.Price);
+            Assert.AreEqual(3, intro.IntroOffer.DurationPeriods);
+
+            var premium = response.Subscriptions.Find(s => s.Sku == "premium");
+            Assert.That(premium, Is.Not.Null);
+            Assert.That(premium.IntroOffer, Is.Null);
+        }
+
+        [Test]
         public void BeginSubscription_Cancel_ReturnsCancel()
         {
             // Default mock response is a cancel.
@@ -786,6 +812,24 @@ namespace com.jest.sdk.Tests
             JsBridge.SetMock(_mock);
         }
 
+        [Test]
+        public void ShowRegistrationOverlay_AcceptsMessageOption()
+        {
+            var unregisteredMock = new TestBridgeMock(testId, false);
+            JsBridge.SetMock(unregisteredMock);
+
+            RegistrationOverlay.Handle handle = null;
+            Assert.DoesNotThrow(() =>
+                handle = JestSDK.Instance.ShowRegistrationOverlay(new RegistrationOverlay.Options
+                {
+                    Message = "Let me in! {{registrationCode}} is my code."
+                }));
+
+            Assert.That(handle, Is.Not.Null);
+
+            JsBridge.SetMock(_mock);
+        }
+
 
         [Test]
         public void RichNotifications_ScheduleNotification_WithImageReference()
@@ -1135,10 +1179,8 @@ namespace com.jest.sdk.Tests
         #region Analytics Tests
 
         [Test]
-        public void MarkFirstMilestone_SendsOnceAndIgnoresRepeatCalls()
+        public void MarkFirstMilestone_IsANoOp()
         {
-            // The once-per-session guard is static bridge state that is never reset, so this
-            // must remain the only test that calls MarkFirstMilestone.
             var sends = 0;
             Application.LogCallback onLog = (message, stackTrace, type) =>
             {
@@ -1150,14 +1192,13 @@ namespace com.jest.sdk.Tests
             {
                 JestSDK.Instance.MarkFirstMilestone();
                 JestSDK.Instance.MarkFirstMilestone();
-                JestSDK.Instance.MarkFirstMilestone();
             }
             finally
             {
                 Application.logMessageReceived -= onLog;
             }
 
-            Assert.That(sends, Is.EqualTo(1));
+            Assert.That(sends, Is.EqualTo(0));
         }
 
         #endregion

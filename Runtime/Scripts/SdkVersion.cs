@@ -7,7 +7,7 @@ namespace com.jest.sdk
     /// </summary>
     public static class SdkVersion
     {
-        public const string Value = "2.13.2";
+        public const string Value = "2.17.1";
 
         internal const string WireName = "unity-sdk-" + Value;
     }

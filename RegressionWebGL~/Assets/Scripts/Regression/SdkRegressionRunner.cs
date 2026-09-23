@@ -208,7 +208,7 @@ namespace com.jest.sdk.regression
                 true));
 
             JestSDK.Instance.MarkFirstMilestone();
-            JestSDK.Instance.MarkFirstMilestone(); // second call must be a no-op
+            JestSDK.Instance.MarkFirstMilestone(); // deprecated no-op; repeat calls must stay harmless
             assertions.Add(RegressionAssertion.Condition(
                 "mark first milestone completed without error",
                 true,
@@ -396,6 +396,15 @@ namespace com.jest.sdk.regression
                         firstSubscription.EstimatedRevenue >= 0,
                         firstSubscription.EstimatedRevenue,
                         "non-negative estimatedRevenue"));
+                    var introOfferDescription = firstSubscription.IntroOffer == null
+                        ? "null"
+                        : $"price={firstSubscription.IntroOffer.Price}, durationPeriods={firstSubscription.IntroOffer.DurationPeriods}";
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription intro offer is null or has non-negative price and duration",
+                        firstSubscription.IntroOffer == null ||
+                            (firstSubscription.IntroOffer.Price >= 0 && firstSubscription.IntroOffer.DurationPeriods > 0),
+                        introOfferDescription,
+                        "null or non-negative price with positive durationPeriods"));
                 }
             }
 

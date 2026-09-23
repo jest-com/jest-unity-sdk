@@ -101,6 +101,7 @@ namespace com.jest.demo
                         {
                             { "source", "unity_sample_custom_registration" }
                         },
+                        Message = "Let me into the demo! {{registrationCode}} is my code.",
                         OnClose = HandleOverlayClosed
                     });
 

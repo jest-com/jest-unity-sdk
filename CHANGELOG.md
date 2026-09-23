@@ -1,10 +1,34 @@
 # Changelog
 
-## [2.13.2] - 2026-09-21
+## [2.17.1] - 2026-09-23
 
 ### Fixed
 
 - `RichNotifications.Options.scheduledInDays` doc comment incorrectly said 1-7; the platform now permits 0 to deliver later the same day (lands 10 minutes from now at the earliest). No behavior change — the SDK never enforced this range client-side.
+
+## [2.17.0] - 2026-09-23
+
+### Added
+
+- `Internal.ReserveLoginMessageOptions.TargetGameSlug` (`string`) — optional slug of a public game the login link should log the user into, instead of the onboarding's flagship game. `ReserveLoginMessageAsync` can now also return `error: "invalid_target_game"` when the slug does not resolve to a public game.
+
+## [2.16.0] - 2026-09-23
+
+### Added
+
+- `Payment.SubscriptionData.IntroOffer` (`Payment.IntroOfferData`, nullable) — discounted `Price` for the first `DurationPeriods` billing periods of a subscription. Non-null only when an intro offer is configured and the wallet has never subscribed to that product before; the standard `Price` applies automatically afterward.
+
+## [2.15.0] - 2026-09-23
+
+### Added
+
+- `RegistrationOverlay.Options.Message` (`string`) — optional text the player's messaging app is pre-filled with, in place of the platform's default wording. Must contain `{{registrationCode}}` exactly once, with a space or punctuation around it. Kept under 140 characters once the code is filled in; past 60 characters, emoji and accented characters are dropped rather than splitting the message in two.
+
+## [2.14.0] - 2026-09-22
+
+### Deprecated
+
+- `JestSDK.Instance.MarkFirstMilestone()` now does nothing. The platform no longer collects a first-milestone signal; the call is safe to remove.
 
 ## [2.13.1] - 2026-09-18
 
