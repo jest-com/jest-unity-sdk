@@ -208,7 +208,7 @@ namespace com.jest.sdk.regression
                 true));
 
             JestSDK.Instance.MarkFirstMilestone();
-            JestSDK.Instance.MarkFirstMilestone(); // second call must be a no-op
+            JestSDK.Instance.MarkFirstMilestone(); // deprecated no-op; repeat calls must stay harmless
             assertions.Add(RegressionAssertion.Condition(
                 "mark first milestone completed without error",
                 true,

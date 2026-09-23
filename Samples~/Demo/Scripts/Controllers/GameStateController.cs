@@ -68,8 +68,8 @@ namespace com.jest.demo
 
         public void MarkDemoMilestone()
         {
-            // The demo treats its first gameplay event (level 1) as the first meaningful
-            // milestone. Repeat calls are no-ops, so it is safe to call on every press.
+            // MarkFirstMilestone is deprecated and now a no-op; kept here only so the demo
+            // button wiring still resolves.
             JestSDK.Instance.MarkFirstMilestone();
             UIManager.Instance.m_toastUI.ShowToast("Milestone marked");
         }

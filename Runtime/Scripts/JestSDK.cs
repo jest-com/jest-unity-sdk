@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -194,22 +195,12 @@ namespace com.jest.sdk
         }
 
         /// <summary>
-        /// Reports that the player reached your game's first meaningful milestone — the earliest
-        /// action that demonstrates the player has experienced the core value of your game.
-        /// The platform records it as the standardized <c>first_milestone</c> analytics event.
+        /// Does nothing. The platform no longer collects a first-milestone signal, and the call
+        /// is safe to remove.
         /// </summary>
-        /// <remarks>
-        /// You define what the milestone is. Good examples: completing the first-time user
-        /// experience (FTUE) or tutorial, completing Level 1, or completing the first puzzle,
-        /// match, or equivalent core gameplay objective.
-        /// Call it every time the milestone is reached — you don't need to track whether it was
-        /// already reported. Calls after the first in a session are no-ops, and the platform
-        /// measures milestone reach as unique players.
-        /// Implementing this event is required for launch. See https://docs.jest.com/launch-checklist.
-        /// </remarks>
+        [Obsolete("Does nothing. The platform no longer collects a first-milestone signal, and the call is safe to remove.")]
         public void MarkFirstMilestone()
         {
-            JsBridge.MarkFirstMilestone();
         }
 
         /// <summary>

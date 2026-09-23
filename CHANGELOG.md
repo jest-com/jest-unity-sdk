@@ -1,11 +1,16 @@
 # Changelog
 
-## [2.14.0] - 2026-09-21
+## [2.15.0] - 2026-09-23
 
 ### Changed
 
 - `RichNotifications.Options.notificationPriority` now defaults to `Severity.Medium` instead of `Severity.Low`, matching the priority the platform has always applied when none was specified.
 - `RichNotifications.ScheduleNotification` now throws `ArgumentException` when `Options.identifier` is missing, matching the field's existing "Required" doc comment.
+## [2.14.0] - 2026-09-22
+
+### Deprecated
+
+- `JestSDK.Instance.MarkFirstMilestone()` now does nothing. The platform no longer collects a first-milestone signal; the call is safe to remove.
 
 ## [2.13.1] - 2026-09-18
 

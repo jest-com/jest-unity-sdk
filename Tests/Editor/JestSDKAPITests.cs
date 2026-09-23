@@ -1119,10 +1119,8 @@ namespace com.jest.sdk.Tests
         #region Analytics Tests
 
         [Test]
-        public void MarkFirstMilestone_SendsOnceAndIgnoresRepeatCalls()
+        public void MarkFirstMilestone_IsANoOp()
         {
-            // The once-per-session guard is static bridge state that is never reset, so this
-            // must remain the only test that calls MarkFirstMilestone.
             var sends = 0;
             Application.LogCallback onLog = (message, stackTrace, type) =>
             {
@@ -1134,14 +1132,13 @@ namespace com.jest.sdk.Tests
             {
                 JestSDK.Instance.MarkFirstMilestone();
                 JestSDK.Instance.MarkFirstMilestone();
-                JestSDK.Instance.MarkFirstMilestone();
             }
             finally
             {
                 Application.logMessageReceived -= onLog;
             }
 
-            Assert.That(sends, Is.EqualTo(1));
+            Assert.That(sends, Is.EqualTo(0));
         }
 
         #endregion
