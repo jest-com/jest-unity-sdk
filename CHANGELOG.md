@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.18.0] - 2026-09-23
+
+### Changed
+
+- `RichNotifications.Options.notificationPriority` now defaults to `Severity.Medium` instead of `Severity.Low`, matching the priority the platform has always applied when none was specified.
+- `RichNotifications.ScheduleNotification` now throws `ArgumentException` when `Options.identifier` is missing, matching the field's existing "Required" doc comment.
+
 ## [2.17.1] - 2026-09-23
 
 ### Fixed

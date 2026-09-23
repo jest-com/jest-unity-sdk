@@ -483,6 +483,7 @@ namespace com.jest.sdk.regression
                 }
             });
             assertions.Add(RegressionAssertion.Condition("notification schedule completed", true, identifier, "scheduled"));
+            assertions.Add(RegressionAssertion.Equal("notification default priority is medium", new RichNotifications.Options().notificationPriority, RichNotifications.Severity.Medium));
 
             await JestSDK.Instance.RichNotifications.UnscheduleNotification(identifier);
             assertions.Add(RegressionAssertion.Condition("notification unschedule completed", true, identifier, "unscheduled"));
@@ -517,6 +518,14 @@ namespace com.jest.sdk.regression
                 {
                     body = "Hello",
                     identifier = identifier + ":missing-cta",
+                    scheduledInDays = 1
+                })));
+            assertions.Add(ExpectThrows<ArgumentException>(
+                "notification schedule requires identifier",
+                () => JestSDK.Instance.RichNotifications.ScheduleNotification(new RichNotifications.Options
+                {
+                    body = "Hello",
+                    ctaText = "Open",
                     scheduledInDays = 1
                 })));
             assertions.Add(ExpectThrows<ArgumentException>(
