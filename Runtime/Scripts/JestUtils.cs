@@ -55,16 +55,8 @@ namespace com.jest.sdk
             Texture2D readable = null;
             try
             {
-                // RenderTexture sampling origin differs by graphics API; flip vertically on
-                // APIs whose UVs start at the bottom (OpenGL/WebGL) so the PNG is upright.
-                if (SystemInfo.graphicsUVStartsAtTop)
-                {
-                    Graphics.Blit(source, rt);
-                }
-                else
-                {
-                    Graphics.Blit(source, rt, new Vector2(1f, -1f), new Vector2(0f, 1f));
-                }
+                // Blit + ReadPixels preserves orientation on every graphics API; a conditional flip breaks WebGL.
+                Graphics.Blit(source, rt);
 
                 RenderTexture.active = rt;
                 readable = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
@@ -83,7 +75,15 @@ namespace com.jest.sdk
                 RenderTexture.ReleaseTemporary(rt);
                 if (readable != null)
                 {
-                    Object.Destroy(readable);
+                    // Destroy is not allowed in edit mode, where editor tooling and tests call this.
+                    if (Application.isPlaying)
+                    {
+                        Object.Destroy(readable);
+                    }
+                    else
+                    {
+                        Object.DestroyImmediate(readable);
+                    }
                 }
             }
         }

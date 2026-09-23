@@ -1,10 +1,95 @@
 # Changelog
 
-## [2.8.0] - 2026-08-03
+## [2.17.0] - 2026-09-23
 
 ### Added
 
 - `Internal.ReserveLoginMessageOptions.TargetGameSlug` (`string`) — optional slug of a public game the login link should log the user into, instead of the onboarding's flagship game. `ReserveLoginMessageAsync` can now also return `error: "invalid_target_game"` when the slug does not resolve to a public game.
+
+## [2.16.0] - 2026-09-23
+
+### Added
+
+- `Payment.SubscriptionData.IntroOffer` (`Payment.IntroOfferData`, nullable) — discounted `Price` for the first `DurationPeriods` billing periods of a subscription. Non-null only when an intro offer is configured and the wallet has never subscribed to that product before; the standard `Price` applies automatically afterward.
+
+## [2.15.0] - 2026-09-23
+
+### Added
+
+- `RegistrationOverlay.Options.Message` (`string`) — optional text the player's messaging app is pre-filled with, in place of the platform's default wording. Must contain `{{registrationCode}}` exactly once, with a space or punctuation around it. Kept under 140 characters once the code is filled in; past 60 characters, emoji and accented characters are dropped rather than splitting the message in two.
+
+## [2.14.0] - 2026-09-22
+
+### Deprecated
+
+- `JestSDK.Instance.MarkFirstMilestone()` now does nothing. The platform no longer collects a first-milestone signal; the call is safe to remove.
+
+## [2.13.1] - 2026-09-18
+
+### Fixed
+
+- `JestUtils.SpriteToDataUrl` / `TextureToDataUrl` / `EncodeTextureToPng` produced a vertically flipped PNG in WebGL builds, so referral share images set via `shareImage` appeared upside down in link previews. The encoder flipped the blit on graphics APIs whose UVs start at the bottom (OpenGL/WebGL); the blit-and-read-back path already preserves orientation on every API, so the compensation inverted the image. Editor playback on Metal/D3D was unaffected, which is why it only showed up in shipped builds.
+- `JestUtils.EncodeTextureToPng` logged `Destroy may not be called from edit mode!` and leaked its temporary texture when called outside play mode (editor tooling, tests); it now uses `DestroyImmediate` there.
+
+## [2.13.0] - 2026-09-15
+
+### Changed
+
+- `Payment.PurchaseData.estimatedRevenue` and `Payment.SubscriptionData.EstimatedRevenue` are no longer deprecated and no longer always `0`. They now report the approximate revenue in USD for the publisher (per purchase, or per billing period for subscriptions).
+
+### Fixed
+
+- `RichNotifications.Options.ctaText` doc comment incorrectly said 1-25 characters; the platform limit is 1-50 characters. No behavior change — the SDK never enforced this client-side.
+
+## [2.12.0] - 2026-09-15
+
+### Added
+
+- `JestSDK.Instance.MarkFirstMilestone()` — reports that the player reached the game's first meaningful milestone (for example completing the tutorial or Level 1), which the platform records as the standardized `first_milestone` analytics event. Required for launch — see https://docs.jest.com/launch-checklist. Safe to call every time the milestone is reached; calls after the first in a session are no-ops.
+
+## [2.11.0] - 2026-09-12
+
+### Fixed
+
+- `IBridgeMock.GetPurchaseResponse()` now takes the requested `sku` and echoes it back as `productSku` on the mocked purchase, instead of always returning a hardcoded SKU regardless of what was purchased. Affects `ScriptableMock`, `TestBridgeMock`, and `DebugBridgeMock`. Custom `IBridgeMock` implementations must update their `GetPurchaseResponse` signature to accept the SKU.
+
+## [2.10.1] - 2026-08-24
+
+### Fixed
+
+- `Runtime/Scripts/Lifecycle.cs` shipped without its `.meta` file in 2.9.0 and 2.10.0. Unity cannot generate `.meta` files for immutable packages (git URL and tarball installs), so the script was never imported and any project using it failed to compile with `error CS0246: The type or namespace name 'Lifecycle' could not be found`. Upgrade from either version to pick up `JestSDK.Instance.Lifecycle`.
+
+## [2.10.0] - 2026-08-20
+
+### Added
+
+- `Payment.PurchaseData.Sandbox` (`bool?`) — true when no money changed hands: a sandbox user made the purchase (priced at 0), or it came from the Developer Console simulator (which keeps the configured price). Null on real purchases.
+- `Payment.SubscriptionData.Sandbox` (`bool?`) — true when no money can change hands: the player is a sandbox user, or the entry came from the Developer Console simulator. Null for real players.
+
+## [2.9.0] - 2026-08-17
+
+### Added
+
+- `JestSDK.Instance.Lifecycle` (`Lifecycle`) — app visibility and platform exit events.
+- `Lifecycle.OnHide` — fires when the game document changes from visible to hidden.
+- `Lifecycle.OnShow` — fires when the game document changes from hidden to visible.
+- `Lifecycle.OnExitRequested` — fires when the platform begins an exit flow for the game.
+
+## [2.8.0] - 2026-07-21
+
+### Added
+
+- `Payment.SubscriptionData.TrialEligible` (`bool`) — true only when the offer has a free trial and the wallet has never subscribed to it before, so games can show a "Start free trial" call to action only when it applies.
+- `Payment.ClaimRetentionOffer(subscriptionSku)` — applies the subscription's configured retention discount to the player's existing subscription instantly, with no checkout. Returns a `ClaimRetentionOfferResult` with `Result` ("success" or "error") and `Error` ("internal_error", "not_eligible", or "guest_not_allowed").
+- `Payment.ClaimRetentionOfferResult` DTO.
+- `Payment.SubscriptionData.RetentionOffer` (`RetentionOfferData`) — the retention discount the wallet can claim once via `ClaimRetentionOffer`, or null.
+- `Payment.RetentionOfferData` DTO.
+- `JS_claimRetentionOffer` in the JS bridge layer.
+- `SubscriptionController.ClaimRetentionOffer(string)` sample method.
+
+### Fixed
+
+- `SdkVersion.Value` corrected from `2.6.0` to `2.8.0` to stay in sync with `package.json`.
 
 ## [2.7.0] - 2026-06-11
 

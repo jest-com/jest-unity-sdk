@@ -382,6 +382,17 @@ mergeInto(LibraryManager.library, {
     });
   },
 
+  JS_claimRetentionOffer__deps: ['$JestSDKHelper'],
+  JS_claimRetentionOffer: function (taskPtr, subscriptionSku, successCallback, errorCallback) {
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().payments.claimRetentionOffer({
+        subscriptionSku: UTF8ToString(subscriptionSku)
+      }).then(function (result) {
+        return JSON.stringify(result);
+      });
+    });
+  },
+
   JS_openReferralDialog__deps: ['$JestSDKHelper'],
   JS_openReferralDialog: function (taskPtr, optionsJson, successCallback, errorCallback) {
     JestSDKHelper.callVoidTask(taskPtr, successCallback, errorCallback, function () {
@@ -500,6 +511,11 @@ mergeInto(LibraryManager.library, {
     JestSDKHelper.getSdk().markGameLoaded();
   },
 
+  JS_markFirstMilestone__deps: ['$JestSDKHelper'],
+  JS_markFirstMilestone: function () {
+    JestSDKHelper.getSdk().markFirstMilestone();
+  },
+
   JS_beginPlatformRegistrationOverlay__deps: ['$JestSDKHelper'],
   JS_beginPlatformRegistrationOverlay: function (taskPtr, optionsJson, onClose, onError) {
     try {
@@ -509,6 +525,7 @@ mergeInto(LibraryManager.library, {
       var handle = JestSDKHelper.getSdk().showRegistrationOverlay({
         theme: opts.theme,
         entryPayload: opts.entryPayload,
+        message: opts.message,
         onClose: function () {
           if (notified) return;
           notified = true;
@@ -571,5 +588,19 @@ mergeInto(LibraryManager.library, {
       props = JSON.parse(raw);
     }
     JestSDKHelper.getSdk().captureEvent(name, props);
+  },
+
+  JS_registerLifecycleCallbacks__deps: ['$JestSDKHelper'],
+  JS_registerLifecycleCallbacks: function (onHide, onShow, onExitRequested) {
+    var sdk = JestSDKHelper.getSdk();
+    sdk.lifecycle.onHide(function () {
+      {{{ makeDynCall('v', 'onHide') }}}();
+    });
+    sdk.lifecycle.onShow(function () {
+      {{{ makeDynCall('v', 'onShow') }}}();
+    });
+    sdk.lifecycle.onExitRequested(function () {
+      {{{ makeDynCall('v', 'onExitRequested') }}}();
+    });
   }
 });

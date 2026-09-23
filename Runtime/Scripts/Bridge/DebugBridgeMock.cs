@@ -146,10 +146,10 @@ namespace com.jest.sdk
         /// Logs a purchase response retrieval request to the Unity console.
         /// </summary>
         /// <returns>Mock purchase response indicating success.</returns>
-        public string GetPurchaseResponse()
+        public string GetPurchaseResponse(string sku)
         {
-            Debug.Log($"[JestSDK] GetPurchaseResponse");
-            return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_debug\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":0,\"price\":99.0,\"currency\":\"USD\"},\"purchaseSigned\":\"JWS\"}";
+            Debug.Log($"[JestSDK] GetPurchaseResponse {sku}");
+            return $"{{\"result\":\"success\",\"purchase\":{{\"purchaseToken\":\"mock_token_debug\",\"productSku\":\"{sku}\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":85.8,\"price\":99.0,\"currency\":\"USD\"}},\"purchaseSigned\":\"JWS\"}}";
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace com.jest.sdk
         public string GetSubscriptionsResponse()
         {
             Debug.Log("[JestSDK] GetSubscriptionsResponse");
-            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\"}],\"signed\":\"\"}";
+            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"trialEligible\":true,\"introOffer\":null},{\"sku\":\"intro\",\"displayName\":\"Intro Subscription\",\"displayDescription\":\"Half price for the first three months.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"trialEligible\":false,\"introOffer\":{\"price\":4.99,\"durationPeriods\":3}}],\"signed\":\"\"}";
         }
 
         /// <summary>
@@ -247,6 +247,16 @@ namespace com.jest.sdk
         {
             Debug.Log("[JestSDK] GetCancelSubscriptionResponse");
             return "{\"result\":\"cancel\"}";
+        }
+
+        /// <summary>
+        /// Returns a mock claim retention offer response indicating not eligible.
+        /// </summary>
+        /// <returns>A JSON string containing mock claim retention offer response data.</returns>
+        public string GetClaimRetentionOfferResponse()
+        {
+            Debug.Log("[JestSDK] GetClaimRetentionOfferResponse");
+            return "{\"result\":\"error\",\"error\":\"not_eligible\"}";
         }
     }
 }

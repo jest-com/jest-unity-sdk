@@ -14,6 +14,7 @@ namespace com.jest.demo
     {
         void BeginSubscription(string subscriptionSku);
         void CancelSubscription(string subscriptionSku);
+        void ClaimRetentionOffer(string subscriptionSku);
     }
 
     public class SubscriptionController : MonoBehaviour, ISubscriptionController
@@ -157,6 +158,34 @@ namespace com.jest.demo
                 catch (Exception e)
                 {
                     UIManager.Instance.m_toastUI.ShowToast("Cancel Subscription failed: " + e.Message);
+                }
+                UIManager.Instance.HideLoadingSpinner();
+            });
+        }
+
+        public void ClaimRetentionOffer(string subscriptionSku)
+        {
+            UIManager.Instance.ShowLoadingSpinner();
+            JestSDK.Instance.Payment.ClaimRetentionOffer(subscriptionSku).ContinueWith(t => {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Claim Retention Offer Failed: " + t.Exception.Message);
+                    }
+                    else if (t.Result.Result == "success")
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Retention offer claimed");
+                        RefreshSubscriptionsIfRendered();
+                    }
+                    else
+                    {
+                        UIManager.Instance.m_toastUI.ShowToast("Claim Retention Offer Failed: " + t.Result.Error);
+                    }
+                }
+                catch (Exception e)
+                {
+                    UIManager.Instance.m_toastUI.ShowToast("Claim Retention Offer failed: " + e.Message);
                 }
                 UIManager.Instance.HideLoadingSpinner();
             });
