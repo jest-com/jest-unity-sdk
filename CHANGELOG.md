@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.17.0] - 2026-09-23
+
+### Added
+
+- `Internal.ReserveLoginMessageOptions.TargetGameSlug` (`string`) — optional slug of a public game the login link should log the user into, instead of the onboarding's flagship game. `ReserveLoginMessageAsync` can now also return `error: "invalid_target_game"` when the slug does not resolve to a public game.
+
 ## [2.16.0] - 2026-09-23
 
 ### Added
