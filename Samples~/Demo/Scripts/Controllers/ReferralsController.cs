@@ -119,9 +119,8 @@ namespace com.jest.demo
                 return null;
             }
 
-            // JestUtils handles compressed / non-readable textures (and the Y-flip) so the
-            // sample doesn't have to. Any other SDK API that accepts an image data URL can
-            // reuse the same helper.
+            // JestUtils handles compressed / non-readable textures so the sample doesn't have
+            // to. Any other SDK API that accepts an image data URL can reuse the same helper.
             string dataUrl = JestUtils.SpriteToDataUrl(sprite);
             Debug.Log(dataUrl == null
                 ? "[Jest ShareImage] Encoding failed — see the error above."

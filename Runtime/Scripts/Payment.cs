@@ -13,7 +13,12 @@ namespace com.jest.sdk
     /// <remarks>
     /// <b>Sandbox testing:</b> sandbox users see real product prices in the
     /// game UI, but the platform checkout modal makes clear that no charge
-    /// will be made and the resulting purchase records 0 credits.
+    /// will be made and the resulting purchase records 0 credits. Such a
+    /// purchase carries <see cref="PurchaseData.Sandbox"/> set to true — in the
+    /// SDK payload and in the signed JWS — so your backend can grant the item
+    /// while keeping test traffic out of revenue reporting. Purchases driven
+    /// from the Developer Console simulator carry the same flag, at their
+    /// configured price.
     /// </remarks>
     public class Payment
     {
@@ -223,7 +228,10 @@ namespace com.jest.sdk
 
         /// <summary>
         /// Lists subscription offers for this game along with the player's current entitlement on each.
-        /// For guest players, the returned subscriptions list is empty.
+        /// For sandbox users, and in the Developer Console simulator, every entry has
+        /// <see cref="SubscriptionData.Sandbox"/> set to true: price shows as configured, but any
+        /// subscription started that way bills nothing. For guest players, the returned subscriptions
+        /// list is empty.
         /// </summary>
         /// <returns>
         /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="GetSubscriptionsResponse"/>.
@@ -293,6 +301,47 @@ namespace com.jest.sdk
             return task;
         }
 
+        /// <summary>
+        /// Applies the subscription's configured retention discount to the player's existing
+        /// subscription instantly, with no checkout. Each player can claim a subscription's
+        /// retention discount only once, and not while an introductory offer window is still
+        /// running; otherwise the call fails with "not_eligible".
+        /// </summary>
+        /// <param name="subscriptionSku">The SKU of the subscription the player holds.</param>
+        /// <returns>
+        /// A <see cref="JestSDKTask{TResult}"/> resolving to a <see cref="ClaimRetentionOfferResult"/>.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when subscriptionSku is null or empty.</exception>
+        public JestSDKTask<ClaimRetentionOfferResult> ClaimRetentionOffer(string subscriptionSku)
+        {
+            if (string.IsNullOrWhiteSpace(subscriptionSku))
+            {
+                throw new ArgumentException("Subscription SKU cannot be null or empty", nameof(subscriptionSku));
+            }
+
+            var task = new JestSDKTask<ClaimRetentionOfferResult>();
+            JsBridge.ClaimRetentionOffer(subscriptionSku).ContinueWith(t =>
+            {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        task.SetException(t.Exception);
+                        return;
+                    }
+                    string json = t.GetResult();
+                    var result = JsonConvert.DeserializeObject<ClaimRetentionOfferResult>(json);
+                    task.SetResult(result);
+                }
+                catch (Exception e)
+                {
+                    task.SetException(e);
+                }
+            });
+
+            return task;
+        }
+
         #endregion
 
         #region Nested Classes
@@ -331,10 +380,48 @@ namespace com.jest.sdk
             [JsonProperty("status")]
             public string Status;
 
-            /// <summary>Always 0. Kept for SDK backwards compatibility.</summary>
-            [Obsolete("Always 0. Kept for SDK backwards compatibility.")]
+            /// <summary>
+            /// True only when this offer has a free trial and the wallet has never subscribed to it before.
+            /// </summary>
+            [JsonProperty("trialEligible")]
+            public bool TrialEligible;
+
+            /// <summary>
+            /// The retention discount this wallet can claim once via <see cref="Payment.ClaimRetentionOffer"/>,
+            /// or null. Non-null only while the wallet is entitled, the offer is configured, it was never
+            /// claimed before, and no introductory offer window is still running.
+            /// </summary>
+            [JsonProperty("retentionOffer")]
+            public RetentionOfferData RetentionOffer;
+
+            /// <summary>
+            /// True when no money can change hands: the player is a sandbox user (any
+            /// subscription they start bills 0), or this came from the Developer Console
+            /// simulator. Null for real players. <see cref="Price"/> still shows the configured
+            /// amount, but a sandbox user never gets a <see cref="RetentionOffer"/> — a checkout
+            /// already forced to 0 carries no discount.
+            /// </summary>
+            [JsonProperty("sandbox")]
+            public bool? Sandbox;
+
+            /// <summary>Approximate revenue in USD for the publisher for the current billing period.</summary>
             [JsonProperty("estimatedRevenue")]
             public decimal EstimatedRevenue;
+        }
+
+        /// <summary>
+        /// Represents a discounted price for a limited number of billing periods on a subscription.
+        /// </summary>
+        [Serializable]
+        public class RetentionOfferData
+        {
+            /// <summary>Discounted price in the currency specified in <see cref="SubscriptionData.Currency"/>, in decimal.</summary>
+            [JsonProperty("price")]
+            public decimal Price;
+
+            /// <summary>Number of billing periods the discounted price applies, starting at the next renewal.</summary>
+            [JsonProperty("durationPeriods")]
+            public int DurationPeriods;
         }
 
         /// <summary>
@@ -368,6 +455,32 @@ namespace com.jest.sdk
             /// </summary>
             [JsonProperty("error")]
             public string Error;
+        }
+
+        /// <summary>
+        /// Represents the result of claiming a subscription's retention discount.
+        /// </summary>
+        [Serializable]
+        public class ClaimRetentionOfferResult
+        {
+            /// <summary>The result status: "success" or "error".</summary>
+            [JsonProperty("result")]
+            public string Result;
+
+            /// <summary>
+            /// Error code when result is "error":
+            /// "internal_error", "not_eligible", or "guest_not_allowed".
+            /// </summary>
+            [JsonProperty("error")]
+            public string Error;
+
+            /// <summary>The refreshed subscription data on success.</summary>
+            [JsonProperty("subscription")]
+            public SubscriptionData Subscription;
+
+            /// <summary>The serialized and signed subscription data for server-side verification.</summary>
+            [JsonProperty("subscriptionSigned")]
+            public string SubscriptionSigned;
         }
 
         /// <summary>
@@ -493,8 +606,7 @@ namespace com.jest.sdk
             /// </summary>
             public long? completedAt;
 
-            /// <summary>Always 0. Kept for SDK backwards compatibility.</summary>
-            [Obsolete("Always 0. Kept for SDK backwards compatibility.")]
+            /// <summary>Approximate revenue in USD for the game publisher.</summary>
             public decimal estimatedRevenue;
 
             /// <summary>
@@ -506,6 +618,15 @@ namespace com.jest.sdk
             /// ISO currency code for the price, e.g. "USD", "EUR".
             /// </summary>
             public string currency;
+
+            /// <summary>
+            /// True when no money changed hands: a sandbox user made the purchase (it is then
+            /// priced at 0), or it came from the Developer Console simulator (which keeps the
+            /// configured price). Null on real purchases. Grant the item as usual when testing,
+            /// but keep these out of anything counting real money.
+            /// </summary>
+            [JsonProperty("sandbox")]
+            public bool? Sandbox;
         }
 
         /// <summary>

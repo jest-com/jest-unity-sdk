@@ -20,6 +20,9 @@ This folder ends in `~` so Unity ignores it.
 3. `tests/webgl-load.spec.ts` stubs `window.JestSDK` (so `init()` resolves and
    the success `makeDynCall` path runs), loads `index.html` in headless
    Chromium (SwiftShader for GL), and waits for the `runnerReady` postMessage.
+4. The stub retains the lifecycle callbacks registered by the SDK bridge. The
+   test runs the `lifecycle` regression scenario, which invokes those callbacks
+   and verifies each one reaches — and can be unsubscribed from — its C# event.
 
 ## Run locally
 

@@ -164,12 +164,12 @@ namespace com.jest.sdk
         /// <summary>
         /// Retrieves the in-app purchase response.
         /// </summary>
-        public string GetPurchaseResponse()
+        public string GetPurchaseResponse(string sku)
         {
             switch (_purchaseResult)
             {
                 case PurchaseReult.success:
-                    return "{\"result\":\"success\",\"purchase\":{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":0,\"price\":99.0,\"currency\":\"USD\"},\"purchaseSigned\":\"JWS\"}";
+                    return $"{{\"result\":\"success\",\"purchase\":{{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"{sku}\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":85.8,\"price\":99.0,\"currency\":\"USD\"}},\"purchaseSigned\":\"JWS\"}}";
                 default:
                     return "{\"result\":\"error\",\"error\":\"internal_error\"}";
             }
@@ -180,7 +180,7 @@ namespace com.jest.sdk
         /// </summary>
         public string GetIncompletePurchaseResponse()
         {
-            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":0,\"price\":99.0,\"currency\":\"USD\"}]}";
+            return "{\"hasMore\":false,\"purchasesSigned\":\"JWS\",\"purchases\":[{\"purchaseToken\":\"mock_token_bcwux13xvm4\",\"productSku\":\"gems_100\",\"credits\":99,\"createdAt\":1761729039,\"completedAt\":null,\"estimatedRevenue\":85.8,\"price\":99.0,\"currency\":\"USD\"}]}";
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace com.jest.sdk
         /// </summary>
         public string GetSubscriptionsResponse()
         {
-            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\"}],\"signed\":\"\"}";
+            return "{\"subscriptions\":[{\"sku\":\"premium\",\"displayName\":\"Premium Subscription\",\"displayDescription\":\"Unlock premium features and exclusive content.\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"inactive\",\"trialEligible\":true}],\"signed\":\"\"}";
         }
 
         /// <summary>
@@ -259,6 +259,14 @@ namespace com.jest.sdk
         public string GetCancelSubscriptionResponse()
         {
             return "{\"result\":\"cancel\"}";
+        }
+
+        /// <summary>
+        /// Returns a mock claim retention offer response indicating not eligible.
+        /// </summary>
+        public string GetClaimRetentionOfferResponse()
+        {
+            return "{\"result\":\"error\",\"error\":\"not_eligible\"}";
         }
 
 #if UNITY_EDITOR

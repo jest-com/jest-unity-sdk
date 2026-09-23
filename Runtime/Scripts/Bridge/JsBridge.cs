@@ -106,6 +106,10 @@ namespace com.jest.sdk
                                     Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
+        private static extern void JS_claimRetentionOffer(IntPtr taskPtr, string subscriptionSku, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
         private static extern void JS_openReferralDialog(IntPtr taskPtr, string optionsJson,
                                     Action<IntPtr> onSuccess, Action<IntPtr, string> onError);
 
@@ -147,6 +151,9 @@ namespace com.jest.sdk
         private static extern void JS_markGameLoaded();
 
         [DllImport("__Internal")]
+        private static extern void JS_markFirstMilestone();
+
+        [DllImport("__Internal")]
         private static extern void JS_beginPlatformRegistrationOverlay(IntPtr taskPtr, string optionsJson, Action<IntPtr> onClose, Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
@@ -163,6 +170,9 @@ namespace com.jest.sdk
 
         [DllImport("__Internal")]
         private static extern void JS_captureEvent(string eventName, string propertiesJson);
+
+        [DllImport("__Internal")]
+        private static extern void JS_registerLifecycleCallbacks(Action onHide, Action onShow, Action onExitRequested);
 
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
@@ -238,7 +248,7 @@ namespace com.jest.sdk
         {
             if (bool.TryParse(_bridgeMock.isRegistered, out bool isRegistered) && isRegistered)
             {
-                onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse());
+                onSuccess(taskPtr, _bridgeMock.GetPurchaseResponse(sku));
             }
             else
             {
@@ -281,6 +291,12 @@ namespace com.jest.sdk
                                     Action<IntPtr, string> onError)
         {
             onSuccess(taskPtr, _bridgeMock.GetCancelSubscriptionResponse());
+        }
+
+        private static void JS_claimRetentionOffer(IntPtr taskPtr, string subscriptionSku, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            onSuccess(taskPtr, _bridgeMock.GetClaimRetentionOfferResponse());
         }
 
         private static void JS_openReferralDialog(IntPtr taskPtr, string optionsJson,
@@ -355,6 +371,11 @@ namespace com.jest.sdk
             UnityEngine.Debug.Log("[JestSDK] MarkGameLoaded (mock)");
         }
 
+        private static void JS_markFirstMilestone()
+        {
+            UnityEngine.Debug.Log("[JestSDK] MarkFirstMilestone (mock)");
+        }
+
         private static void JS_beginPlatformRegistrationOverlay(IntPtr taskPtr, string optionsJson, Action<IntPtr> onClose, Action<IntPtr, string> onError)
         {
             UnityEngine.Debug.Log($"[JestSDK] BeginPlatformRegistrationOverlay (mock): {optionsJson}");
@@ -384,6 +405,11 @@ namespace com.jest.sdk
         private static void JS_captureEvent(string eventName, string propertiesJson)
         {
             UnityEngine.Debug.Log($"[JestSDK] CaptureEvent (mock): {eventName} / {propertiesJson}");
+        }
+
+        private static void JS_registerLifecycleCallbacks(Action onHide, Action onShow, Action onExitRequested)
+        {
+            UnityEngine.Debug.Log("[JestSDK] RegisterLifecycleCallbacks (mock)");
         }
 
 #endif
@@ -485,7 +511,15 @@ namespace com.jest.sdk
 
         internal static JestSDKTask Init(bool autoLoginReminders = true)
         {
-            return new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, SdkVersion.WireName, HandleSuccess, HandleError); });
+            var task = new JestSDKTask((System.IntPtr ptr) => { JS_initSdk(ptr, autoLoginReminders, SdkVersion.WireName, HandleSuccess, HandleError); });
+            task.ContinueWith(t =>
+            {
+                if (!t.IsFaulted)
+                {
+                    RegisterLifecycleCallbacks();
+                }
+            });
+            return task;
         }
 
         internal static JestSDKTask Login(string payload)
@@ -525,6 +559,11 @@ namespace com.jest.sdk
         internal static JestSDKTask<string> CancelSubscription(string subscriptionSku)
         {
             return new JestSDKTask<string>((System.IntPtr ptr) => { JS_cancelSubscription(ptr, subscriptionSku, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static JestSDKTask<string> ClaimRetentionOffer(string subscriptionSku)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_claimRetentionOffer(ptr, subscriptionSku, HandleSuccessString, HandleErrorString); });
         }
 
         internal static JestSDKTask OpenReferralDialog(string optionsJson)
@@ -618,6 +657,16 @@ namespace com.jest.sdk
             JS_markGameLoaded();
         }
 
+        private static bool _firstMilestoneSent = false;
+
+        internal static void MarkFirstMilestone()
+        {
+            if (_firstMilestoneSent)
+                return;
+            _firstMilestoneSent = true;
+            JS_markFirstMilestone();
+        }
+
         internal static JestSDKTask BeginPlatformRegistrationOverlay(string optionsJson)
         {
             return new JestSDKTask((System.IntPtr ptr) => { JS_beginPlatformRegistrationOverlay(ptr, optionsJson, HandleSuccess, HandleError); });
@@ -647,6 +696,35 @@ namespace com.jest.sdk
         {
             JS_captureEvent(eventName, propertiesJson ?? "");
         }
+
+        private static bool _lifecycleCallbacksRegistered;
+
+        internal static event Action LifecycleHide;
+        internal static event Action LifecycleShow;
+        internal static event Action LifecycleExitRequested;
+
+        internal static void RegisterLifecycleCallbacks()
+        {
+            if (_lifecycleCallbacksRegistered)
+            {
+                return;
+            }
+
+            _lifecycleCallbacksRegistered = true;
+            JS_registerLifecycleCallbacks(HandleLifecycleHide, HandleLifecycleShow, HandleLifecycleExitRequested);
+        }
+
+        [Preserve]
+        [MonoPInvokeCallback(typeof(Action))]
+        public static void HandleLifecycleHide() => LifecycleHide?.Invoke();
+
+        [Preserve]
+        [MonoPInvokeCallback(typeof(Action))]
+        public static void HandleLifecycleShow() => LifecycleShow?.Invoke();
+
+        [Preserve]
+        [MonoPInvokeCallback(typeof(Action))]
+        public static void HandleLifecycleExitRequested() => LifecycleExitRequested?.Invoke();
 
         [Preserve]
         [MonoPInvokeCallback(typeof(System.Action<System.IntPtr, float>))]

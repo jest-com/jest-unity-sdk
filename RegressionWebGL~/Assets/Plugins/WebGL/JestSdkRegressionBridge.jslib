@@ -40,5 +40,22 @@ mergeInto(LibraryManager.library, {
     var json = UTF8ToString(jsonPtr);
     var message = JSON.parse(json);
     window.parent.postMessage(message, "*");
+  },
+
+  JS_SdkRegressionTriggerLifecycleCallbacks: function () {
+    var callbacks = window.__jestSdkLifecycleCallbacks;
+    if (
+      !callbacks ||
+      typeof callbacks.onHide !== "function" ||
+      typeof callbacks.onShow !== "function" ||
+      typeof callbacks.onExitRequested !== "function"
+    ) {
+      return 0;
+    }
+
+    callbacks.onHide();
+    callbacks.onShow();
+    callbacks.onExitRequested();
+    return 1;
   }
 });

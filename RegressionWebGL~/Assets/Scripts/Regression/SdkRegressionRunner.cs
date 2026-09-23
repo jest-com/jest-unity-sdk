@@ -29,6 +29,7 @@ namespace com.jest.sdk.regression
             "referrals-share",
             "internal",
             "legal",
+            "lifecycle",
             "guardrails"
         };
         private static SdkRegressionRunner s_instance;
@@ -39,6 +40,9 @@ namespace com.jest.sdk.regression
 
         [DllImport("__Internal")]
         private static extern void JS_SdkRegressionPostMessage(string json);
+
+        [DllImport("__Internal")]
+        private static extern int JS_SdkRegressionTriggerLifecycleCallbacks();
 #else
         private static void JS_SdkRegressionListen(string gameObjectName) { }
 
@@ -46,6 +50,8 @@ namespace com.jest.sdk.regression
         {
             Debug.Log("[SdkRegressionRunner] " + json);
         }
+
+        private static int JS_SdkRegressionTriggerLifecycleCallbacks() => 0;
 #endif
 
         public static void EnsureStarted()
@@ -142,6 +148,8 @@ namespace com.jest.sdk.regression
                     return RunInternalScenario(command);
                 case "legal":
                     return RunLegalScenario();
+                case "lifecycle":
+                    return RunLifecycleScenario();
                 case "guardrails":
                     return RunGuardrailsScenario();
                 default:
@@ -195,6 +203,14 @@ namespace com.jest.sdk.regression
             JestSDK.Instance.MarkGameLoaded(); // second call must be a no-op
             assertions.Add(RegressionAssertion.Condition(
                 "mark game loaded completed without error",
+                true,
+                true,
+                true));
+
+            JestSDK.Instance.MarkFirstMilestone();
+            JestSDK.Instance.MarkFirstMilestone(); // deprecated no-op; repeat calls must stay harmless
+            assertions.Add(RegressionAssertion.Condition(
+                "mark first milestone completed without error",
                 true,
                 true,
                 true));
@@ -328,6 +344,20 @@ namespace com.jest.sdk.regression
                     true,
                     incompletePurchases.purchasesSigned,
                     "signed payload or empty"));
+                if (incompletePurchases.purchases != null && incompletePurchases.purchases.Count > 0)
+                {
+                    var firstPurchase = incompletePurchases.purchases[0];
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first incomplete purchase sandbox flag is readable",
+                        true,
+                        firstPurchase.Sandbox?.ToString() ?? "null",
+                        "boolean sandbox or null"));
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first incomplete purchase has non-negative estimated revenue",
+                        firstPurchase.estimatedRevenue >= 0,
+                        firstPurchase.estimatedRevenue,
+                        "non-negative estimatedRevenue"));
+                }
             }
 
             var subscriptions = await JestSDK.Instance.Payment.GetSubscriptions();
@@ -348,6 +378,25 @@ namespace com.jest.sdk.regression
                     true,
                     subscriptions.Signed,
                     "signed payload or empty"));
+                if (subscriptions.Subscriptions != null && subscriptions.Subscriptions.Count > 0)
+                {
+                    var firstSubscription = subscriptions.Subscriptions[0];
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription trial eligibility is readable",
+                        true,
+                        firstSubscription.TrialEligible.ToString(),
+                        "boolean trialEligible"));
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription sandbox flag is readable",
+                        true,
+                        firstSubscription.Sandbox?.ToString() ?? "null",
+                        "boolean sandbox or null"));
+                    assertions.Add(RegressionAssertion.Condition(
+                        "first subscription has non-negative estimated revenue",
+                        firstSubscription.EstimatedRevenue >= 0,
+                        firstSubscription.EstimatedRevenue,
+                        "non-negative estimatedRevenue"));
+                }
             }
 
             return assertions;
@@ -392,6 +441,14 @@ namespace com.jest.sdk.regression
             {
                 assertions.Add(RegressionAssertion.Equal("cancel subscription reports error", cancelSubscription.Result, "error"));
                 assertions.Add(RegressionAssertion.Equal("cancel subscription error code is not_found", cancelSubscription.Error, "not_found"));
+            }
+
+            var claimRetentionOffer = await JestSDK.Instance.Payment.ClaimRetentionOffer(MissingSubscriptionSku);
+            assertions.Add(RegressionAssertion.Condition("claim retention offer error response is not null", claimRetentionOffer != null, claimRetentionOffer == null ? null : "response", "response"));
+            if (claimRetentionOffer != null)
+            {
+                assertions.Add(RegressionAssertion.Equal("claim retention offer reports error", claimRetentionOffer.Result, "error"));
+                assertions.Add(RegressionAssertion.Equal("claim retention offer error code is not_eligible", claimRetentionOffer.Error, "not_eligible"));
             }
 
             return assertions;
@@ -627,6 +684,72 @@ namespace com.jest.sdk.regression
             return Task.FromResult(assertions);
         }
 
+        private static Task<List<RegressionAssertion>> RunLifecycleScenario()
+        {
+            var assertions = new List<RegressionAssertion>();
+            var hideCallCount = 0;
+            var showCallCount = 0;
+            var exitRequestedCallCount = 0;
+
+            Action onHide = () => hideCallCount++;
+            Action onShow = () => showCallCount++;
+            Action onExitRequested = () => exitRequestedCallCount++;
+
+            JestSDK.Instance.Lifecycle.OnHide += onHide;
+            JestSDK.Instance.Lifecycle.OnShow += onShow;
+            JestSDK.Instance.Lifecycle.OnExitRequested += onExitRequested;
+            assertions.Add(RegressionAssertion.Condition(
+                "lifecycle listeners subscribe without throwing",
+                true,
+                true,
+                true));
+
+            var callbacksTriggered = JS_SdkRegressionTriggerLifecycleCallbacks() == 1;
+            if (callbacksTriggered)
+            {
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle hide callback crosses JS bridge",
+                    hideCallCount,
+                    1));
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle show callback crosses JS bridge",
+                    showCallCount,
+                    1));
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle exit-requested callback crosses JS bridge",
+                    exitRequestedCallCount,
+                    1));
+            }
+
+            JestSDK.Instance.Lifecycle.OnHide -= onHide;
+            JestSDK.Instance.Lifecycle.OnShow -= onShow;
+            JestSDK.Instance.Lifecycle.OnExitRequested -= onExitRequested;
+            assertions.Add(RegressionAssertion.Condition(
+                "lifecycle listeners unsubscribe without throwing",
+                true,
+                true,
+                true));
+
+            if (callbacksTriggered)
+            {
+                JS_SdkRegressionTriggerLifecycleCallbacks();
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle hide listener remains unsubscribed",
+                    hideCallCount,
+                    1));
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle show listener remains unsubscribed",
+                    showCallCount,
+                    1));
+                assertions.Add(RegressionAssertion.Equal(
+                    "lifecycle exit-requested listener remains unsubscribed",
+                    exitRequestedCallCount,
+                    1));
+            }
+
+            return Task.FromResult(assertions);
+        }
+
         private static Task<List<RegressionAssertion>> RunGuardrailsScenario()
         {
             var assertions = new List<RegressionAssertion>();
@@ -663,6 +786,8 @@ namespace com.jest.sdk.regression
             assertions.Add(ExpectThrows<ArgumentException>("subscription begin rejects empty sku", () => JestSDK.Instance.Payment.BeginSubscription("")));
             assertions.Add(ExpectThrows<ArgumentException>("subscription cancel rejects null sku", () => JestSDK.Instance.Payment.CancelSubscription(null)));
             assertions.Add(ExpectThrows<ArgumentException>("subscription cancel rejects empty sku", () => JestSDK.Instance.Payment.CancelSubscription("")));
+            assertions.Add(ExpectThrows<ArgumentException>("subscription claim retention offer rejects null sku", () => JestSDK.Instance.Payment.ClaimRetentionOffer(null)));
+            assertions.Add(ExpectThrows<ArgumentException>("subscription claim retention offer rejects empty sku", () => JestSDK.Instance.Payment.ClaimRetentionOffer("")));
             assertions.Add(ExpectThrows<ArgumentException>("notification unschedule rejects null identifier", () => JestSDK.Instance.RichNotifications.UnscheduleNotification(null)));
             assertions.Add(ExpectThrows<ArgumentNullException>("referral dialog rejects null options", () => JestSDK.Instance.Referrals.OpenReferralDialog(null)));
             assertions.Add(ExpectThrows<ArgumentException>("referral dialog rejects empty reference", () => JestSDK.Instance.Referrals.OpenReferralDialog(new Referrals.OpenDialogOptions())));

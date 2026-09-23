@@ -301,9 +301,17 @@ namespace com.jest.sdk.Tests
             Assert.That(result.purchase, Is.Not.Null);
             Assert.AreEqual(products[0].sku, result.purchase.productSku);
             Assert.AreEqual((decimal)products[0].price, result.purchase.credits);
-#pragma warning disable CS0618
-            Assert.That(result.purchase.estimatedRevenue, Is.EqualTo(0m));
-#pragma warning restore CS0618
+            Assert.That(result.purchase.estimatedRevenue, Is.EqualTo(85.8m));
+            Assert.That(result.purchase.Sandbox, Is.Null);
+        }
+
+        [Test]
+        public void Purchase_Success_EchoesRequestedSku()
+        {
+            _mock.purchaseResult = PurchaseReult.success;
+            var purchaseTask = JestSDK.Instance.Payment.BeginPurchase("gems_500");
+            var result = purchaseTask.GetResult();
+            Assert.AreEqual("gems_500", result.purchase.productSku);
         }
 
         [Test]
@@ -364,12 +372,13 @@ namespace com.jest.sdk.Tests
         public void BeginSubscription_Success_ReturnsSubscription()
         {
             _mock.subscriptionResponse =
-                "{\"result\":\"success\",\"subscription\":{\"sku\":\"premium_monthly\",\"displayName\":\"Premium\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\"},\"subscriptionSigned\":\"JWS\"}";
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"premium_monthly\",\"displayName\":\"Premium\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"trialEligible\":false},\"subscriptionSigned\":\"JWS\"}";
             var result = JestSDK.Instance.Payment.BeginSubscription("premium_monthly").GetResult();
             Assert.That(result, Is.Not.Null);
             Assert.AreEqual("success", result.Result);
             Assert.That(result.Subscription, Is.Not.Null);
             Assert.AreEqual("premium_monthly", result.Subscription.Sku);
+            Assert.AreEqual(false, result.Subscription.TrialEligible);
             Assert.AreEqual("JWS", result.SubscriptionSigned);
         }
 
@@ -450,6 +459,66 @@ namespace com.jest.sdk.Tests
         {
             Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CancelSubscription(""));
             Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.CancelSubscription("   "));
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_Success_ReturnsSubscription()
+        {
+            _mock.claimRetentionOfferResponse =
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"gold\",\"displayName\":\"Gold\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"retentionOffer\":null},\"subscriptionSigned\":\"JWS\"}";
+            var result = JestSDK.Instance.Payment.ClaimRetentionOffer("gold").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("success", result.Result);
+            Assert.That(result.Subscription, Is.Not.Null);
+            Assert.AreEqual("gold", result.Subscription.Sku);
+            Assert.That(result.Subscription.RetentionOffer, Is.Null);
+            Assert.AreEqual("JWS", result.SubscriptionSigned);
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_Success_ReturnsSandboxSubscription()
+        {
+            _mock.claimRetentionOfferResponse =
+                "{\"result\":\"success\",\"subscription\":{\"sku\":\"gold\",\"displayName\":\"Gold\",\"price\":9.99,\"currency\":\"USD\",\"billingPeriod\":\"monthly\",\"status\":\"active\",\"retentionOffer\":null,\"sandbox\":true},\"subscriptionSigned\":\"JWS\"}";
+            var result = JestSDK.Instance.Payment.ClaimRetentionOffer("gold").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Subscription, Is.Not.Null);
+            Assert.That(result.Subscription.Sandbox, Is.True);
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_NotEligible_ReturnsError()
+        {
+            // Default mock response reports the offer is not eligible.
+            var result = JestSDK.Instance.Payment.ClaimRetentionOffer("gold").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("error", result.Result);
+            Assert.AreEqual("not_eligible", result.Error);
+        }
+
+        [TestCase("internal_error")]
+        [TestCase("not_eligible")]
+        [TestCase("guest_not_allowed")]
+        public void ClaimRetentionOffer_Error_ForwardsErrorCode(string code)
+        {
+            _mock.claimRetentionOfferResponse = "{\"result\":\"error\",\"error\":\"" + code + "\"}";
+            var result = JestSDK.Instance.Payment.ClaimRetentionOffer("gold").GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.AreEqual("error", result.Result);
+            Assert.AreEqual(code, result.Error);
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_ThrowsOnNullSku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.ClaimRetentionOffer(null));
+        }
+
+        [Test]
+        public void ClaimRetentionOffer_ThrowsOnEmptySku()
+        {
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.ClaimRetentionOffer(""));
+            Assert.Throws<ArgumentException>(() => JestSDK.Instance.Payment.ClaimRetentionOffer("   "));
         }
 
         #endregion
@@ -1005,6 +1074,89 @@ namespace com.jest.sdk.Tests
         public void OpenCopyright_CompletesSuccessfully()
         {
             Assert.DoesNotThrow(() => JestSDK.Instance.OpenCopyright());
+        }
+
+        #endregion
+
+        #region Lifecycle Tests
+
+        [Test]
+        public void Lifecycle_OnHide_FiresWhenBridgeRelaysHideEvent()
+        {
+            var hidden = false;
+            Action handler = () => hidden = true;
+            JestSDK.Instance.Lifecycle.OnHide += handler;
+
+            JsBridge.HandleLifecycleHide();
+
+            Assert.That(hidden, Is.True);
+            JestSDK.Instance.Lifecycle.OnHide -= handler;
+        }
+
+        [Test]
+        public void Lifecycle_OnShow_FiresWhenBridgeRelaysShowEvent()
+        {
+            var shown = false;
+            Action handler = () => shown = true;
+            JestSDK.Instance.Lifecycle.OnShow += handler;
+
+            JsBridge.HandleLifecycleShow();
+
+            Assert.That(shown, Is.True);
+            JestSDK.Instance.Lifecycle.OnShow -= handler;
+        }
+
+        [Test]
+        public void Lifecycle_OnExitRequested_FiresWhenBridgeRelaysExitEvent()
+        {
+            var exitRequested = false;
+            Action handler = () => exitRequested = true;
+            JestSDK.Instance.Lifecycle.OnExitRequested += handler;
+
+            JsBridge.HandleLifecycleExitRequested();
+
+            Assert.That(exitRequested, Is.True);
+            JestSDK.Instance.Lifecycle.OnExitRequested -= handler;
+        }
+
+        [Test]
+        public void Lifecycle_Unsubscribe_StopsReceivingEvents()
+        {
+            var callCount = 0;
+            Action handler = () => callCount++;
+            JestSDK.Instance.Lifecycle.OnHide += handler;
+            JestSDK.Instance.Lifecycle.OnHide -= handler;
+
+            JsBridge.HandleLifecycleHide();
+
+            Assert.That(callCount, Is.EqualTo(0));
+        }
+
+        #endregion
+
+        #region Analytics Tests
+
+        [Test]
+        public void MarkFirstMilestone_IsANoOp()
+        {
+            var sends = 0;
+            Application.LogCallback onLog = (message, stackTrace, type) =>
+            {
+                if (type == LogType.Log && message == "[JestSDK] MarkFirstMilestone (mock)")
+                    sends++;
+            };
+            Application.logMessageReceived += onLog;
+            try
+            {
+                JestSDK.Instance.MarkFirstMilestone();
+                JestSDK.Instance.MarkFirstMilestone();
+            }
+            finally
+            {
+                Application.logMessageReceived -= onLog;
+            }
+
+            Assert.That(sends, Is.EqualTo(0));
         }
 
         #endregion
