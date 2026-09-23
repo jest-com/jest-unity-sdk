@@ -886,6 +886,22 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
+        public void RichNotifications_ScheduleNotification_WithScheduledInDaysZero()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = "Test Body",
+                ctaText = "Play Now!",
+                identifier = "test-key",
+                scheduledInDays = 0,
+                notificationPriority = RichNotifications.Severity.Low
+            };
+
+            // 0 means "later today" and must not throw
+            Assert.DoesNotThrow(() => JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+        }
+
+        [Test]
         public void RichNotifications_ImageReference_Works()
         {
             var options = new RichNotifications.Options();
