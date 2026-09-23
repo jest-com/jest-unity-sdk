@@ -423,6 +423,15 @@ mergeInto(LibraryManager.library, {
     });
   },
 
+  JS_shareImage__deps: ['$JestSDKHelper'],
+  JS_shareImage: function (taskPtr, optionsJson, successCallback, errorCallback) {
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().social.shareImage(JestSDKHelper.parseJson(optionsJson)).then(function (result) {
+        return JSON.stringify(result);
+      });
+    });
+  },
+
   JS_redirectToGame__deps: ['$JestSDKHelper'],
   JS_redirectToGame: function (optionsJson) {
     var sdk = JestSDKHelper.getSdk();

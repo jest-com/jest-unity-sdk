@@ -127,6 +127,13 @@ namespace com.jest.sdk
         string GetListReferralsResponse();
 
         /// <summary>
+        /// Retrieves the share image response.
+        /// </summary>
+        /// <param name="optionsJson">A JSON string containing the share image options.</param>
+        /// <returns>A JSON string containing the share image response data.</returns>
+        string GetShareImageResponse(string optionsJson);
+
+        /// <summary>
         /// Redirects to another game or the flagship game.
         /// </summary>
         /// <param name="optionsJson">A JSON string containing redirect options.</param>

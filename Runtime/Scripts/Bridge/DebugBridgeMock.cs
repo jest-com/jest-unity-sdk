@@ -192,6 +192,17 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Logs a share image request to the Unity console.
+        /// </summary>
+        /// <param name="optionsJson">The share image options in JSON format.</param>
+        /// <returns>A mock share image response indicating the sheet was not canceled.</returns>
+        public string GetShareImageResponse(string optionsJson)
+        {
+            Debug.Log($"[JestSDK] ShareImage {optionsJson}");
+            return "{\"canceled\":false}";
+        }
+
+        /// <summary>
         /// Logs a redirect to game request to the Unity console.
         /// </summary>
         /// <param name="optionsJson">The redirect options in JSON format.</param>

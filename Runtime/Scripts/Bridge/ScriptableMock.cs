@@ -214,6 +214,15 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Retrieves the share image response.
+        /// </summary>
+        public string GetShareImageResponse(string optionsJson)
+        {
+            Debug.Log($"[JestSDK] ShareImage {optionsJson}");
+            return "{\"canceled\":false}";
+        }
+
+        /// <summary>
         /// Logs a redirect to game request.
         /// </summary>
         public void RedirectToGame(string optionsJson)

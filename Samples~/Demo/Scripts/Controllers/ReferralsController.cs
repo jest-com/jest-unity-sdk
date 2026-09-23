@@ -128,6 +128,44 @@ namespace com.jest.demo
             return dataUrl;
         }
 
+        // Reuses the referral share image (m_shareImage / m_useShareImageToggle) and entry
+        // payload fields above to demonstrate JestSDK.Instance.Social.ShareImage.
+        public async void ShareImage()
+        {
+            string entryPayloadJson = m_entryPayloadInput.text;
+            Dictionary<string, object> entryPayload = null;
+            if (!string.IsNullOrEmpty(entryPayloadJson))
+            {
+                try
+                {
+                    entryPayload = Convert.FromString<Dictionary<string, object>>(entryPayloadJson);
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError(e);
+                    UIManager.Instance.m_toastUI.ShowToast("Invalid entry payload JSON");
+                    return;
+                }
+            }
+
+            UIManager.Instance.ShowLoadingSpinner();
+            try
+            {
+                var task = JestSDK.Instance.Social.ShareImage(BuildShareImageDataUrl(), entryPayload);
+                await task;
+
+                if (task.IsCompleted)
+                {
+                    UIManager.Instance.m_toastUI.ShowToast(task.Result.Canceled ? "Share canceled" : "Shared!");
+                }
+            }
+            catch (System.Exception e)
+            {
+                UIManager.Instance.m_toastUI.ShowToast("Failed: " + e.Message);
+            }
+            UIManager.Instance.HideLoadingSpinner();
+        }
+
         public async void ListReferrals()
         {
             UIManager.Instance.ShowLoadingSpinner();

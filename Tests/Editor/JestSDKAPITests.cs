@@ -911,6 +911,48 @@ namespace com.jest.sdk.Tests
 
         #endregion
 
+        #region Social ShareImage Tests
+
+        [Test]
+        public void Social_ShareImage_ReturnsExpectedResponse()
+        {
+            var result = JestSDK.Instance.Social.ShareImage().GetResult();
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Canceled, Is.False);
+        }
+
+        [Test]
+        public void Social_ShareImage_Canceled_ReturnsTrue()
+        {
+            _mock.shareImageResponse = "{\"canceled\":true}";
+            var result = JestSDK.Instance.Social.ShareImage().GetResult();
+            Assert.That(result.Canceled, Is.True);
+        }
+
+        [Test]
+        public void Social_ShareImage_ForwardsImageAndEntryPayload()
+        {
+            const string dataUrl = "data:image/png;base64,iVBORw0KGgo=";
+            var entryPayload = new Dictionary<string, object> { { "coupon", "SPRING25" } };
+
+            JestSDK.Instance.Social.ShareImage(dataUrl, entryPayload);
+
+            Assert.That(_mock.lastShareImageOptionsJson, Does.Contain("\"image\""));
+            Assert.That(_mock.lastShareImageOptionsJson, Does.Contain(dataUrl));
+            Assert.That(_mock.lastShareImageOptionsJson, Does.Contain("\"coupon\""));
+        }
+
+        [Test]
+        public void Social_ShareImage_OmitsFieldsWhenNotSet()
+        {
+            JestSDK.Instance.Social.ShareImage();
+
+            Assert.That(_mock.lastShareImageOptionsJson, Does.Not.Contain("image"));
+            Assert.That(_mock.lastShareImageOptionsJson, Does.Not.Contain("entryPayload"));
+        }
+
+        #endregion
+
         #region Referrals Tests
 
         [Test]
