@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.14.0] - 2026-09-23
+
+### Added
+
+- `Social.ShareImage(image, entryPayload)` — opens the platform's share sheet for an image, the same sheet the platform's own screenshot button shows. Omit `image` to have the platform capture the game's canvas or its registered screenshot provider. Returns a `Social.ShareImageResponse` whose `Canceled` flag is `true` when the sheet closed without sharing; this is not proof that nothing was posted, since a player who left the page mid-post also reports `true`.
+
 ## [2.13.1] - 2026-09-18
 
 ### Fixed

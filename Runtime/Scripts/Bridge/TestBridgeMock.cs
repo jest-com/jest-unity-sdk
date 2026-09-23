@@ -233,6 +233,29 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// The most recent share image options JSON passed to <see cref="GetShareImageResponse"/>.
+        /// Exposed so tests can assert what the bridge layer forwarded.
+        /// </summary>
+        public string lastShareImageOptionsJson { get; private set; }
+
+        /// <summary>
+        /// Raw ShareImage response JSON. When null, defaults to a not-canceled result.
+        /// Set to a canceled or error payload to exercise those paths in tests.
+        /// </summary>
+        public string shareImageResponse { get; set; }
+
+        /// <summary>
+        /// Records a share image request and returns the mock response.
+        /// </summary>
+        /// <param name="optionsJson">The share image options in JSON format.</param>
+        /// <returns>A JSON string containing mock share image response data.</returns>
+        public string GetShareImageResponse(string optionsJson)
+        {
+            lastShareImageOptionsJson = optionsJson;
+            return shareImageResponse ?? "{\"canceled\":false}";
+        }
+
+        /// <summary>
         /// Logs a redirect to game request.
         /// </summary>
         /// <param name="optionsJson">The redirect options in JSON format.</param>

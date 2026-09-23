@@ -118,6 +118,10 @@ namespace com.jest.sdk
                                     Action<IntPtr, string> onError);
 
         [DllImport("__Internal")]
+        private static extern void JS_shareImage(IntPtr taskPtr, string optionsJson,
+                                    Action<IntPtr, string> onSuccess, Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
         private static extern void JS_redirectToGame(string optionsJson);
 
         [DllImport("__Internal")]
@@ -310,6 +314,12 @@ namespace com.jest.sdk
                                     Action<IntPtr, string> onError)
         {
             onSuccess(taskPtr, _bridgeMock.GetListReferralsResponse());
+        }
+
+        private static void JS_shareImage(IntPtr taskPtr, string optionsJson, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            onSuccess(taskPtr, _bridgeMock.GetShareImageResponse(optionsJson));
         }
 
         private static void JS_redirectToGame(string optionsJson)
@@ -574,6 +584,11 @@ namespace com.jest.sdk
         internal static JestSDKTask<string> ListReferrals()
         {
             return new JestSDKTask<string>((System.IntPtr ptr) => { JS_listReferrals(ptr, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static JestSDKTask<string> ShareImage(string optionsJson)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_shareImage(ptr, optionsJson, HandleSuccessString, HandleErrorString); });
         }
 
         internal static void RedirectToGame(string optionsJson)

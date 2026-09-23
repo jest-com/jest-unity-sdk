@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace com.jest.sdk
@@ -51,6 +52,61 @@ namespace com.jest.sdk
         public string GetPlayerAvatar(int size = 1000)
         {
             return JsBridge.GetPlayerAvatar(size);
+        }
+
+        /// <summary>
+        /// Opens the platform's share sheet for an image — the same sheet the platform's own
+        /// screenshot button shows, offering chat, the native share sheet and download. The
+        /// player picks where it goes and writes the caption, so this never shares on the
+        /// player's behalf without a tap.
+        /// </summary>
+        /// <param name="image">Base64 PNG (raw or data URL) to share. Omit it to have the platform
+        /// capture the canvas, or your registered screenshot provider.</param>
+        /// <param name="entryPayload">Handed back to your game when a player opens the shared
+        /// message, so a code or coupon travels with it.</param>
+        /// <returns>A task resolving to a <see cref="ShareImageResponse"/>. <c>Canceled</c> is
+        /// <c>true</c> when the sheet closed without sharing, including a player who left the page
+        /// while the post was still landing, so it is not proof that nothing was posted.</returns>
+        public JestSDKTask<ShareImageResponse> ShareImage(string image = null, Dictionary<string, object> entryPayload = null)
+        {
+            var jsonObj = new Dictionary<string, object>();
+
+            if (!string.IsNullOrEmpty(image))
+            {
+                jsonObj["image"] = image;
+            }
+
+            if (entryPayload != null && entryPayload.Count > 0)
+            {
+                jsonObj["entryPayload"] = entryPayload;
+            }
+
+            string optionsJson = JsonConvert.SerializeObject(jsonObj);
+
+            var task = new JestSDKTask<ShareImageResponse>();
+            var shareImageTask = JsBridge.ShareImage(optionsJson);
+
+            shareImageTask.ContinueWith(t =>
+            {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        task.SetException(t.Exception);
+                        return;
+                    }
+
+                    string json = t.GetResult();
+                    var response = JsonConvert.DeserializeObject<ShareImageResponse>(json);
+                    task.SetResult(response);
+                }
+                catch (Exception e)
+                {
+                    task.SetException(e);
+                }
+            });
+
+            return task;
         }
 
         internal static string GetBotAvatarFallback(string username, int size)
@@ -145,6 +201,21 @@ namespace com.jest.sdk
             /// </summary>
             [JsonProperty("avatarUrl")]
             public string AvatarUrl;
+        }
+
+        /// <summary>
+        /// Result of a <see cref="ShareImage"/> call.
+        /// </summary>
+        [Serializable]
+        public class ShareImageResponse
+        {
+            /// <summary>
+            /// True when the share sheet closed without sharing. Not proof that nothing was
+            /// posted — a player who left the page while the post was still landing also reports
+            /// <c>true</c>.
+            /// </summary>
+            [JsonProperty("canceled")]
+            public bool Canceled;
         }
     }
 }

@@ -25,6 +25,7 @@ namespace com.jest.sdk.regression
             "commerce-errors",
             "notifications",
             "social",
+            "social-share-image",
             "referrals-read",
             "referrals-share",
             "internal",
@@ -140,6 +141,8 @@ namespace com.jest.sdk.regression
                     return RunNotificationsScenario(command);
                 case "social":
                     return RunSocialScenario();
+                case "social-share-image":
+                    return RunSocialShareImageScenario(command);
                 case "referrals-read":
                     return RunReferralsReadScenario();
                 case "referrals-share":
@@ -552,6 +555,33 @@ namespace com.jest.sdk.regression
                 "url or null"));
 
             return Task.FromResult(assertions);
+        }
+
+        private static async Task<List<RegressionAssertion>> RunSocialShareImageScenario(RunScenarioCommand command)
+        {
+            var assertions = new List<RegressionAssertion>();
+
+            var response = await JestSDK.Instance.Social.ShareImage(entryPayload: new Dictionary<string, object>
+            {
+                { "source", "sdk-regression" },
+                { "runId", command.runId }
+            });
+
+            assertions.Add(RegressionAssertion.Condition(
+                "share image response is not null",
+                response != null,
+                response == null ? null : "response",
+                "response"));
+            if (response != null)
+            {
+                assertions.Add(RegressionAssertion.Condition(
+                    "share image canceled flag is readable",
+                    true,
+                    response.Canceled,
+                    "boolean canceled"));
+            }
+
+            return assertions;
         }
 
         private static async Task<List<RegressionAssertion>> RunReferralsReadScenario()
