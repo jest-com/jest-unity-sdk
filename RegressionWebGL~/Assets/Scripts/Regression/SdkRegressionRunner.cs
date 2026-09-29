@@ -719,6 +719,9 @@ namespace com.jest.sdk.regression
             assertions.Add(ExpectThrows<ArgumentNullException>(
                 "send reserved login message rejects null reservation",
                 () => JestSDK.Instance.Internal.SendReservedLoginMessage(null)));
+            assertions.Add(ExpectThrows<ArgumentNullException>(
+                "open reserved browser continuation link rejects null reservation",
+                () => JestSDK.Instance.Internal.OpenReservedBrowserContinuationLink(null)));
             assertions.Add(ExpectThrows<ArgumentException>(
                 "validate name rejects empty name",
                 () => JestSDK.Instance.Internal.ValidateName("")));

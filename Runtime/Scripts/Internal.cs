@@ -75,6 +75,58 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Prepares a link that opens the game in the device's external browser, carrying this
+        /// session's anonymous analytics id across. An onboarding links to its flagship game;
+        /// any other game links to itself. Open it with
+        /// <see cref="OpenReservedBrowserContinuationLink"/> from a tap handler.
+        /// </summary>
+        /// <param name="options">Optional reservation options.</param>
+        /// <returns>A task resolving to the reservation or an error code.</returns>
+        public JestSDKTask<ReserveBrowserContinuationResponse> ReserveBrowserContinuationLinkAsync(ReserveBrowserContinuationOptions options = null)
+        {
+            var task = new JestSDKTask<ReserveBrowserContinuationResponse>();
+            var optionsJson = options != null ? JsonConvert.SerializeObject(options) : null;
+            var reserveTask = JsBridge.ReserveBrowserContinuationLink(optionsJson);
+
+            reserveTask.ContinueWith(t =>
+            {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        task.SetException(t.Exception);
+                        return;
+                    }
+
+                    var response = JsonConvert.DeserializeObject<ReserveBrowserContinuationResponse>(t.GetResult());
+                    task.SetResult(response);
+                }
+                catch (Exception e)
+                {
+                    task.SetException(e);
+                }
+            });
+
+            return task;
+        }
+
+        /// <summary>
+        /// Opens a previously reserved browser continuation link in the external browser.
+        /// Call it synchronously from a user gesture.
+        /// </summary>
+        /// <param name="reservation">The reservation to open.</param>
+        public void OpenReservedBrowserContinuationLink(BrowserContinuationReservation reservation)
+        {
+            if (reservation == null)
+            {
+                throw new ArgumentNullException(nameof(reservation));
+            }
+
+            var reservationJson = JsonConvert.SerializeObject(reservation);
+            JsBridge.OpenReservedBrowserContinuationLink(reservationJson);
+        }
+
+        /// <summary>
         /// Validates a player name against platform rules.
         /// </summary>
         /// <param name="name">The name to validate.</param>
@@ -219,6 +271,51 @@ namespace com.jest.sdk
             /// The reserved message.
             /// </summary>
             public string message;
+        }
+
+        /// <summary>
+        /// Options for reserving a browser continuation link.
+        /// </summary>
+        [Serializable]
+        public class ReserveBrowserContinuationOptions
+        {
+            /// <summary>
+            /// Optional data available as the entry payload in the target game.
+            /// </summary>
+            [JsonProperty("entryPayload", NullValueHandling = NullValueHandling.Ignore)]
+            public Dictionary<string, object> EntryPayload;
+        }
+
+        /// <summary>
+        /// Response from reserving a browser continuation link.
+        /// </summary>
+        [Serializable]
+        public class ReserveBrowserContinuationResponse
+        {
+            /// <summary>
+            /// The reservation if successful.
+            /// </summary>
+            [JsonProperty("reservation")]
+            public BrowserContinuationReservation Reservation;
+
+            /// <summary>
+            /// "no_target_game" or "could_not_reserve" if the reservation failed.
+            /// </summary>
+            [JsonProperty("error")]
+            public string Error;
+        }
+
+        /// <summary>
+        /// An opaque browser continuation link reservation.
+        /// </summary>
+        [Serializable]
+        public class BrowserContinuationReservation
+        {
+            [JsonProperty("__type")]
+            public string Type;
+
+            [JsonProperty("__token")]
+            public string Token;
         }
 
         /// <summary>

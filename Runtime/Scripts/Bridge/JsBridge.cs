@@ -149,6 +149,13 @@ namespace com.jest.sdk
         private static extern void JS_sendReservedLoginMessage(string reservationJson);
 
         [DllImport("__Internal")]
+        private static extern void JS_reserveBrowserContinuationLink(IntPtr taskPtr, string optionsJson, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError);
+
+        [DllImport("__Internal")]
+        private static extern void JS_openReservedBrowserContinuationLink(string reservationJson);
+
+        [DllImport("__Internal")]
         private static extern void JS_setLoadingProgress(int progress);
 
         [DllImport("__Internal")]
@@ -369,6 +376,19 @@ namespace com.jest.sdk
         private static void JS_sendReservedLoginMessage(string reservationJson)
         {
             UnityEngine.Debug.Log($"[JestSDK] Send reserved login message (mock): {reservationJson}");
+        }
+
+        private static void JS_reserveBrowserContinuationLink(IntPtr taskPtr, string optionsJson, Action<IntPtr, string> onSuccess,
+                                    Action<IntPtr, string> onError)
+        {
+            var mockResponse = "{\"reservation\":{\"__type\":\"BrowserContinuationReservation\",\"__token\":\"https://jest.com/g/mock-flagship-game\"}}";
+            onSuccess(taskPtr, mockResponse);
+            UnityEngine.Debug.Log("[JestSDK] Reserve browser continuation link (mock)");
+        }
+
+        private static void JS_openReservedBrowserContinuationLink(string reservationJson)
+        {
+            UnityEngine.Debug.Log($"[JestSDK] Open reserved browser continuation link (mock): {reservationJson}");
         }
 
         private static void JS_setLoadingProgress(int progress)
@@ -646,6 +666,16 @@ namespace com.jest.sdk
         internal static void SendReservedLoginMessage(string reservationJson)
         {
             JS_sendReservedLoginMessage(reservationJson);
+        }
+
+        internal static JestSDKTask<string> ReserveBrowserContinuationLink(string optionsJson)
+        {
+            return new JestSDKTask<string>((System.IntPtr ptr) => { JS_reserveBrowserContinuationLink(ptr, optionsJson, HandleSuccessString, HandleErrorString); });
+        }
+
+        internal static void OpenReservedBrowserContinuationLink(string reservationJson)
+        {
+            JS_openReservedBrowserContinuationLink(reservationJson);
         }
 
         private static bool _loadingComplete = false;

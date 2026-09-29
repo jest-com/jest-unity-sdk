@@ -510,6 +510,20 @@ mergeInto(LibraryManager.library, {
     JestSDKHelper.getSdk().internal.sendReservedLoginMessage(JestSDKHelper.parseJson(reservationJson));
   },
 
+  JS_reserveBrowserContinuationLink__deps: ['$JestSDKHelper'],
+  JS_reserveBrowserContinuationLink: function (taskPtr, optionsJson, successCallback, errorCallback) {
+    JestSDKHelper.callStringTask(taskPtr, successCallback, errorCallback, function () {
+      return JestSDKHelper.getSdk().internal.reserveBrowserContinuationLink(JestSDKHelper.parseJson(optionsJson)).then(function (result) {
+        return JSON.stringify(result);
+      });
+    });
+  },
+
+  JS_openReservedBrowserContinuationLink__deps: ['$JestSDKHelper'],
+  JS_openReservedBrowserContinuationLink: function (reservationJson) {
+    JestSDKHelper.getSdk().internal.openReservedBrowserContinuationLink(JestSDKHelper.parseJson(reservationJson));
+  },
+
   JS_setLoadingProgress__deps: ['$JestSDKHelper'],
   JS_setLoadingProgress: function (progress) {
     JestSDKHelper.getSdk().setLoadingProgress(progress);

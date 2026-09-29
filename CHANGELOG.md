@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.20.0] - 2026-09-29
+
+### Added
+
+- `Internal.ReserveBrowserContinuationLinkAsync(options)` and `Internal.OpenReservedBrowserContinuationLink(reservation)` — internal API to hand an onboarding (or any game) off to the device's external browser, carrying the anonymous analytics id across. The reserve call resolves to a `ReserveBrowserContinuationResponse` with either a `Reservation` or an `Error` (`no_target_game` / `could_not_reserve`).
+
 ## [2.19.0] - 2026-09-23
 
 ### Added
