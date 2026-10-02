@@ -98,7 +98,7 @@ namespace com.jest.sdk
         /// </summary>
         public void ScheduleNotificationV2(string options)
         {
-            _notificationsV2.Add(JsonUtility.FromJson<RichNotifications.Options>(options));
+            _notificationsV2.Add(RichNotifications.Options.FromJson(options));
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace com.jest.sdk
         /// </summary>
         public List<string> GetNotificationsV2()
         {
-            return _notificationsV2.Select(n => JsonUtility.ToJson(n)).ToList();
+            return _notificationsV2.Select(n => n.ToJson()).ToList();
         }
 
         /// <summary>

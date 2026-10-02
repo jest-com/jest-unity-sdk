@@ -524,6 +524,17 @@ namespace com.jest.sdk.regression
                     scheduledInDays = 1
                 })));
             assertions.Add(ExpectThrows<ArgumentException>(
+                "notification schedule rejects asset combined with assetReference",
+                () => JestSDK.Instance.RichNotifications.ScheduleNotification(new RichNotifications.Options
+                {
+                    body = "Hello",
+                    ctaText = "Open",
+                    identifier = identifier + ":asset-and-reference",
+                    scheduledInDays = 1,
+                    Asset = "data:image/png;base64,AAAA",
+                    assetReference = "ref"
+                })));
+            assertions.Add(ExpectThrows<ArgumentException>(
                 "notification schedule requires identifier",
                 () => JestSDK.Instance.RichNotifications.ScheduleNotification(new RichNotifications.Options
                 {
