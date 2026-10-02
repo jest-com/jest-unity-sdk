@@ -233,12 +233,14 @@ namespace com.jest.sdk.Tests
         [Test]
         public void RichNotifications_ScheduleNotification_StoresNotification()
         {
+            const string dataUrl = "data:image/png;base64,iVBORw0KGgo=";
             var options = new RichNotifications.Options
             {
                 body = "Test Body",
                 ctaText = "Play Now!",
                 identifier = "test-key",
                 date = DateTime.Now,
+                Asset = dataUrl,
                 notificationPriority = RichNotifications.Severity.Low
             };
             options.entryPayloadData["stringValue"] = "test";
@@ -247,6 +249,7 @@ namespace com.jest.sdk.Tests
             var task = JestSDK.Instance.RichNotifications.ScheduleNotification(options);
             Assert.That(task.IsCompleted, Is.True);
             Assert.That(task.IsFaulted, Is.False);
+            Assert.That(_mock.GetNotificationsV2()[0], Does.Contain("\"asset\":\"" + dataUrl + "\""));
 
             var notifications = JestSDK.Instance.RichNotifications.GetNotifications();
             Assert.That(notifications, Has.Count.EqualTo(1));
@@ -256,6 +259,68 @@ namespace com.jest.sdk.Tests
             Assert.AreEqual(options.date, result.date);
             Assert.AreEqual(options.identifier, result.identifier);
             Assert.AreEqual(options.notificationPriority, result.notificationPriority);
+            Assert.AreEqual(dataUrl, result.Asset);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void RichNotifications_ScriptableMock_PreservesInlineAsset(bool useFuzzyScheduling)
+        {
+            const string dataUrl = "data:image/png;base64,iVBORw0KGgo=";
+            var mock = ScriptableObject.CreateInstance<ScriptableMock>();
+            try
+            {
+                JsonUtility.FromJsonOverwrite("{\"_notificationsV2\":[]}", mock);
+                JsBridge.SetMock(mock);
+
+                var options = new RichNotifications.Options
+                {
+                    body = "Test Body",
+                    title = "Test Title",
+                    ctaText = "Play Now!",
+                    identifier = "inline-asset",
+                    Asset = dataUrl,
+                    notificationPriority = RichNotifications.Severity.High,
+                    entryPayloadData = new Dictionary<string, object> { { "score", 42 } }
+                };
+                if (useFuzzyScheduling)
+                    options.scheduledInDays = 1;
+                else
+                    options.date = DateTime.UtcNow.AddDays(1);
+
+                var task = JestSDK.Instance.RichNotifications.ScheduleNotification(options);
+                Assert.That(task.IsCompleted, Is.True);
+                Assert.That(task.IsFaulted, Is.False);
+
+                using (var serializedMock = new UnityEditor.SerializedObject(mock))
+                {
+                    var storedNotifications = serializedMock.FindProperty("_notificationsV2");
+                    Assert.That(storedNotifications.arraySize, Is.EqualTo(1));
+                    Assert.That(storedNotifications.GetArrayElementAtIndex(0).FindPropertyRelative("Asset").stringValue, Is.EqualTo(dataUrl));
+                }
+
+                var wireJson = mock.GetNotificationsV2()[0];
+                Assert.That(wireJson, Does.Contain("\"asset\":\"" + dataUrl + "\""));
+                Assert.That(wireJson, Does.Not.Contain("\"Asset\""));
+
+                var notifications = JestSDK.Instance.RichNotifications.GetNotifications();
+                Assert.That(notifications, Has.Count.EqualTo(1));
+                var result = notifications[0];
+                Assert.That(result.Asset, Is.EqualTo(dataUrl));
+                Assert.That(result.body, Is.EqualTo(options.body));
+                Assert.That(result.title, Is.EqualTo(options.title));
+                Assert.That(result.ctaText, Is.EqualTo(options.ctaText));
+                Assert.That(result.identifier, Is.EqualTo(options.identifier));
+                Assert.That(result.notificationPriority, Is.EqualTo(options.notificationPriority));
+                Assert.That(result.date, Is.EqualTo(options.date));
+                Assert.That(result.scheduledInDays, Is.EqualTo(options.scheduledInDays));
+                Assert.That(result.entryPayloadData["score"], Is.EqualTo(42));
+            }
+            finally
+            {
+                JsBridge.SetMock(_mock);
+                UnityEngine.Object.DestroyImmediate(mock);
+            }
         }
 
         [Test]

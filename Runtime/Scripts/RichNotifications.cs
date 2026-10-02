@@ -294,6 +294,7 @@ namespace com.jest.sdk
                     title = dict.TryGetValue("title", out var ti) ? ti?.ToString() : null,
                     ctaText = dict.TryGetValue("ctaText", out var cta) ? cta?.ToString() : null,
                     assetReference = dict.TryGetValue("assetReference", out var ar) ? ar?.ToString() : null,
+                    Asset = dict.TryGetValue("asset", out var asset) ? asset?.ToString() : null,
                     imageReference = dict.TryGetValue("imageReference", out var img) ? img?.ToString() : null,
                     identifier = dict.TryGetValue("identifier", out var id) ? id?.ToString() : null
                 };
