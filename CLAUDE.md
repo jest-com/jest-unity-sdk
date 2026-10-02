@@ -4,11 +4,13 @@ This repo is the **Jest Unity SDK** — a C# Unity package that exposes a JS bri
 
 ## C# naming — required for new code
 
-When you add new C# code in this repo, follow standard .NET naming conventions, even if surrounding code in the same file does not. The legacy code in `Runtime/Scripts/` uses camelCase public fields; **do not propagate that pattern**. Match the language convention, not the file.
+When you add new C# code in this repo, follow standard .NET naming conventions, even if other classes in the same file do not. The legacy code in `Runtime/Scripts/` uses camelCase public fields; **do not propagate that pattern into new classes**. Match the language convention, not the file.
+
+**Exception — adding a member to an existing class:** match the casing of that class's existing public members. If a class's public fields are camelCase (e.g. `RichNotifications.Options`: `body`, `ctaText`, `assetReference`), a field you add to it is camelCase too (`asset`, not `Asset`). Consumers set these fields side by side in one object initializer, so mixing `body = ...` with `Asset = ...` reads like a bug, and Unity's `JsonUtility` (used by mocks and inspector serialization) matches field names exactly, so a casing mismatch with the wire key silently drops the value. PascalCase applies to new classes/structs and everything declared in them.
 
 | Element | Convention | Example |
 |---|---|---|
-| Public field | PascalCase | `public string PlayerId;` |
+| Public field | PascalCase (new classes; see exception above) | `public string PlayerId;` |
 | Public property | PascalCase | `public int Score { get; set; }` |
 | Public method | PascalCase | `public void OpenDialog()` |
 | Public class / struct / enum / interface | PascalCase (interfaces start with `I`) | `class ReferralInfo`, `interface IBridgeMock` |

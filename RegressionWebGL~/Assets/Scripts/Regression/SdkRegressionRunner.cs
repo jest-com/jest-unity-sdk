@@ -531,7 +531,7 @@ namespace com.jest.sdk.regression
                     ctaText = "Open",
                     identifier = identifier + ":asset-and-reference",
                     scheduledInDays = 1,
-                    Asset = "data:image/png;base64,AAAA",
+                    asset = "data:image/png;base64,AAAA",
                     assetReference = "ref"
                 })));
             assertions.Add(ExpectThrows<ArgumentException>(
