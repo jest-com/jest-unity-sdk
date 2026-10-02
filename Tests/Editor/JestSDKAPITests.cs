@@ -240,7 +240,7 @@ namespace com.jest.sdk.Tests
                 ctaText = "Play Now!",
                 identifier = "test-key",
                 date = DateTime.Now,
-                Asset = dataUrl,
+                asset = dataUrl,
                 notificationPriority = RichNotifications.Severity.Low
             };
             options.entryPayloadData["stringValue"] = "test";
@@ -259,7 +259,7 @@ namespace com.jest.sdk.Tests
             Assert.AreEqual(options.date, result.date);
             Assert.AreEqual(options.identifier, result.identifier);
             Assert.AreEqual(options.notificationPriority, result.notificationPriority);
-            Assert.AreEqual(dataUrl, result.Asset);
+            Assert.AreEqual(dataUrl, result.asset);
         }
 
         [TestCase(false)]
@@ -279,7 +279,7 @@ namespace com.jest.sdk.Tests
                     title = "Test Title",
                     ctaText = "Play Now!",
                     identifier = "inline-asset",
-                    Asset = dataUrl,
+                    asset = dataUrl,
                     notificationPriority = RichNotifications.Severity.High,
                     entryPayloadData = new Dictionary<string, object> { { "score", 42 } }
                 };
@@ -296,17 +296,16 @@ namespace com.jest.sdk.Tests
                 {
                     var storedNotifications = serializedMock.FindProperty("_notificationsV2");
                     Assert.That(storedNotifications.arraySize, Is.EqualTo(1));
-                    Assert.That(storedNotifications.GetArrayElementAtIndex(0).FindPropertyRelative("Asset").stringValue, Is.EqualTo(dataUrl));
+                    Assert.That(storedNotifications.GetArrayElementAtIndex(0).FindPropertyRelative("asset").stringValue, Is.EqualTo(dataUrl));
                 }
 
                 var wireJson = mock.GetNotificationsV2()[0];
                 Assert.That(wireJson, Does.Contain("\"asset\":\"" + dataUrl + "\""));
-                Assert.That(wireJson, Does.Not.Contain("\"Asset\""));
 
                 var notifications = JestSDK.Instance.RichNotifications.GetNotifications();
                 Assert.That(notifications, Has.Count.EqualTo(1));
                 var result = notifications[0];
-                Assert.That(result.Asset, Is.EqualTo(dataUrl));
+                Assert.That(result.asset, Is.EqualTo(dataUrl));
                 Assert.That(result.body, Is.EqualTo(options.body));
                 Assert.That(result.title, Is.EqualTo(options.title));
                 Assert.That(result.ctaText, Is.EqualTo(options.ctaText));
@@ -332,7 +331,7 @@ namespace com.jest.sdk.Tests
                 ctaText = "Play Now!",
                 identifier = "asset-and-reference",
                 scheduledInDays = 1,
-                Asset = "data:image/png;base64,iVBORw0KGgo=",
+                asset = "data:image/png;base64,iVBORw0KGgo=",
                 assetReference = "pre-approved-asset"
             };
 
@@ -350,7 +349,7 @@ namespace com.jest.sdk.Tests
                 ctaText = "Play Now!",
                 identifier = "asset-and-image-reference",
                 scheduledInDays = 1,
-                Asset = "data:image/png;base64,iVBORw0KGgo=",
+                asset = "data:image/png;base64,iVBORw0KGgo=",
                 imageReference = "image://test-image"
             };
 

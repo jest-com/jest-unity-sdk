@@ -4,7 +4,7 @@
 
 ### Added
 
-- `RichNotifications.Options.Asset` — a base64 data URL (png, jpeg, or webp, at most 2MB) to attach to a notification, moderated before delivery. Mutually exclusive with `assetReference`; `ScheduleNotification` throws `ArgumentException` if both are set.
+- `RichNotifications.Options.asset` — a base64 data URL (png, jpeg, or webp, at most 2MB) to attach to a notification, moderated before delivery. Mutually exclusive with `assetReference` (and the deprecated `imageReference`); `ScheduleNotification` throws `ArgumentException` if both are set.
 
 ## [2.19.0] - 2026-09-23
 

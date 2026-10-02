@@ -66,9 +66,9 @@ namespace com.jest.sdk
                 throw new ArgumentException("date and scheduledInDays are mutually exclusive");
 
 #pragma warning disable CS0618
-            if (!string.IsNullOrEmpty(options.Asset) &&
+            if (!string.IsNullOrEmpty(options.asset) &&
                 (!string.IsNullOrEmpty(options.assetReference) || !string.IsNullOrEmpty(options.imageReference)))
-                throw new ArgumentException("Asset and assetReference are mutually exclusive");
+                throw new ArgumentException("asset and assetReference are mutually exclusive");
 #pragma warning restore CS0618
 
             var payload = options.ToJson();
@@ -136,8 +136,7 @@ namespace com.jest.sdk
             /// Base64 data URL (png, jpeg, or webp, at most 2MB) to display with the notification.
             /// Moderated before delivery. Mutually exclusive with <see cref="assetReference"/>.
             /// </summary>
-            [JsonProperty("asset")]
-            public string Asset;
+            public string asset;
 
             /// <summary>
             /// Deprecated. Use <see cref="assetReference"/> instead.
@@ -255,9 +254,9 @@ namespace com.jest.sdk
                     jsonObj["assetReference"] = resolvedAssetRef;
                 }
 
-                if (!string.IsNullOrEmpty(Asset))
+                if (!string.IsNullOrEmpty(asset))
                 {
-                    jsonObj["asset"] = Asset;
+                    jsonObj["asset"] = asset;
                 }
 
                 // Add entryPayload if present
@@ -294,7 +293,7 @@ namespace com.jest.sdk
                     title = dict.TryGetValue("title", out var ti) ? ti?.ToString() : null,
                     ctaText = dict.TryGetValue("ctaText", out var cta) ? cta?.ToString() : null,
                     assetReference = dict.TryGetValue("assetReference", out var ar) ? ar?.ToString() : null,
-                    Asset = dict.TryGetValue("asset", out var asset) ? asset?.ToString() : null,
+                    asset = dict.TryGetValue("asset", out var inlineAsset) ? inlineAsset?.ToString() : null,
                     imageReference = dict.TryGetValue("imageReference", out var img) ? img?.ToString() : null,
                     identifier = dict.TryGetValue("identifier", out var id) ? id?.ToString() : null
                 };
