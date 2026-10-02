@@ -324,6 +324,42 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
+        public void RichNotifications_ScheduleNotification_RejectsAssetWithAssetReference()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = "Test Body",
+                ctaText = "Play Now!",
+                identifier = "asset-and-reference",
+                scheduledInDays = 1,
+                Asset = "data:image/png;base64,iVBORw0KGgo=",
+                assetReference = "pre-approved-asset"
+            };
+
+            Assert.Throws<ArgumentException>(() =>
+                JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+            Assert.That(_mock.GetNotificationsV2(), Is.Empty);
+        }
+
+        [Test]
+        public void RichNotifications_ScheduleNotification_RejectsAssetWithDeprecatedImageReference()
+        {
+            var options = new RichNotifications.Options
+            {
+                body = "Test Body",
+                ctaText = "Play Now!",
+                identifier = "asset-and-image-reference",
+                scheduledInDays = 1,
+                Asset = "data:image/png;base64,iVBORw0KGgo=",
+                imageReference = "image://test-image"
+            };
+
+            Assert.Throws<ArgumentException>(() =>
+                JestSDK.Instance.RichNotifications.ScheduleNotification(options));
+            Assert.That(_mock.GetNotificationsV2(), Is.Empty);
+        }
+
+        [Test]
         public void RichNotifications_UnscheduleNotification_CompletesAndRemovesNotification()
         {
             var options = new RichNotifications.Options
