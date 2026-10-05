@@ -133,8 +133,9 @@ namespace com.jest.sdk
             public string assetReference;
 
             /// <summary>
-            /// Base64 data URL (png, jpeg, or webp, at most 2MB) to display with the notification.
-            /// Moderated before delivery. Mutually exclusive with <see cref="assetReference"/>.
+            /// Base64 data URL (png, jpeg, or webp, at most 2MB) or an https:// URL to display with the
+            /// notification. A URL is downloaded once (at most 2MB, no redirects) and treated as
+            /// immutable: change the URL to change the image. Moderated before delivery. Mutually exclusive with <see cref="assetReference"/>.
             /// </summary>
             public string asset;
 
