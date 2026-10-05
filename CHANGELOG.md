@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.21.0] - 2026-10-05
+
+### Changed
+
+- `RichNotifications.Options.asset` now also accepts an `https://` URL (at most 2MB, no redirects) that the platform downloads once. A URL is treated as immutable: change the URL to change the image.
+
 ## [2.20.0] - 2026-10-01
 
 ### Added
