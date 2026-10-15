@@ -98,6 +98,25 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Returns how the player entered this game session.
+        /// </summary>
+        /// <remarks>
+        /// Entry sources describe the current entry, rather than the player's first acquisition.
+        /// Unclassified entries return <c>unknown</c>. Editor mocks return <c>direct</c>.
+        /// </remarks>
+        /// <returns>The entry source; read <see cref="EntrySource.Type"/> before its other fields.</returns>
+        public EntrySource GetEntrySource()
+        {
+            string sourceString = JsBridge.GetEntrySource();
+            if (string.IsNullOrEmpty(sourceString))
+            {
+                return new EntrySource { Type = "unknown" };
+            }
+
+            return Convert.FromString<EntrySource>(sourceString) ?? new EntrySource { Type = "unknown" };
+        }
+
+        /// <summary>
         /// Starts the platform login flow and completes when the player dismisses the
         /// login popup. Resolves immediately if the player is already registered.
         /// </summary>

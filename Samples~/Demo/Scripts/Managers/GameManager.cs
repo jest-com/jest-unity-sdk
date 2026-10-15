@@ -44,6 +44,8 @@ namespace com.jest.demo
             JestSDK.Instance.Init().ContinueWith(t =>
             {
                 Debug.Log("InitJestSDK Success");
+                var entrySource = JestSDK.Instance.GetEntrySource();
+                Debug.Log($"Entry source: {entrySource.Type}" + (entrySource.Campaign != null ? $" (campaign {entrySource.Campaign.Id})" : ""));
                 JestSDK.Instance.MarkGameLoaded();
                 JestSDK.Instance.Lifecycle.OnHide += () => Debug.Log("Game hidden");
                 JestSDK.Instance.Lifecycle.OnShow += () => Debug.Log("Game shown");

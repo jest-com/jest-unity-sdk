@@ -231,6 +231,47 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
+        public void GetEntrySource_DefaultsToDirectInMock()
+        {
+            var source = JestSDK.Instance.GetEntrySource();
+
+            Assert.That(source.Type, Is.EqualTo("direct"));
+            Assert.That(source.Campaign, Is.Null);
+            Assert.That(source.Utm, Is.Null);
+        }
+
+        [Test]
+        public void GetEntrySource_ParsesJestAdCampaign()
+        {
+            const string wireJson = "{\"type\":\"jest_ad\",\"campaign\":{\"id\":\"cmp_123\",\"name\":\"Boss rush\"}}";
+            _mock.SetEntrySource(Convert.FromString<EntrySource>(wireJson));
+
+            var source = JestSDK.Instance.GetEntrySource();
+
+            Assert.That(source.Type, Is.EqualTo("jest_ad"));
+            Assert.That(source.Campaign.Id, Is.EqualTo("cmp_123"));
+            Assert.That(source.Campaign.Name, Is.EqualTo("Boss rush"));
+            Assert.That(source.Utm, Is.Null);
+        }
+
+        [Test]
+        public void GetEntrySource_ParsesExternalAdWithMissingUtmValues()
+        {
+            const string wireJson = "{\"type\":\"external_ad\",\"utm\":{\"source\":\"meta\",\"medium\":\"paid\",\"campaign\":\"launch\",\"term\":null,\"content\":null}}";
+            _mock.SetEntrySource(Convert.FromString<EntrySource>(wireJson));
+
+            var source = JestSDK.Instance.GetEntrySource();
+
+            Assert.That(source.Type, Is.EqualTo("external_ad"));
+            Assert.That(source.Utm.Source, Is.EqualTo("meta"));
+            Assert.That(source.Utm.Medium, Is.EqualTo("paid"));
+            Assert.That(source.Utm.Campaign, Is.EqualTo("launch"));
+            Assert.That(source.Utm.Term, Is.Null);
+            Assert.That(source.Utm.Content, Is.Null);
+            Assert.That(source.Campaign, Is.Null);
+        }
+
+        [Test]
         public void RichNotifications_ScheduleNotification_StoresNotification()
         {
             const string dataUrl = "data:image/png;base64,iVBORw0KGgo=";
