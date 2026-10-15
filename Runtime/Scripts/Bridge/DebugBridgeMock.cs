@@ -123,6 +123,24 @@ namespace com.jest.sdk
         }
 
         /// <summary>
+        /// Retrieves how the player entered the current game session.
+        /// </summary>
+        /// <returns>A direct entry, matching the HTML5 SDK's mock mode.</returns>
+        public string GetEntrySource()
+        {
+            return "{\"type\":\"direct\"}";
+        }
+
+        /// <summary>
+        /// Logs a request to set the entry source.
+        /// </summary>
+        /// <param name="source">The entry source to report.</param>
+        public void SetEntrySource(EntrySource source)
+        {
+            Debug.Log($"[JestSDK] SetEntrySource {Convert.ToString(source)}");
+        }
+
+        /// <summary>
         /// Logs a user login event to the Unity console and updates registration status.
         /// </summary>
         /// <param name="payload">A JSON string representing the login payload.</param>

@@ -33,6 +33,19 @@ namespace com.jest.sdk.regression
             "lifecycle",
             "guardrails"
         };
+        private static readonly string[] EntrySourceTypes =
+        {
+            "explore",
+            "home",
+            "profile",
+            "chat",
+            "notification",
+            "jest_ad",
+            "external_ad",
+            "referral",
+            "direct",
+            "unknown"
+        };
         private static SdkRegressionRunner s_instance;
 
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -174,6 +187,13 @@ namespace com.jest.sdk.regression
                     actual,
                     expected.Value));
             }
+
+            var entrySourceType = JestSDK.Instance.GetEntrySource()?.Type;
+            assertions.Add(RegressionAssertion.Condition(
+                "entry source type is a known value",
+                Array.IndexOf(EntrySourceTypes, entrySourceType) >= 0,
+                entrySourceType,
+                string.Join(" | ", EntrySourceTypes)));
 
             var playerId = JestSDK.Instance.Player.id;
             assertions.Add(RegressionAssertion.Condition(

@@ -84,6 +84,18 @@ namespace com.jest.sdk
         void SetEntryPayload(Dictionary<string, object> payload);
 
         /// <summary>
+        /// Retrieves how the player entered the current game session.
+        /// </summary>
+        /// <returns>A JSON string containing the entry source.</returns>
+        string GetEntrySource();
+
+        /// <summary>
+        /// Sets the entry source returned by <see cref="GetEntrySource"/>.
+        /// </summary>
+        /// <param name="source">The entry source to report.</param>
+        void SetEntrySource(EntrySource source);
+
+        /// <summary>
         /// Marks the user as logged in.
         /// </summary>
         /// <param name="payload">A JSON string containing login payload data.</param>

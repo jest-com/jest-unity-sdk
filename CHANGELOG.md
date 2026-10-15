@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.22.0] - 2026-10-15
+
+### Added
+
+- `JestSDK.Instance.GetEntrySource()` — returns an `EntrySource` describing how the player entered the current game session (`Type` of `explore`, `home`, `profile`, `chat`, `notification`, `jest_ad`, `external_ad`, `referral`, `direct`, or `unknown`), with type-specific fields such as `Campaign` for Jest Ads and `Utm` for external ads. Editor mocks return `direct`.
+
 ## [2.21.0] - 2026-10-05
 
 ### Changed

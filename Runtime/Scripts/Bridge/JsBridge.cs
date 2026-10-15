@@ -15,6 +15,9 @@ namespace com.jest.sdk
         private static extern string JS_getEntryPayload();
 
         [DllImport("__Internal")]
+        private static extern string JS_getEntrySource();
+
+        [DllImport("__Internal")]
         private static extern string JS_getPlayerId();
 
         [DllImport("__Internal")]
@@ -180,6 +183,8 @@ namespace com.jest.sdk
 
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
+
+        private static string JS_getEntrySource() { return _bridgeMock.GetEntrySource(); }
 
         private static string JS_getPlayerId() { return _bridgeMock.playerId; }
 
@@ -442,6 +447,11 @@ namespace com.jest.sdk
         internal static string GetEntryPayload()
         {
             return JS_getEntryPayload();
+        }
+
+        internal static string GetEntrySource()
+        {
+            return JS_getEntrySource();
         }
 
         internal static string GetPlayerId()

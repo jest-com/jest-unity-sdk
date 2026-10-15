@@ -28,6 +28,8 @@ namespace com.jest.sdk
         [Header("Entry Payload")]
         [SerializeField] private List<ValuePair> _entryPayload;
 
+        private EntrySource _entrySource = new EntrySource { Type = "direct" };
+
         [Header("Payment")]
         [Tooltip("Select purchase response")]
         [SerializeField] private PurchaseReult _purchaseResult;
@@ -141,6 +143,22 @@ namespace com.jest.sdk
             {
                 _entryPayload.Add(new ValuePair { key = pair.Key, value = pair.Value.ToString() });
             }
+        }
+
+        /// <summary>
+        /// Retrieves how the player entered the current game session.
+        /// </summary>
+        public string GetEntrySource()
+        {
+            return Convert.ToString(_entrySource);
+        }
+
+        /// <summary>
+        /// Sets the entry source returned by <see cref="GetEntrySource"/>.
+        /// </summary>
+        public void SetEntrySource(EntrySource source)
+        {
+            _entrySource = source;
         }
 
         /// <summary>

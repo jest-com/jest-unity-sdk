@@ -14,6 +14,7 @@ namespace com.jest.sdk
         private readonly Dictionary<string, string> _playerValues = new();
         private readonly List<string> _notificationsV2 = new();
         private string _entryPayload;
+        private EntrySource _entrySource = new EntrySource { Type = "direct" };
 
         /// <summary>
         /// Gets the unique identifier for the player.
@@ -147,6 +148,24 @@ namespace com.jest.sdk
         public void SetEntryPayload(Dictionary<string, object> payload)
         {
             _entryPayload = Convert.ToString(payload);
+        }
+
+        /// <summary>
+        /// Retrieves how the player entered the current game session.
+        /// </summary>
+        /// <returns>A JSON string representing the entry source.</returns>
+        public string GetEntrySource()
+        {
+            return Convert.ToString(_entrySource);
+        }
+
+        /// <summary>
+        /// Sets the entry source returned by <see cref="GetEntrySource"/>.
+        /// </summary>
+        /// <param name="source">The entry source to report.</param>
+        public void SetEntrySource(EntrySource source)
+        {
+            _entrySource = source;
         }
 
         /// <summary>

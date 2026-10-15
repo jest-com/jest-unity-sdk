@@ -155,6 +155,12 @@ mergeInto(LibraryManager.library, {
     return JestSDKHelper.marshalString(JSON.stringify(payload || {}));
   },
 
+  JS_getEntrySource__deps: ['$JestSDKHelper'],
+  JS_getEntrySource: function () {
+    var source = JestSDKHelper.getSdk().getEntrySource();
+    return JestSDKHelper.marshalString(JSON.stringify(source || { type: 'unknown' }));
+  },
+
   JS_getPlayerId__deps: ['$JestSDKHelper'],
   JS_getPlayerId: function () {
     var player = JestSDKHelper.getSdk().getPlayer();
