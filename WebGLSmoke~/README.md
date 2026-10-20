@@ -23,6 +23,9 @@ This folder ends in `~` so Unity ignores it.
 4. The stub retains the lifecycle callbacks registered by the SDK bridge. The
    test runs the `lifecycle` regression scenario, which invokes those callbacks
    and verifies each one reaches — and can be unsubscribed from — its C# event.
+5. The stub also records the patterns passed to `haptics.vibrate` and reports
+   the `tap` capability. The test runs the `haptics` scenario and checks the
+   C# calls arrive as the expected JavaScript arrays and the capability parses.
 
 ## Run locally
 

@@ -31,6 +31,7 @@ namespace com.jest.sdk.regression
             "internal",
             "legal",
             "lifecycle",
+            "haptics",
             "guardrails"
         };
         private static readonly string[] EntrySourceTypes =
@@ -166,6 +167,8 @@ namespace com.jest.sdk.regression
                     return RunLegalScenario();
                 case "lifecycle":
                     return RunLifecycleScenario();
+                case "haptics":
+                    return RunHapticsScenario();
                 case "guardrails":
                     return RunGuardrailsScenario();
                 default:
@@ -838,6 +841,46 @@ namespace com.jest.sdk.regression
                     exitRequestedCallCount,
                     1));
             }
+
+            return Task.FromResult(assertions);
+        }
+
+        private static Task<List<RegressionAssertion>> RunHapticsScenario()
+        {
+            var assertions = new List<RegressionAssertion>();
+
+            var capability = JestSDK.Instance.Haptics.GetCapability();
+            assertions.Add(RegressionAssertion.Condition(
+                "haptics capability is a known value",
+                Enum.IsDefined(typeof(HapticsCapability), capability),
+                capability.ToString(),
+                "None | Vibrate | Tap"));
+
+            var accepted = JestSDK.Instance.Haptics.Vibrate(10);
+            assertions.Add(RegressionAssertion.Condition(
+                "haptics vibrate returns without throwing",
+                true,
+                accepted,
+                "bool"));
+
+            var patternAccepted = JestSDK.Instance.Haptics.Vibrate(new[] { 10, 20, 10 });
+            assertions.Add(RegressionAssertion.Condition(
+                "haptics vibrate pattern returns without throwing",
+                true,
+                patternAccepted,
+                "bool"));
+
+            if (capability == HapticsCapability.None)
+            {
+                assertions.Add(RegressionAssertion.Equal(
+                    "haptics vibrate is rejected without capability",
+                    accepted,
+                    false));
+            }
+
+            assertions.Add(ExpectThrows<ArgumentNullException>(
+                "haptics vibrate rejects null pattern",
+                () => JestSDK.Instance.Haptics.Vibrate(null)));
 
             return Task.FromResult(assertions);
         }

@@ -61,6 +61,16 @@ namespace com.jest.sdk
         /// </summary>
         public string claimRetentionOfferResponse { get; set; }
 
+        /// <summary>
+        /// Haptics capability reported to the game. Vibrate requests are accepted unless this is None.
+        /// </summary>
+        public HapticsCapability hapticsCapability { get; set; }
+
+        /// <summary>
+        /// Every pattern passed to Vibrate, in call order.
+        /// </summary>
+        public List<int[]> vibratePatterns { get; } = new();
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestBridgeMock"/> class.
@@ -335,6 +345,26 @@ namespace com.jest.sdk
         public string GetClaimRetentionOfferResponse()
         {
             return claimRetentionOfferResponse ?? "{\"result\":\"error\",\"error\":\"not_eligible\"}";
+        }
+
+        /// <summary>
+        /// Records the vibration pattern and accepts it unless <see cref="hapticsCapability"/> is None.
+        /// </summary>
+        /// <param name="patternJson">A JSON array of alternating vibration and pause durations in milliseconds.</param>
+        /// <returns>Whether the request was accepted.</returns>
+        public bool Vibrate(string patternJson)
+        {
+            vibratePatterns.Add(JsonConvert.DeserializeObject<int[]>(patternJson));
+            return hapticsCapability != HapticsCapability.None;
+        }
+
+        /// <summary>
+        /// Retrieves the haptics capability.
+        /// </summary>
+        /// <returns>The wire value of <see cref="hapticsCapability"/>.</returns>
+        public string GetHapticsCapability()
+        {
+            return hapticsCapability.ToString().ToLowerInvariant();
         }
     }
 }

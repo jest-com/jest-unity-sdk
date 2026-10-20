@@ -617,5 +617,16 @@ mergeInto(LibraryManager.library, {
     sdk.lifecycle.onExitRequested(function () {
       {{{ makeDynCall('v', 'onExitRequested') }}}();
     });
+  },
+
+  JS_vibrate__deps: ['$JestSDKHelper'],
+  JS_vibrate: function (patternJson) {
+    var pattern = JSON.parse(UTF8ToString(patternJson));
+    return JestSDKHelper.getSdk().haptics.vibrate(pattern) ? 1 : 0;
+  },
+
+  JS_getHapticsCapability__deps: ['$JestSDKHelper'],
+  JS_getHapticsCapability: function () {
+    return JestSDKHelper.marshalString(JestSDKHelper.getSdk().haptics.getCapability());
   }
 });

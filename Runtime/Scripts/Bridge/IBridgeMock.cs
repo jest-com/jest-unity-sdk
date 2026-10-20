@@ -186,5 +186,18 @@ namespace com.jest.sdk
         /// </summary>
         /// <returns>A JSON string containing claim retention offer response data.</returns>
         string GetClaimRetentionOfferResponse();
+
+        /// <summary>
+        /// Requests a device vibration.
+        /// </summary>
+        /// <param name="patternJson">A JSON array of alternating vibration and pause durations in milliseconds.</param>
+        /// <returns>Whether the request was accepted.</returns>
+        bool Vibrate(string patternJson);
+
+        /// <summary>
+        /// Retrieves which kind of haptics the device supports.
+        /// </summary>
+        /// <returns>One of "none", "vibrate", or "tap".</returns>
+        string GetHapticsCapability();
     }
 }
