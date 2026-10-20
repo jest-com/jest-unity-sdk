@@ -181,6 +181,12 @@ namespace com.jest.sdk
         [DllImport("__Internal")]
         private static extern void JS_registerLifecycleCallbacks(Action onHide, Action onShow, Action onExitRequested);
 
+        [DllImport("__Internal")]
+        private static extern int JS_vibrate(string patternJson);
+
+        [DllImport("__Internal")]
+        private static extern string JS_getHapticsCapability();
+
 #else
         private static string JS_getEntryPayload() { return _bridgeMock.GetEntryPayload(); }
 
@@ -426,6 +432,14 @@ namespace com.jest.sdk
         {
             UnityEngine.Debug.Log("[JestSDK] RegisterLifecycleCallbacks (mock)");
         }
+
+        private static int JS_vibrate(string patternJson)
+        {
+            UnityEngine.Debug.Log($"[JestSDK] Vibrate (mock): {patternJson}");
+            return 0;
+        }
+
+        private static string JS_getHapticsCapability() { return "none"; }
 
 #endif
 
@@ -720,6 +734,16 @@ namespace com.jest.sdk
         internal static void CaptureEvent(string eventName, string propertiesJson)
         {
             JS_captureEvent(eventName, propertiesJson ?? "");
+        }
+
+        internal static bool Vibrate(string patternJson)
+        {
+            return JS_vibrate(patternJson) == 1;
+        }
+
+        internal static string GetHapticsCapability()
+        {
+            return JS_getHapticsCapability();
         }
 
         private static bool _lifecycleCallbacksRegistered;

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.23.0] - 2026-10-20
+
+### Added
+
+- `JestSDK.Instance.Haptics` (`Haptics`, beta) — device vibration. `Vibrate(int)` and `Vibrate(int[])` behave like `navigator.vibrate()` and also work on iPhone (iOS 18+), where a call made during a tap on the game canvas plays one native tick when the tap is released; the first call installs a tap layer, so its tap does not tick. Returns whether the request was accepted. Editor mocks return `false`.
+- `Haptics.GetCapability()` — returns a `HapticsCapability` (`None`, `Vibrate`, or `Tap`) describing which kind of haptics `Vibrate` produces on this device.
+
 ## [2.22.0] - 2026-10-15
 
 ### Added

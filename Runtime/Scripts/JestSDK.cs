@@ -64,6 +64,11 @@ namespace com.jest.sdk
         public readonly Lifecycle Lifecycle = new();
 
         /// <summary>
+        /// Provides access to device vibration (beta).
+        /// </summary>
+        public readonly Haptics Haptics = new();
+
+        /// <summary>
         /// Initializes the Jest SDK and ensures it's ready for use.
         /// </summary>
         /// <returns>A task that completes when the SDK is ready</returns>
