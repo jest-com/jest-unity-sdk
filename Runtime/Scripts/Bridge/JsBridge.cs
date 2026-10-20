@@ -433,13 +433,9 @@ namespace com.jest.sdk
             UnityEngine.Debug.Log("[JestSDK] RegisterLifecycleCallbacks (mock)");
         }
 
-        private static int JS_vibrate(string patternJson)
-        {
-            UnityEngine.Debug.Log($"[JestSDK] Vibrate (mock): {patternJson}");
-            return 0;
-        }
+        private static int JS_vibrate(string patternJson) { return _bridgeMock.Vibrate(patternJson) ? 1 : 0; }
 
-        private static string JS_getHapticsCapability() { return "none"; }
+        private static string JS_getHapticsCapability() { return _bridgeMock.GetHapticsCapability(); }
 
 #endif
 

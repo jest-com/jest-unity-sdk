@@ -37,6 +37,10 @@ namespace com.jest.sdk
         [Tooltip("Select incomplete purchase response")]
         [SerializeField] private PurchaseReult _purchaseCompleteResult;
 
+        [Header("Haptics")]
+        [Tooltip("Haptics capability reported to the game; vibrate requests are accepted unless None")]
+        [SerializeField] private HapticsCapability _hapticsCapability;
+
         /// <summary>
         /// Gets the unique identifier for the player.
         /// </summary>
@@ -294,6 +298,23 @@ namespace com.jest.sdk
         public string GetClaimRetentionOfferResponse()
         {
             return "{\"result\":\"error\",\"error\":\"not_eligible\"}";
+        }
+
+        /// <summary>
+        /// Logs a vibration request and accepts it unless the configured capability is None.
+        /// </summary>
+        public bool Vibrate(string patternJson)
+        {
+            Debug.Log($"[JestSDKMock] Vibrate {patternJson}");
+            return _hapticsCapability != HapticsCapability.None;
+        }
+
+        /// <summary>
+        /// Returns the configured haptics capability.
+        /// </summary>
+        public string GetHapticsCapability()
+        {
+            return _hapticsCapability.ToString().ToLowerInvariant();
         }
 
 #if UNITY_EDITOR

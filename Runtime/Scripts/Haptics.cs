@@ -33,7 +33,9 @@ namespace com.jest.sdk
         /// <summary>
         /// Same as <c>navigator.vibrate()</c>, but also works on iPhone, where it plays one native
         /// tick when the current tap on the game canvas is released. On iPhone only a call made
-        /// during that tap counts, and the first call installs a layer, so its tap does not tick.
+        /// while the finger is down counts, so call it from the frame that sees the touch begin
+        /// (<see cref="UnityEngine.TouchPhase.Began"/>), and the first call installs a layer, so
+        /// its tap does not tick. A duration of 0 cancels an ongoing vibration.
         /// </summary>
         /// <param name="durationMs">Vibration duration in milliseconds.</param>
         /// <returns>Whether the request was accepted; on iPhone, whether the current tap ticks.</returns>
@@ -44,9 +46,11 @@ namespace com.jest.sdk
 
         /// <summary>
         /// Vibrates with a pattern of alternating vibration and pause durations in milliseconds.
+        /// iPhone ignores the pattern and plays a single tick; see <see cref="Vibrate(int)"/>.
         /// </summary>
         /// <param name="pattern">Alternating vibration and pause durations in milliseconds.</param>
         /// <returns>Whether the request was accepted; on iPhone, whether the current tap ticks.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when pattern is null.</exception>
         public bool Vibrate(int[] pattern)
         {
             if (pattern == null)
@@ -54,7 +58,7 @@ namespace com.jest.sdk
                 throw new ArgumentNullException(nameof(pattern));
             }
 
-            return JsBridge.Vibrate("[" + string.Join(",", pattern) + "]");
+            return JsBridge.Vibrate(Convert.ToString(pattern));
         }
 
         /// <summary>

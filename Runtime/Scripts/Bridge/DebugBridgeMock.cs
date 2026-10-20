@@ -287,5 +287,25 @@ namespace com.jest.sdk
             Debug.Log("[JestSDK] GetClaimRetentionOfferResponse");
             return "{\"result\":\"error\",\"error\":\"not_eligible\"}";
         }
+
+        /// <summary>
+        /// Logs a vibration request. The editor has nothing to vibrate, so it is never accepted.
+        /// </summary>
+        /// <param name="patternJson">A JSON array of alternating vibration and pause durations in milliseconds.</param>
+        /// <returns>Always false.</returns>
+        public bool Vibrate(string patternJson)
+        {
+            Debug.Log($"[JestSDK] Vibrate {patternJson}");
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the haptics capability of the editor.
+        /// </summary>
+        /// <returns>Always "none".</returns>
+        public string GetHapticsCapability()
+        {
+            return "none";
+        }
     }
 }

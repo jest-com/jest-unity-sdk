@@ -272,6 +272,55 @@ namespace com.jest.sdk.Tests
         }
 
         [Test]
+        public void Haptics_GetCapability_DefaultsToNoneInMock()
+        {
+            Assert.That(JestSDK.Instance.Haptics.GetCapability(), Is.EqualTo(HapticsCapability.None));
+        }
+
+        [TestCase(HapticsCapability.None)]
+        [TestCase(HapticsCapability.Vibrate)]
+        [TestCase(HapticsCapability.Tap)]
+        public void Haptics_GetCapability_ParsesWireValue(HapticsCapability capability)
+        {
+            _mock.hapticsCapability = capability;
+
+            Assert.That(JestSDK.Instance.Haptics.GetCapability(), Is.EqualTo(capability));
+        }
+
+        [Test]
+        public void Haptics_Vibrate_SendsDurationAsSingleElementPattern()
+        {
+            _mock.hapticsCapability = HapticsCapability.Vibrate;
+
+            Assert.That(JestSDK.Instance.Haptics.Vibrate(15), Is.True);
+            Assert.That(_mock.vibratePatterns, Is.EqualTo(new[] { new[] { 15 } }));
+        }
+
+        [Test]
+        public void Haptics_Vibrate_SendsPattern()
+        {
+            _mock.hapticsCapability = HapticsCapability.Tap;
+
+            Assert.That(JestSDK.Instance.Haptics.Vibrate(new[] { 10, 20, 30 }), Is.True);
+            Assert.That(_mock.vibratePatterns, Is.EqualTo(new[] { new[] { 10, 20, 30 } }));
+        }
+
+        [Test]
+        public void Haptics_Vibrate_ReturnsFalseWhenRejected()
+        {
+            Assert.That(JestSDK.Instance.Haptics.Vibrate(10), Is.False);
+            Assert.That(JestSDK.Instance.Haptics.Vibrate(new int[0]), Is.False);
+            Assert.That(_mock.vibratePatterns, Is.EqualTo(new[] { new[] { 10 }, new int[0] }));
+        }
+
+        [Test]
+        public void Haptics_Vibrate_ThrowsOnNullPattern()
+        {
+            Assert.Throws<ArgumentNullException>(() => JestSDK.Instance.Haptics.Vibrate(null));
+            Assert.That(_mock.vibratePatterns, Is.Empty);
+        }
+
+        [Test]
         public void RichNotifications_ScheduleNotification_StoresNotification()
         {
             const string dataUrl = "data:image/png;base64,iVBORw0KGgo=";
