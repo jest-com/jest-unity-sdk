@@ -413,6 +413,11 @@ namespace com.jest.sdk.regression
                         firstSubscription.TrialEligible.ToString(),
                         "boolean trialEligible"));
                     assertions.Add(RegressionAssertion.Condition(
+                        "first subscription id and period end are readable",
+                        true,
+                        (firstSubscription.Id ?? "null") + "/" + (firstSubscription.CurrentPeriodEnd?.ToString(CultureInfo.InvariantCulture) ?? "null"),
+                        "string id or null / long currentPeriodEnd or null"));
+                    assertions.Add(RegressionAssertion.Condition(
                         "first subscription sandbox flag is readable",
                         true,
                         firstSubscription.Sandbox?.ToString() ?? "null",

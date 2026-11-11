@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.24.0] - 2026-11-11
+
+### Added
+
+- `Payment.SubscriptionData.Id` — ID of the player's subscription, unchanged across renewals; null if the player has never subscribed to the product.
+- `Payment.SubscriptionData.CurrentPeriodEnd` — end of the current (or most recent) billing period in milliseconds since the Unix epoch; null if the player has never subscribed.
+- The signed subscription payload now includes `iat`.
+
 ## [2.23.0] - 2026-10-20
 
 ### Added
