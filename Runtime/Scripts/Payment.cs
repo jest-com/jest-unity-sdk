@@ -381,6 +381,20 @@ namespace com.jest.sdk
             public string Status;
 
             /// <summary>
+            /// ID of the player's subscription, unchanged across renewals. A new ID is issued if they
+            /// subscribe again after it ends. Null if the player has never subscribed to this product.
+            /// </summary>
+            [JsonProperty("id")]
+            public string Id;
+
+            /// <summary>
+            /// End of the current (or most recent) billing period, in milliseconds since the Unix epoch.
+            /// Null if the player has never subscribed to this product.
+            /// </summary>
+            [JsonProperty("currentPeriodEnd")]
+            public long? CurrentPeriodEnd;
+
+            /// <summary>
             /// True only when this offer has a free trial and the wallet has never subscribed to it before.
             /// </summary>
             [JsonProperty("trialEligible")]
